@@ -3,8 +3,8 @@
 //! Provides compile-time type shape computation and runtime value fingerprinting.
 //! Type conformance checks (`value is Type`) use a two-phase approach:
 //!
-//! 1. **Fast reject** — `u128` presence bitmask: `(value & type) == type`
-//! 2. **Exact verify** — sorted field shapes comparison (name hash + type tag)
+//! 1. **Fast reject** - `u128` presence bitmask: `(value & type) == type`
+//! 2. **Exact verify** - sorted field shapes comparison (name hash + type tag)
 //!
 //! # Example
 //!
@@ -23,7 +23,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 // ============================================================================
-// Type tags — one byte per primitive JSON type
+// Type tags - one byte per primitive JSON type
 // ============================================================================
 
 /// Primitive type tags for leaf nodes in a shape.
@@ -81,7 +81,7 @@ impl TypeTag {
 }
 
 // ============================================================================
-// Field shape — one field's contribution to a type fingerprint
+// Field shape - one field's contribution to a type fingerprint
 // ============================================================================
 
 /// A single field's shape: its name hash and type tag.
@@ -110,7 +110,7 @@ fn hash_field_name(name: &str) -> u64 {
 }
 
 // ============================================================================
-// Type shape — the full fingerprint for a type
+// Type shape - the full fingerprint for a type
 // ============================================================================
 
 /// A type's structural shape, used for conformance checking.
@@ -211,7 +211,7 @@ impl TypeShape {
 }
 
 // ============================================================================
-// Runtime fingerprinting — walk a JSON value to produce its shape
+// Runtime fingerprinting - walk a JSON value to produce its shape
 // ============================================================================
 
 /// Fingerprint a JSON value by recursively walking its fields.
@@ -244,7 +244,7 @@ fn fingerprint_value_recursive(value: &Value) -> TypeShape {
 }
 
 // ============================================================================
-// Type registry — compile-time shape computation from schema
+// Type registry - compile-time shape computation from schema
 // ============================================================================
 
 /// Registry of type shapes built from schema modules.
@@ -366,7 +366,7 @@ impl TypeRegistry {
     fn add_typed_field(&self, shape: &mut TypeShape, name: &str, ty: &TypeRef) {
         let tag = TypeTag::from_type_ref(ty);
         if tag == TypeTag::Record {
-            // This is a named entity/abstract type — look up its sub-shape
+            // This is a named entity/abstract type - look up its sub-shape
             if let TypeRef::Named(ref type_name) = ty {
                 if let Some(child_shape) = self.shapes.get(type_name) {
                     shape.add_field_with_shape(name, tag, child_shape.clone());

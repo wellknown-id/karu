@@ -2,7 +2,7 @@
 
 Status of Cedar feature support in Karu.
 
-## Parser (cedar_parser.rs) — ✅ Full Grammar
+## Parser (cedar_parser.rs) - ✅ Full Grammar
 
 The Cedar parser covers the complete Cedar grammar specification. All features below parse correctly.
 
@@ -43,10 +43,10 @@ The Cedar parser covers the complete Cedar grammar specification. All features b
 | `decimal(path).lessThanOrEqual(...)`       | `Compare(path, DecimalLe, "v")`                                  |
 | `decimal(path).greaterThan(...)`           | `Compare(path, DecimalGt, "v")`                                  |
 | `decimal(path).greaterThanOrEqual(...)`    | `Compare(path, DecimalGe, "v")`                                  |
-| `if C then T else E`                       | `Or(And(C,T), And(Not(C),E))` — short-circuits for bool branches |
+| `if C then T else E`                       | `Or(And(C,T), And(Not(C),E))` - short-circuits for bool branches |
 | Arithmetic (`+`, `-`, `*`)                 | Constant-folded at import time                                   |
 | Unary negation (`-expr`)                   | Constant-folded to negative literal                              |
-| Karu `or` expressions                      | `ConditionExpr::Or(...)` — full nested boolean logic             |
+| Karu `or` expressions                      | `ConditionExpr::Or(...)` - full nested boolean logic             |
 
 ### ❌ Unsupported (explicit error on import)
 

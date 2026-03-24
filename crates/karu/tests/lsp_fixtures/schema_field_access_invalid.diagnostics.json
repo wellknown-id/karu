@@ -3,7 +3,7 @@
     "line": 9,
     "character": 34,
     "severity": "error",
-    "message_contains": "Field 'roles' on 'actor' requires a type guard — base actor has no fields. Use 'actor is <Type> and ...' or add type parameter to assert"
+    "message_contains": "Field 'roles' on 'actor' requires a type guard - base actor has no fields. Use 'actor is <Type> and ...' or add type parameter to assert"
   },
   {
     "line": 14,

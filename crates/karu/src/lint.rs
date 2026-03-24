@@ -1,4 +1,4 @@
-//! Policy linter — detects common pitfalls in Karu policies.
+//! Policy linter - detects common pitfalls in Karu policies.
 //!
 //! The linter walks a parsed AST and produces [`LintWarning`] diagnostics.
 //! It is used by both the LSP (as part of semantic diagnostics) and the CLI
@@ -97,7 +97,7 @@ fn collect_referenced_paths(expr: &ExprAst) -> Vec<&PathAst> {
         ExprAst::Has { path } => vec![path],
         ExprAst::Like { path, .. } => vec![path],
         ExprAst::Not(inner) => collect_referenced_paths(inner),
-        // Don't descend into And/Or — we check siblings at the And level
+        // Don't descend into And/Or - we check siblings at the And level
         _ => vec![],
     }
 }
@@ -115,11 +115,7 @@ fn has_guard_for_path(siblings: &[ExprAst], forall_path: &PathAst) -> bool {
 }
 
 /// Recursively check for unguarded forall expressions.
-fn check_forall_vacuous(
-    expr: &ExprAst,
-    rule_name: &str,
-    warnings: &mut Vec<LintWarning>,
-) {
+fn check_forall_vacuous(expr: &ExprAst, rule_name: &str, warnings: &mut Vec<LintWarning>) {
     match expr {
         ExprAst::And(exprs) => {
             // For each child in this And:
@@ -171,14 +167,11 @@ fn emit_w001(path: &PathAst, rule_name: &str, warnings: &mut Vec<LintWarning>) {
     warnings.push(LintWarning {
         code: "W001",
         message: format!(
-            "forall over `{}` is vacuously true when the collection is empty — \
+            "forall over `{}` is vacuously true when the collection is empty - \
              this may unintentionally grant access",
             path_str
         ),
-        suggestion: Some(format!(
-            "Add a guard: `has {} and forall ...`",
-            path_str
-        )),
+        suggestion: Some(format!("Add a guard: `has {} and forall ...`", path_str)),
         rule_name: rule_name.to_string(),
         forall_path: Some(path_str),
     });
@@ -196,9 +189,8 @@ mod tests {
 
     #[test]
     fn forall_without_guard_emits_w001() {
-        let warnings = lint_source(
-            r#"allow access if forall user in users: user.verified == true;"#,
-        );
+        let warnings =
+            lint_source(r#"allow access if forall user in users: user.verified == true;"#);
         assert_eq!(warnings.len(), 1);
         assert_eq!(warnings[0].code, "W001");
         assert!(warnings[0].message.contains("users"));
@@ -234,9 +226,8 @@ mod tests {
 
     #[test]
     fn exists_does_not_trigger_w001() {
-        let warnings = lint_source(
-            r#"allow access if exists user in users: user.verified == true;"#,
-        );
+        let warnings =
+            lint_source(r#"allow access if exists user in users: user.verified == true;"#);
         assert_eq!(warnings.len(), 0, "exists should not trigger W001");
     }
 
@@ -246,7 +237,11 @@ mod tests {
             r#"allow access if forall user in users: user.active == true and forall role in roles: role.valid == true;"#,
         );
         // Should warn about both unguarded foralls
-        assert!(warnings.len() >= 2, "should have at least 2 warnings, got {}", warnings.len());
+        assert!(
+            warnings.len() >= 2,
+            "should have at least 2 warnings, got {}",
+            warnings.len()
+        );
     }
 
     #[test]
@@ -260,24 +255,20 @@ mod tests {
 
     #[test]
     fn forall_in_deny_still_warns() {
-        let warnings = lint_source(
-            r#"deny block if forall user in users: user.banned == true;"#,
-        );
+        let warnings = lint_source(r#"deny block if forall user in users: user.banned == true;"#);
         assert_eq!(warnings.len(), 1, "deny rules with forall should also warn");
         assert_eq!(warnings[0].code, "W001");
     }
 
     #[test]
     fn no_forall_no_warnings() {
-        let warnings = lint_source(
-            r#"allow access if action == "read" and role == "admin";"#,
-        );
+        let warnings = lint_source(r#"allow access if action == "read" and role == "admin";"#);
         assert_eq!(warnings.len(), 0);
     }
 
     #[test]
     fn forall_guarded_by_subpath_no_warning() {
-        // A check on users.count references a sub-path of users — still counts as guard
+        // A check on users.count references a sub-path of users - still counts as guard
         let warnings = lint_source(
             r#"allow access if users.count > 0 and forall user in users: user.active == true;"#,
         );

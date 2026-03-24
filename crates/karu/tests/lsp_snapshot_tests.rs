@@ -1,9 +1,9 @@
 //! Snapshot-based tests for LSP functions.
 //!
 //! Each `.karu` fixture in `tests/lsp_fixtures/` can have companion files:
-//!   - `.diagnostics.json`  — expected `parse_diagnostics()` output
-//!   - `.symbols.json`      — expected `document_symbols()` names/kinds
-//!   - `.formatted.karu`    — expected output from `format_source()`
+//!   - `.diagnostics.json`  - expected `parse_diagnostics()` output
+//!   - `.symbols.json`      - expected `document_symbols()` names/kinds
+//!   - `.formatted.karu`    - expected output from `format_source()`
 //!
 //! Run with `UPDATE_SNAPSHOTS=1` to regenerate all snapshot files.
 

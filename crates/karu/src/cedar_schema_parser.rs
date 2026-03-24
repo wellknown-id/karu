@@ -62,7 +62,7 @@ impl fmt::Display for CedarSchemaError {
 impl std::error::Error for CedarSchemaError {}
 
 // ============================================================================
-// Tokens — reuse the same token set as cedar_parser
+// Tokens - reuse the same token set as cedar_parser
 // ============================================================================
 
 #[derive(Debug, Clone, PartialEq)]
@@ -674,7 +674,7 @@ impl Parser {
                 if *self.peek() == Token::LBrace {
                     context = Some(self.parse_record_fields()?);
                 } else {
-                    // Context is a named type reference — just consume it
+                    // Context is a named type reference - just consume it
                     self._parse_type()?;
                 }
             } else {
@@ -826,7 +826,7 @@ impl Parser {
             if matches!(self.peek(), Token::Ident(_)) {
                 names.push(self.consume_ident()?);
             } else {
-                // Wasn't an ident — backtrack
+                // Wasn't an ident - backtrack
                 self.pos = saved;
                 break;
             }

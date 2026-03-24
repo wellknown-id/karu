@@ -199,24 +199,24 @@ fn token_length(token: &Token) -> u32 {
 /// Returns markdown-formatted documentation if the word is a known keyword.
 pub fn keyword_hover(word: &str) -> Option<&'static str> {
     match word {
-        "allow" => Some("**allow** — Declares a rule that permits access when conditions match."),
-        "deny" => Some("**deny** — Declares a rule that denies access when conditions match. Deny rules take precedence over allow rules."),
-        "if" => Some("**if** — Introduces the condition clause of a rule."),
-        "and" => Some("**and** — Logical AND operator. All conditions must be true."),
-        "or" => Some("**or** — Logical OR operator. At least one condition must be true."),
-        "not" => Some("**not** — Logical NOT operator. Negates the following condition."),
-        "in" => Some("**in** — Membership operator. Checks if a pattern exists in a collection."),
-        "forall" => Some("**forall** — Universal quantifier. Checks if all items in a collection match a condition."),
-        "exists" => Some("**exists** — Existential quantifier. Checks if any item in a collection matches a condition. Supports variable binding: `exists x in path: condition[x]`."),
-        "true" => Some("**true** — Boolean literal."),
-        "false" => Some("**false** — Boolean literal."),
-        "null" => Some("**null** — Null literal."),
-        "principal" => Some("**principal** — The entity making the request (e.g., a user)."),
-        "action" => Some("**action** — The operation being requested (e.g., \"read\", \"write\")."),
-        "resource" => Some("**resource** — The target of the operation (e.g., a document, folder)."),
-        "context" => Some("**context** — Request-time attributes (e.g., IP address, time, device)."),
-        "test" => Some("**test** — Declares an inline test block. Tests are run with `karu test` and shown live in the editor."),
-        "expect" => Some("**expect** — Specifies the expected effect (`allow` or `deny`) for a test case."),
+        "allow" => Some("**allow** - Declares a rule that permits access when conditions match."),
+        "deny" => Some("**deny** - Declares a rule that denies access when conditions match. Deny rules take precedence over allow rules."),
+        "if" => Some("**if** - Introduces the condition clause of a rule."),
+        "and" => Some("**and** - Logical AND operator. All conditions must be true."),
+        "or" => Some("**or** - Logical OR operator. At least one condition must be true."),
+        "not" => Some("**not** - Logical NOT operator. Negates the following condition."),
+        "in" => Some("**in** - Membership operator. Checks if a pattern exists in a collection."),
+        "forall" => Some("**forall** - Universal quantifier. Checks if all items in a collection match a condition."),
+        "exists" => Some("**exists** - Existential quantifier. Checks if any item in a collection matches a condition. Supports variable binding: `exists x in path: condition[x]`."),
+        "true" => Some("**true** - Boolean literal."),
+        "false" => Some("**false** - Boolean literal."),
+        "null" => Some("**null** - Null literal."),
+        "principal" => Some("**principal** - The entity making the request (e.g., a user)."),
+        "action" => Some("**action** - The operation being requested (e.g., \"read\", \"write\")."),
+        "resource" => Some("**resource** - The target of the operation (e.g., a document, folder)."),
+        "context" => Some("**context** - Request-time attributes (e.g., IP address, time, device)."),
+        "test" => Some("**test** - Declares an inline test block. Tests are run with `karu test` and shown live in the editor."),
+        "expect" => Some("**expect** - Specifies the expected effect (`allow` or `deny`) for a test case."),
         _ => None,
     }
 }
@@ -551,7 +551,7 @@ pub fn error_to_diagnostic(error: &ParseError) -> Diagnostic {
     }
 }
 
-/// Maximum number of diagnostics to report — beyond this, errors are
+/// Maximum number of diagnostics to report - beyond this, errors are
 /// usually cascading noise from an earlier mistake.
 const MAX_DIAGNOSTICS: usize = 5;
 
@@ -570,7 +570,7 @@ pub fn parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     let string_errors = detect_unterminated_strings(source);
     if !string_errors.is_empty() {
         // Unterminated strings cause massive cascading errors downstream,
-        // so report only the string issues — tree-sitter results would be noise.
+        // so report only the string issues - tree-sitter results would be noise.
         return string_errors;
     }
 
@@ -588,7 +588,7 @@ pub fn parse_diagnostics(source: &str) -> Vec<Diagnostic> {
         .collect();
 
     if real_errors.is_empty() {
-        // Phase 3: semantic diagnostics — pass the grammar tree for span info
+        // Phase 3: semantic diagnostics - pass the grammar tree for span info
         if let Some(grammar_tree) = parse_result.result {
             semantic_diagnostics(source, &grammar_tree)
         } else {
@@ -649,7 +649,7 @@ fn semantic_diagnostics(source: &str, grammar_tree: &grammar::grammar::Program) 
                             severity: Some(DiagnosticSeverity::ERROR),
                             source: Some("karu".to_string()),
                             message: format!(
-                                "Unknown rule '{}' in expect block — no rule with this name exists",
+                                "Unknown rule '{}' in expect block - no rule with this name exists",
                                 rule_name
                             ),
                             ..Default::default()
@@ -666,12 +666,17 @@ fn semantic_diagnostics(source: &str, grammar_tree: &grammar::grammar::Program) 
         check_schema_field_access_from_tree(&program, source, grammar_tree, &mut diagnostics);
     }
 
-    // Lint checks — detect common policy pitfalls
+    // Lint checks - detect common policy pitfalls
     let lint_warnings = crate::lint::lint(&program);
     let lines: Vec<&str> = source.lines().collect();
     for warning in lint_warnings {
         // Find the position of the forall keyword in the rule that triggered the warning
-        let position = find_forall_in_rule(source, &lines, &warning.rule_name, warning.forall_path.as_deref());
+        let position = find_forall_in_rule(
+            source,
+            &lines,
+            &warning.rule_name,
+            warning.forall_path.as_deref(),
+        );
         let (line, col, end_col) = position.unwrap_or((0, 0, 6));
 
         let mut diag = Diagnostic {
@@ -847,7 +852,7 @@ fn resolve_path_type(
     }
 
     if path.segments.is_empty() {
-        // Bare `actor`/`resource` — entity ID reference.
+        // Bare `actor`/`resource` - entity ID reference.
         // These can be compared to strings (entity IDs), so don't type-check.
         return ResolvedType::Unknown;
     }
@@ -1206,7 +1211,7 @@ fn check_grammar_expr_field_access(
             );
         }
         grammar::grammar::Expr::Has(_, _, _) => {
-            // `has` checks field existence — fine
+            // `has` checks field existence - fine
         }
         grammar::grammar::Expr::IsType(path, _, type_name) => {
             // Validate that the type guard is kind-compatible:
@@ -1251,7 +1256,7 @@ fn check_grammar_expr_field_access(
                             severity: Some(DiagnosticSeverity::ERROR),
                             source: Some("karu".to_string()),
                             message: format!(
-                                "'{}' cannot be '{}' — '{}' is {} type, but {} is {} built-in",
+                                "'{}' cannot be '{}' - '{}' is {} type, but {} is {} built-in",
                                 root,
                                 type_name,
                                 type_name,
@@ -1270,7 +1275,7 @@ fn check_grammar_expr_field_access(
                     }
                 } else {
                     // entity_kind_for_name returns None for both abstracts
-                    // and truly undefined types — check if it's a known abstract
+                    // and truly undefined types - check if it's a known abstract
                     let is_abstract = program
                         .modules
                         .iter()
@@ -1299,7 +1304,7 @@ fn check_grammar_expr_field_access(
                             severity: Some(DiagnosticSeverity::ERROR),
                             source: Some("karu".to_string()),
                             message: format!(
-                                "Unknown type '{}' in type guard — no entity or abstract with this name is defined in the schema",
+                                "Unknown type '{}' in type guard - no entity or abstract with this name is defined in the schema",
                                 type_name,
                             ),
                             ..Default::default()
@@ -1336,7 +1341,7 @@ fn check_grammar_path_field_access(
         other => other,
     };
 
-    // Only check actor and resource — context and action are different
+    // Only check actor and resource - context and action are different
     if canonical_root != "actor" && canonical_root != "resource" {
         return;
     }
@@ -1346,7 +1351,7 @@ fn check_grammar_path_field_access(
         _ => return,
     };
 
-    // Skip `id` — it's always present as the entity identifier
+    // Skip `id` - it's always present as the entity identifier
     if field == "id" {
         return;
     }
@@ -1354,7 +1359,7 @@ fn check_grammar_path_field_access(
     // Compute position from tree-sitter span on path head
     let (line, col) = byte_offset_to_position(source, path.head.position.bytes.start);
     let end_byte = if !path.segments.is_empty() {
-        // Span covers root.field — calculate from head start + root + "." + field
+        // Span covers root.field - calculate from head start + root + "." + field
         path.head.position.bytes.start + root.len() + 1 + field.len()
     } else {
         path.head.position.bytes.end
@@ -1396,7 +1401,7 @@ fn check_grammar_path_field_access(
             }
         }
     } else {
-        // Unguarded access — base actor/resource has no fields
+        // Unguarded access - base actor/resource has no fields
         diagnostics.push(Diagnostic {
             range: tower_lsp::lsp_types::Range {
                 start: Position {
@@ -1411,7 +1416,7 @@ fn check_grammar_path_field_access(
             severity: Some(DiagnosticSeverity::ERROR),
             source: Some("karu".to_string()),
             message: format!(
-                "Field '{}' on '{}' requires a type guard — base {} has no fields. \
+                "Field '{}' on '{}' requires a type guard - base {} has no fields. \
                  Use '{} is <Type> and ...' or add type parameter to assert",
                 field, root, root, root
             ),
@@ -1752,7 +1757,7 @@ pub fn rule_to_symbol(rule: &RuleAst, line_number: u32, line_length: u32) -> Doc
 
 /// Extract document symbols from a Karu policy.
 ///
-/// Uses tree-sitter for error-tolerant parsing — symbols are returned
+/// Uses tree-sitter for error-tolerant parsing - symbols are returned
 /// even when the document has syntax errors. Rules and tests are grouped
 /// under "Rules" and "Tests" parent nodes in the outline.
 pub fn document_symbols(source: &str) -> Vec<DocumentSymbol> {
@@ -1828,7 +1833,7 @@ pub fn document_symbols(source: &str) -> Vec<DocumentSymbol> {
 
     let mut top_level = Vec::new();
 
-    // Schema group — when "use schema;" is present
+    // Schema group - when "use schema;" is present
     if source.lines().any(|l| l.trim().starts_with("use schema")) {
         let schema_children = extract_schema_symbols(&lines);
         let (_first_line, last_line) =
@@ -2337,7 +2342,7 @@ pub fn is_cedarschema_uri(uri: &str) -> bool {
 pub fn cedar_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     match crate::cedar_parser::parse(source) {
         Ok(_) => {
-            // Cedar parses OK — now try the import to check Karu compatibility
+            // Cedar parses OK - now try the import to check Karu compatibility
             match crate::cedar_import::from_cedar(source) {
                 Ok(_) => vec![], // All good
                 Err(e) => vec![Diagnostic {

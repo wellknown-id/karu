@@ -257,7 +257,7 @@ fn convert_scope_action(
         }
         CedarActionConstraint::In(entity) => {
             // action in ActionGroup::"readOnly" → action == "readOnly"
-            // (simplified — Cedar hierarchy not modeled)
+            // (simplified - Cedar hierarchy not modeled)
             conditions.push(ExprAst::Compare {
                 left: make_path("action"),
                 op: OpAst::Eq,
@@ -477,7 +477,7 @@ fn convert_expr(expr: &CedarExpr) -> Result<ExprAst, ImportError> {
             key
         ))),
         CedarExpr::Var(name) => {
-            // Standalone var like `principal` — when used as condition, treat as truthy
+            // Standalone var like `principal` - when used as condition, treat as truthy
             let path = make_path(name);
             Ok(ExprAst::Compare {
                 left: path,
@@ -564,7 +564,7 @@ fn convert_relation(
             })
         }
         Err(_) => {
-            // LHS isn't a path — try constant-folding both sides
+            // LHS isn't a path - try constant-folding both sides
             if let (Some(a), Some(b)) = (expr_to_i64(lhs), expr_to_i64(rhs)) {
                 let result = match op {
                     CedarRelOp::Eq => a == b,
@@ -741,7 +741,7 @@ fn extfun_to_path(expr: &CedarExpr, expected_fn: &str) -> Result<PathAst, Import
                 CedarExpr::Var(v) => Ok(make_path(v)),
                 CedarExpr::Access(_, _) => expr_to_path(&args[0]),
                 CedarExpr::Str(s) => {
-                    // Literal string like ip("10.0.0.1") — create a synthetic literal path
+                    // Literal string like ip("10.0.0.1") - create a synthetic literal path
                     // This case happens when comparing two literals, which is unusual
                     // For now, embed as a single-segment path that won't resolve
                     // The evaluator will see the string value directly
@@ -1049,7 +1049,7 @@ mod tests {
         )
         .unwrap();
         if let Some(ExprAst::Not(_)) = &program.rules[0].body {
-            // Good — unless is negated
+            // Good - unless is negated
         } else {
             panic!("Expected Not expression for unless");
         }

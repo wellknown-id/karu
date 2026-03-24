@@ -139,7 +139,7 @@ impl KaruLanguageServer {
                     .publish_diagnostics(uri, all_diagnostics, None)
                     .await;
             } else {
-                // No tests — clear stale gutter decorations and warn about uncovered rules
+                // No tests - clear stale gutter decorations and warn about uncovered rules
                 let _ = self
                     .client
                     .send_notification::<TestResultsNotification>(TestResultsParams {

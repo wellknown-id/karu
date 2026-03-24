@@ -8,10 +8,10 @@ mod {
     };
 };
 
-// Error: actor cannot be Document — Document is a resource type
+// Error: actor cannot be Document - Document is a resource type
 allow bad_guard if actor is Document and actor.name == "alice";
 
-// Error: resource cannot be User — User is an actor type
+// Error: resource cannot be User - User is an actor type
 allow bad_guard2 if resource is User and resource.name == "alice";
 
 // Error: Foo is not defined anywhere in the schema

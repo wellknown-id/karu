@@ -3,6 +3,6 @@
     "line": 9,
     "character": 13,
     "severity": "error",
-    "message_contains": "Unknown rule 'nonexistent_rule' in expect block — no rule with this name exists"
+    "message_contains": "Unknown rule 'nonexistent_rule' in expect block - no rule with this name exists"
   }
 ]

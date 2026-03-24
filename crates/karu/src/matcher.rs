@@ -176,7 +176,7 @@ fn match_inner(data: &Value, pattern: &Pattern, bindings: &mut Bindings) -> bool
     }
 }
 
-/// Fast reference-only matcher — no Bindings allocation.
+/// Fast reference-only matcher - no Bindings allocation.
 ///
 /// Handles all pattern types without creating a Bindings struct.
 /// Variables always match (bindings are discarded).
@@ -277,7 +277,7 @@ fn glob_match(pattern: &str, text: &str) -> bool {
 
     while ti < tlen {
         if pi < plen && (pat[pi] == '?' || pat[pi] == txt[ti]) {
-            // Exact or single-char wildcard match — advance both
+            // Exact or single-char wildcard match - advance both
             pi += 1;
             ti += 1;
         } else if pi < plen && pat[pi] == '*' {
@@ -286,7 +286,7 @@ fn glob_match(pattern: &str, text: &str) -> bool {
             star_ti = ti;
             pi += 1;
         } else if star_pi != usize::MAX {
-            // Mismatch but we have a star bookmark — backtrack:
+            // Mismatch but we have a star bookmark - backtrack:
             // let the star consume one more character from text
             star_ti += 1;
             ti = star_ti;

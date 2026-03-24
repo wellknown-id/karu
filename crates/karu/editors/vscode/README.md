@@ -30,11 +30,12 @@ code --install-extension karu-0.1.0.vsix
 
 ## Configuration
 
-| Setting | Description |
-|---------|-------------|
+| Setting           | Description                                         |
+| ----------------- | --------------------------------------------------- |
 | `karu.serverPath` | Path to `karu-lsp` binary. Leave empty to use PATH. |
 
 Example `settings.json`:
+
 ```json
 {
   "karu.serverPath": "/path/to/karu/target/release/karu-lsp"
@@ -43,13 +44,13 @@ Example `settings.json`:
 
 ## Features
 
-- **Syntax Highlighting** — TextMate grammar for `.karu` files
-- **Diagnostics** — Parse errors with line/column
-- **Hover** — Documentation for keywords
-- **Completion** — Keywords with snippets
-- **Document Symbols** — Rule outline (Ctrl+Shift+O)
-- **Go to Definition** — Jump to rule (F12)
-- **Semantic Tokens** — Rich syntax highlighting via LSP
+- **Syntax Highlighting** - TextMate grammar for `.karu` files
+- **Diagnostics** - Parse errors with line/column
+- **Hover** - Documentation for keywords
+- **Completion** - Keywords with snippets
+- **Document Symbols** - Rule outline (Ctrl+Shift+O)
+- **Go to Definition** - Jump to rule (F12)
+- **Semantic Tokens** - Rich syntax highlighting via LSP
 
 ## Development
 

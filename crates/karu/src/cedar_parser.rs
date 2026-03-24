@@ -1244,7 +1244,7 @@ impl Parser {
                     self.expect(&Token::RParen)?;
                     Ok(CedarExpr::ExtFun(name, args))
                 } else {
-                    // Plain identifier — treat as variable
+                    // Plain identifier - treat as variable
                     Ok(CedarExpr::Var(name))
                 }
             }

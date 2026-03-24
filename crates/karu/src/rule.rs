@@ -104,15 +104,15 @@ pub enum Operator {
     /// Negated containsAny: none of the pattern elements exist in the data array.
     NotContainsAny,
     // ── Cedar extension function operators ──
-    /// ip(path).isInRange(ip("cidr")) — IP address in CIDR range check
+    /// ip(path).isInRange(ip("cidr")) - IP address in CIDR range check
     IpIsInRange,
-    /// ip(path).isIpv4() — true if valid IPv4 address
+    /// ip(path).isIpv4() - true if valid IPv4 address
     IsIpv4,
-    /// ip(path).isIpv6() — true if valid IPv6 address (not a v4-mapped v6)
+    /// ip(path).isIpv6() - true if valid IPv6 address (not a v4-mapped v6)
     IsIpv6,
-    /// ip(path).isLoopback() — true if loopback address
+    /// ip(path).isLoopback() - true if loopback address
     IsLoopback,
-    /// ip(path).isMulticast() — true if multicast address
+    /// ip(path).isMulticast() - true if multicast address
     IsMulticast,
     /// decimal comparison: decimal(path).lessThan(decimal("v"))
     DecimalLt,
@@ -129,7 +129,7 @@ pub enum Operator {
 fn glob_match(text: &str, pattern: &str) -> bool {
     let parts: Vec<&str> = pattern.split('*').collect();
 
-    // No wildcards — must be exact match
+    // No wildcards - must be exact match
     if parts.len() == 1 {
         return text == pattern;
     }
@@ -291,9 +291,9 @@ fn compare_numbers(data: &Value, pattern: &Pattern, cmp: impl Fn(f64, f64) -> bo
 /// Quantifier mode for exists/forall conditions.
 #[derive(Debug, Clone, PartialEq)]
 pub enum QuantifierMode {
-    /// exists var in path: condition — ANY match succeeds
+    /// exists var in path: condition - ANY match succeeds
     Exists,
-    /// forall var in path: condition — ALL must match
+    /// forall var in path: condition - ALL must match
     ForAll,
 }
 
@@ -488,7 +488,7 @@ impl Condition {
             Operator::ForAll => all_match(data, pattern),
             Operator::Exists => any_matches(data, pattern),
             // Has: if we reach dispatch_op, the path already resolved, so the attribute exists.
-            // This is true even for null values — {field: null} means the field EXISTS.
+            // This is true even for null values - {field: null} means the field EXISTS.
             Operator::Has => true,
             Operator::Like => {
                 if let (Some(text), Pattern::Literal(Value::String(pat))) = (data.as_str(), pattern)
@@ -621,7 +621,7 @@ pub enum ConditionExpr {
     /// Structural type check: `path is TypeShape`.
     /// Fingerprints the value at `path` and checks conformance.
     IsType { path: Path, shape: TypeShape },
-    /// Host-provided assert — resolved at evaluation time via callback.
+    /// Host-provided assert - resolved at evaluation time via callback.
     ///
     /// The string is the assert name (e.g. `"resource_is_package_local"`).
     /// When evaluated without an `EvalContext`, defaults to `false`.

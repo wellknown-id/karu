@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://www.osohq.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -12,16 +13,16 @@
 
 ## Policy Preview Overview (Growth Plan)
 
-Policy Preview is a beta CL feature that benchmarks query performance for a **candidate policy** — a new or modified policy you’re testing — and compares it to your current production policy.
+Policy Preview is a beta CL feature that benchmarks query performance for a **candidate policy** - a new or modified policy you’re testing - and compares it to your current production policy.
 
 Use this tool to test policy changes during development or enforce performance checks in CI pipelines.
 
 ## Requirements
 
-* Growth plan subscription
-* [Oso Cloud CLI](/develop/local-dev/env-setup#install-the-oso-cloud-cli), version >= 0.35.1
-* A candidate policy to compare against your deployed policy
-* A list of queries to benchmark
+- Growth plan subscription
+- [Oso Cloud CLI](/develop/local-dev/env-setup#install-the-oso-cloud-cli), version >= 0.35.1
+- A candidate policy to compare against your deployed policy
+- A list of queries to benchmark
 
 ## Quick Start
 
@@ -29,7 +30,7 @@ Use this tool to test policy changes during development or enforce performance c
 
 A YAML file that defines queries to preview. See [Query Manifest Reference](#query-manifest-reference) for details.
 
-```yaml  theme={null}
+```yaml theme={null}
 # Example
 queries:
   - name: "Admins can read repos"
@@ -51,7 +52,7 @@ queries:
 2. **Create a candidate policy** with your proposed changes You can use a single .polar file (e.g. `candidate.polar`) or multiple .polar files (e.g. `policies/*.polar`).
 3. **Run the preview**
 
-```bash  theme={null}
+```bash theme={null}
 oso-cloud experimental policy-preview --queries queries.yaml policies/*.polar
 ```
 
@@ -74,16 +75,16 @@ Queries that exceed thresholds appear as failed in the terminal output and cause
 
 The manifest file defines the queries to execute during policy preview. It supports the following query types:
 
-* [`actions`](https://www.osohq.com/docs/reference/api/check-api/post-actions)
-* [`authorize`](https://www.osohq.com/docs/reference/api/check-api/post-authorize)
-* [`evaluate_query`](https://www.osohq.com/docs/reference/api/check-api/post-evaluate_query)
-* [`list`](https://www.osohq.com/docs/reference/api/check-api/post-list)
+- [`actions`](https://www.osohq.com/docs/reference/api/check-api/post-actions)
+- [`authorize`](https://www.osohq.com/docs/reference/api/check-api/post-authorize)
+- [`evaluate_query`](https://www.osohq.com/docs/reference/api/check-api/post-evaluate_query)
+- [`list`](https://www.osohq.com/docs/reference/api/check-api/post-list)
 
 The query structure is similar to the [HTTP API](/app-integration/client-apis/api-explorer), with two additional required fields: `name` and `query_type`.
 
 ### Manifest Structure
 
-```yaml  theme={null}
+```yaml theme={null}
 queries:
   - name: "Query name"
     query_type: <type>
@@ -94,7 +95,7 @@ queries:
 
 #### Authorize Query
 
-```yaml  theme={null}
+```yaml theme={null}
 - name: <String> (must be unique)
   query_type: authorize
   actor_type: <String>
@@ -106,7 +107,7 @@ queries:
 
 #### List Query
 
-```yaml  theme={null}
+```yaml theme={null}
 - name: <String> (unique)
   query_type: list
   actor_type: <String>
@@ -117,7 +118,7 @@ queries:
 
 #### Actions Query
 
-```yaml  theme={null}
+```yaml theme={null}
 - name: <String> (unique)
   query_type: actions
   actor_type: <String>
@@ -128,7 +129,7 @@ queries:
 
 #### Evaluate Query
 
-```yaml  theme={null}
+```yaml theme={null}
 - name: <String>
   query_type: evaluate_query
   predicate: [<String>]
@@ -144,21 +145,21 @@ queries:
 
 **Required fields:**
 
-* `predicate`: Array where first element is predicate name, the rest are variable names
-* `constraints`: Map of variable names to constraint definitions
-  * `type`: Entity type for the variable
-  * `ids` (optional): List of IDs to test
-* All variables in `predicate` or `calls` must be defined in `constraints`
+- `predicate`: Array where first element is predicate name, the rest are variable names
+- `constraints`: Map of variable names to constraint definitions
+  - `type`: Entity type for the variable
+  - `ids` (optional): List of IDs to test
+- All variables in `predicate` or `calls` must be defined in `constraints`
 
 **Optional fields:**
 
-* `calls`: Array of predicate calls formatted like `predicate`
+- `calls`: Array of predicate calls formatted like `predicate`
 
 #### Context Facts
 
 You can add context facts to any of the above queries. If you add a context fact to a query, each of these fields below are required:
 
-```yaml  theme={null}
+```yaml theme={null}
 context_facts:
   - predicate: <String>
     args:
@@ -176,10 +177,10 @@ context_facts:
 
 Include queries that represent:
 
-* Common authorization paths
-* Edge cases
-* Performance-critical queries
-* Recently changed policy rules
+- Common authorization paths
+- Edge cases
+- Performance-critical queries
+- Recently changed policy rules
 
 ## Troubleshooting
 
@@ -191,6 +192,6 @@ Policy Preview must be enabled. Contact us on [Slack](https://oso-oss.slack.com/
 
 Check your manifest structure. Common issues include:
 
-* Missing required fields
-* Incorrect indentation
-* Unknown fields
+- Missing required fields
+- Incorrect indentation
+- Unknown fields

@@ -12,7 +12,7 @@ use serde_json::json;
 
 fuzz_target!(|data: &[u8]| {
     if let Ok(source) = std::str::from_utf8(data) {
-        // from_cedar should never panic — only Ok or Err
+        // from_cedar should never panic - only Ok or Err
         match from_cedar(source) {
             Ok(program) => {
                 // If import succeeded, all rules should have names
@@ -23,7 +23,7 @@ fuzz_target!(|data: &[u8]| {
             Err(_) => {}
         }
 
-        // compile_cedar should never panic — only Ok or Err
+        // compile_cedar should never panic - only Ok or Err
         match compile_cedar(source) {
             Ok(policy) => {
                 // Evaluate the imported policy with diverse inputs

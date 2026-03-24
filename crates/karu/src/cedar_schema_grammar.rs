@@ -45,7 +45,7 @@ pub mod grammar {
     }
 
     // ========================================================================
-    // Top-level items — annotations are hoisted here to avoid conflicts
+    // Top-level items - annotations are hoisted here to avoid conflicts
     // ========================================================================
 
     /// A schema item with leading annotations.
@@ -122,7 +122,7 @@ pub mod grammar {
         ),
     }
 
-    /// A type path like `Foo::Bar` — uses SchemaIdent (the word token) as base
+    /// A type path like `Foo::Bar` - uses SchemaIdent (the word token) as base
     /// so that tree-sitter keyword extraction works for `Set`, `Long`, etc.
     #[derive(Debug, Rule)]
     pub struct TypePath {

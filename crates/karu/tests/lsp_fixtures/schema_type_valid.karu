@@ -23,5 +23,5 @@ allow long_eq if actor is User and actor.age == 21;
 // Valid: boolean == boolean
 allow bool_eq if resource is Document and resource.public == true;
 
-// Valid: entity field chain — resource.owner.name is string
+// Valid: entity field chain - resource.owner.name is string
 allow chain if resource is Document and resource.owner.name == "alice";

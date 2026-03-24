@@ -304,13 +304,13 @@ Expressions form the conditions in rule bodies.
 ### Boolean Logic
 
 ```karu
-# AND — both must be true
+# AND - both must be true
 allow edit if principal == "alice" and action == "edit";
 
-# OR — either suffices
+# OR - either suffices
 allow view if principal == "alice" or principal == "bob";
 
-# NOT — negation
+# NOT - negation
 deny locked if not resource.active;
 ```
 
@@ -383,16 +383,16 @@ principal == "alice"
 resource.count == 42
 resource.active == true
 
-# Wildcard — matches anything
+# Wildcard - matches anything
 resource.owner == _
 
-# Object pattern — structural match
+# Object pattern - structural match
 resource == { type: "document", status: "active" }
 
 # Array pattern
 resource.tags == ["public", "featured"]
 
-# Path reference — compare two paths
+# Path reference - compare two paths
 resource.ownerId == principal.id
 ```
 
@@ -453,12 +453,12 @@ are merged into the importing file's program.
 
 ### Constraints
 
-1. **No circular imports** — the import graph must form a DAG. If file A
+1. **No circular imports** - the import graph must form a DAG. If file A
    imports file B and file B imports file A, this is a compilation error.
 
-2. **Schema consistency** — a `use schema;` file can only import other
+2. **Schema consistency** - a `use schema;` file can only import other
    `use schema;` files. However, an untyped file **may** import a typed file
-   — every typed file works fine inside an untyped project.
+   - every typed file works fine inside an untyped project.
 
 ```karu
 # ✓ Valid: both files use schema
@@ -534,8 +534,8 @@ deny delete if
 
 ### Entity Kinds
 
-- **`actor`** — principal entity types (users, services, roles).
-- **`resource`** — target entity types (documents, folders, files).
+- **`actor`** - principal entity types (users, services, roles).
+- **`resource`** - target entity types (documents, folders, files).
 
 ### Inheritance
 

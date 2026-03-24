@@ -78,7 +78,7 @@ async function initWasm() {
     try {
         await init();
         wasmReady = true;
-        resultDiv.innerHTML = '<span class="loading">Ready — edit policy or JSON to evaluate</span>';
+        resultDiv.innerHTML = '<span class="loading">Ready - edit policy or JSON to evaluate</span>';
         evaluate();
     } catch (e) {
         resultDiv.className = 'result error';

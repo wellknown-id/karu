@@ -244,7 +244,7 @@ impl Parser {
             tok => return Err(self.err(format!("Expected 'allow' or 'deny', found {}", tok))),
         };
 
-        // Rule name (optional — `allow if ...` has no name)
+        // Rule name (optional - `allow if ...` has no name)
         let name = match self.current_token() {
             Token::Ident(_) | Token::String(_) | Token::Actor | Token::Resource | Token::Action => {
                 self.expect_ident_or_string()?
@@ -869,7 +869,7 @@ impl Parser {
             });
         }
 
-        // Check for ':' — type reference: `MyCedarNamespace:Delete`
+        // Check for ':' - type reference: `MyCedarNamespace:Delete`
         if self.current_token() == &Token::Colon {
             // The path so far should be a single-segment namespace name
             if path.segments.len() == 1 {
@@ -885,7 +885,7 @@ impl Parser {
             }
         }
 
-        // Check for 'is' — type membership: `resource is File`
+        // Check for 'is' - type membership: `resource is File`
         if self.current_token() == &Token::Is {
             self.advance();
             let type_name = self.expect_ident()?;

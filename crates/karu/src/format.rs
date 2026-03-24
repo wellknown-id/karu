@@ -39,7 +39,7 @@ pub fn format_source(source: &str) -> Result<String, String> {
     // spurious errors on comments containing word-like content (the word token
     // `KaruIdent` matches inside extras). The parse still succeeds.
     // For genuinely broken input, we rely on the parsed AST being empty/wrong
-    // which will produce incorrect but non-crashing output — this is acceptable
+    // which will produce incorrect but non-crashing output - this is acceptable
     // for a formatter since it only operates on parseable files.
     let program = grammar::Program::parse(source)
         .result

@@ -34,7 +34,7 @@ pub mod grammar {
 
     // ── Root ─────────────────────────────────────────────────────────────
 
-    /// Root language node — a Karu program is a list of top-level items.
+    /// Root language node - a Karu program is a list of top-level items.
     #[derive(Debug, Rule)]
     #[language]
     #[extras(re(r"\s"), re(r"//[^\n]*"))]
@@ -466,7 +466,7 @@ pub mod grammar {
         Field(#[leaf(".")] (), #[leaf(KaruIdent)] String),
         /// `[index]`
         Index(#[leaf("[")] (), #[leaf(KaruDigits)] u32, #[leaf("]")] ()),
-        /// `[variable]` — identifier inside brackets
+        /// `[variable]` - identifier inside brackets
         Variable(#[leaf("[")] (), #[leaf(KaruIdent)] String, #[leaf("]")] ()),
     }
 

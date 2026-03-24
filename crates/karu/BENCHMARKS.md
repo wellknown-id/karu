@@ -22,7 +22,7 @@ statistically rigorous measurement (100 samples, 5-second measurement window).
 
 - **Native**: Direct Rust library calls (`karu::compile` / `cedar_policy::Authorizer`)
 - **WASM**: In-process via [wasmtime](https://wasmtime.dev/) with Cranelift JIT (`OptLevel::Speed`)
-  — the WASM is compiled to native machine code _before_ benchmarking starts
+  - the WASM is compiled to native machine code _before_ benchmarking starts
 - **Precompiled**: Policy is compiled once; only evaluation is benchmarked
 - **Parse+eval**: Policy is parsed and evaluated every iteration
 
@@ -65,7 +65,7 @@ Policies are converted from Cedar → Karu via `compile_cedar()`.
 
 > **Karu loading Cedar policies is 8–60x faster than Cedar native**
 
-## WASM Benchmarks — Precompiled (eval-only)
+## WASM Benchmarks - Precompiled (eval-only)
 
 Policy compiled once, only evaluation is timed.
 
@@ -79,7 +79,7 @@ Policy compiled once, only evaluation is timed.
 > Karu precompiled WASM (459 ns) is **faster than Cedar native** (1,162 ns)!
 > Karu loading Cedar via WASM (634 ns) is **still faster than Cedar native**!
 
-## WASM Benchmarks — Parse + Eval
+## WASM Benchmarks - Parse + Eval
 
 Policy parsed and evaluated every iteration.
 
@@ -153,7 +153,7 @@ cargo run --release --bin seed -- --full   # 1M users, ~5 min
 | 1→16    | **5.93x**   | 3.51x        |
 
 > At 16 threads, Karu evaluates **10.62 million authorization decisions per second**.
-> Cedar maxes out at **270K** — a **39x difference**.
+> Cedar maxes out at **270K** - a **39x difference**.
 > With 10,000 concurrent users hitting a single node, **Karu handles all evaluations in 0.9ms**.
 
 ## Karu Standalone Benchmarks
@@ -186,11 +186,11 @@ Additional microbenchmarks from the core crate:
 
 The evaluation hot path has been extensively profiled and optimized:
 
-- **`evaluate_fast()`** — bypasses HashMap/bindings for non-quantified conditions
-- **Literal fast-path** — `Eq`/`Ne` with literal patterns does direct `Value` comparison
-- **`resolve_fast()`** — path resolution without HashMap allocation
-- **`matches_ref()`** — pattern matching without Bindings struct allocation
-- **Zero-clone evaluation** — patterns are used by reference, never cloned during eval
+- **`evaluate_fast()`** - bypasses HashMap/bindings for non-quantified conditions
+- **Literal fast-path** - `Eq`/`Ne` with literal patterns does direct `Value` comparison
+- **`resolve_fast()`** - path resolution without HashMap allocation
+- **`matches_ref()`** - pattern matching without Bindings struct allocation
+- **Zero-clone evaluation** - patterns are used by reference, never cloned during eval
 
 Per-condition cost is ~26 ns (path resolve + value compare + dispatch).
 Path resolution costs ~5.6 ns per dot-segment.

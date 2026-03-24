@@ -1,4 +1,4 @@
-//! Security audit tests — PoC exploits for identified vulnerabilities.
+//! Security audit tests - PoC exploits for identified vulnerabilities.
 //!
 //! Each test validates a specific security finding. Tests marked with
 //! "[FIXED]" verify that a vulnerability has been patched. Tests marked
@@ -10,7 +10,7 @@ use serde_json::json;
 use std::time::Instant;
 
 // ============================================================================
-// FINDING 1: glob_match in matcher.rs — exponential backtracking (FIXED)
+// FINDING 1: glob_match in matcher.rs - exponential backtracking (FIXED)
 // Severity: MEDIUM (DoS)
 // The old recursive implementation had O(M^N) worst-case with N wildcards.
 // Fixed by replacing with an iterative two-pointer O(n*m) algorithm.
@@ -37,7 +37,7 @@ fn fixed_glob_match_no_exponential_backtracking() {
         assert!(!result, "Should not match (no 'b' in input)");
         assert!(
             elapsed.as_millis() < 100,
-            "glob_match with {} wildcards + {} chars took {:?} — still has exponential backtracking!",
+            "glob_match with {} wildcards + {} chars took {:?} - still has exponential backtracking!",
             wildcards, text_len, elapsed
         );
     }
@@ -117,16 +117,10 @@ fn fixed_has_operator_null_value() {
     let policy = compile(r#"allow access if has field;"#).unwrap();
 
     // Field exists with non-null value → Allow
-    assert_eq!(
-        policy.evaluate(&json!({"field": "hello"})),
-        Effect::Allow,
-    );
+    assert_eq!(policy.evaluate(&json!({"field": "hello"})), Effect::Allow,);
 
     // Field doesn't exist → Deny
-    assert_eq!(
-        policy.evaluate(&json!({"other": "data"})),
-        Effect::Deny,
-    );
+    assert_eq!(policy.evaluate(&json!({"other": "data"})), Effect::Deny,);
 
     // Field exists with null value → Allow (FIXED: was Deny)
     assert_eq!(
@@ -137,8 +131,8 @@ fn fixed_has_operator_null_value() {
 }
 
 // ============================================================================
-// FINDING 4: Deeply nested expressions — stack depth
-// Severity: LOW (DoS) — requires malicious policy input with extreme nesting.
+// FINDING 4: Deeply nested expressions - stack depth
+// Severity: LOW (DoS) - requires malicious policy input with extreme nesting.
 // Not fixed (would require an iterative evaluator or depth limit).
 // Documented as a known limitation.
 // ============================================================================
@@ -146,7 +140,7 @@ fn fixed_has_operator_null_value() {
 /// [INFO] Moderate nesting depth works fine.
 #[test]
 fn info_moderate_nesting_works() {
-    // 100 levels of not — manageable
+    // 100 levels of not - manageable
     let mut source = String::from("allow access if ");
     for _ in 0..100 {
         source.push_str("not ");
@@ -155,19 +149,13 @@ fn info_moderate_nesting_works() {
 
     let policy = compile(&source).unwrap();
     // 100 negations (even count) = original condition
-    assert_eq!(
-        policy.evaluate(&json!({"role": "admin"})),
-        Effect::Allow,
-    );
-    assert_eq!(
-        policy.evaluate(&json!({"role": "user"})),
-        Effect::Deny,
-    );
+    assert_eq!(policy.evaluate(&json!({"role": "admin"})), Effect::Allow,);
+    assert_eq!(policy.evaluate(&json!({"role": "user"})), Effect::Deny,);
 }
 
 // ============================================================================
 // FINDING 5: ForAll on empty collection
-// Severity: INFO — semantic consideration
+// Severity: INFO - semantic consideration
 // forall on an empty source array returns Deny (no match).
 // This is actually MORE secure than standard logic (∀x∈∅ is vacuously true)
 // since it prevents unintended access grants on empty collections.
@@ -175,11 +163,11 @@ fn info_moderate_nesting_works() {
 
 /// [INFO] forall on empty array returns false (secure default).
 /// When using Condition::for_all via the Rust API, an empty array returns
-/// false because no elements match. This is the secure default — it prevents
+/// false because no elements match. This is the secure default - it prevents
 /// unintended access grants when collections are empty.
 #[test]
 fn info_forall_empty_array_rust_api() {
-    use karu::rule::{Condition, Rule, Policy};
+    use karu::rule::{Condition, Policy, Rule};
     use karu::Pattern;
 
     // forall user in users: user.verified == true
@@ -207,19 +195,19 @@ fn info_forall_empty_array_rust_api() {
         Effect::Deny,
     );
 
-    // Empty array → Allow (vacuously true — standard mathematical logic).
+    // Empty array → Allow (vacuously true - standard mathematical logic).
     // ⚠ Policy authors should be aware: forall on empty collections ALLOWS.
     // To prevent this, add an explicit "users is not empty" condition.
     assert_eq!(
         policy.evaluate(&json!({"users": []})),
         Effect::Allow,
-        "forall on empty array is vacuously true — may surprise policy authors",
+        "forall on empty array is vacuously true - may surprise policy authors",
     );
 }
 
 // ============================================================================
 // FINDING 6: Float comparison imprecision
-// Severity: INFO — standard IEEE 754 behavior, not a bug per se.
+// Severity: INFO - standard IEEE 754 behavior, not a bug per se.
 // ============================================================================
 
 /// [INFO] Float comparison uses f64 with normal IEEE 754 precision.
@@ -228,10 +216,7 @@ fn info_float_comparison_precision() {
     let policy = compile(r#"allow access if price == 0.3;"#).unwrap();
 
     // Direct 0.3 → Allow
-    assert_eq!(
-        policy.evaluate(&json!({"price": 0.3})),
-        Effect::Allow,
-    );
+    assert_eq!(policy.evaluate(&json!({"price": 0.3})), Effect::Allow,);
 
     // 0.1 + 0.2 ≠ 0.3 in IEEE 754
     let computed = 0.1_f64 + 0.2_f64;
@@ -240,6 +225,6 @@ fn info_float_comparison_precision() {
     assert_eq!(
         result,
         Effect::Deny,
-        "0.1 + 0.2 != 0.3 in IEEE 754 — expected behavior",
+        "0.1 + 0.2 != 0.3 in IEEE 754 - expected behavior",
     );
 }

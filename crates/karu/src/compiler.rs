@@ -109,7 +109,13 @@ fn compile_rule(
 
     let body = if let Some(ref body) = rule.body {
         let mut expanding = HashSet::new();
-        Some(compile_expr_inner(body, assertions, types, host_asserts, &mut expanding)?)
+        Some(compile_expr_inner(
+            body,
+            assertions,
+            types,
+            host_asserts,
+            &mut expanding,
+        )?)
     } else {
         None
     };
@@ -167,7 +173,13 @@ fn compile_expr_inner(
                             });
                         }
                         // Inline the assertion's body expression
-                        let result = compile_expr_inner(assertion_body, assertions, types, host_asserts, expanding);
+                        let result = compile_expr_inner(
+                            assertion_body,
+                            assertions,
+                            types,
+                            host_asserts,
+                            expanding,
+                        );
                         expanding.remove(name);
                         return result;
                     }
@@ -274,7 +286,7 @@ fn compile_expr_inner(
         }
         ExprAst::IsType { path, type_name } => {
             // Structural type check: `resource is File`
-            // Look up the type shape in the registry — error if not found.
+            // Look up the type shape in the registry - error if not found.
             let shape = types.get(type_name).cloned().ok_or_else(|| ParseError {
                 message: format!("unknown type `{}` in `is` expression", type_name),
                 line: 0,

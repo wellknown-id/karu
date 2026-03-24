@@ -70,7 +70,7 @@ fn main() {
 
     let total = start.elapsed();
     let size_mb = std::fs::metadata(&db_path).unwrap().len() as f64 / 1_048_576.0;
-    println!("\nDone in {:.1}s — {:.0} MB", total.as_secs_f64(), size_mb);
+    println!("\nDone in {:.1}s - {:.0} MB", total.as_secs_f64(), size_mb);
 }
 
 fn create_schema(conn: &Connection) {

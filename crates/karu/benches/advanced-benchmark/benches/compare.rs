@@ -1,4 +1,4 @@
-//! Advanced benchmark: Karu vs Cedar — Native + WASM comparison.
+//! Advanced benchmark: Karu vs Cedar - Native + WASM comparison.
 //!
 //! Uses Criterion for statistically rigorous benchmarking.
 //! Native engines are called directly as Rust libraries.
@@ -172,7 +172,7 @@ fn bench_cedar_native(c: &mut Criterion) {
 /// Create an optimized wasmtime Engine.
 ///
 /// Cranelift compiles the WASM to native code during Module::from_file,
-/// so all benchmark iterations run JIT-compiled native code — not
+/// so all benchmark iterations run JIT-compiled native code - not
 /// interpreted bytecode.
 fn optimized_engine() -> Engine {
     let mut config = Config::new();

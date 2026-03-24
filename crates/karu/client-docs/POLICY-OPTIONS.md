@@ -22,12 +22,12 @@ Any alternative must satisfy the requirements below without compromising securit
 
 The policy language must support fine-grained decisions based on four dimensions:
 
-| Dimension | Description | Examples |
-|-----------|-------------|----------|
-| **Principal** | The entity making the request | `Module::"app.wasm"`, `User::"alice"` |
-| **Action** | The operation being performed | `read`, `write`, `create`, `invoke` |
-| **Resource** | The target of the operation | `File::"/tmp/data.json"`, `URL::"https://api.example.com"` |
-| **Context** | Environmental/runtime attributes | `timestamp`, `hour_utc`, `day_of_week`, CLI arguments |
+| Dimension     | Description                      | Examples                                                   |
+| ------------- | -------------------------------- | ---------------------------------------------------------- |
+| **Principal** | The entity making the request    | `Module::"app.wasm"`, `User::"alice"`                      |
+| **Action**    | The operation being performed    | `read`, `write`, `create`, `invoke`                        |
+| **Resource**  | The target of the operation      | `File::"/tmp/data.json"`, `URL::"https://api.example.com"` |
+| **Context**   | Environmental/runtime attributes | `timestamp`, `hour_utc`, `day_of_week`, CLI arguments      |
 
 **Current usage**: Every policy decision in kodus evaluates all four dimensions. Partial models (e.g., action-only RBAC) are insufficient.
 
@@ -42,13 +42,14 @@ The language must support:
 - **Default deny**: If no rule matches, the request is denied
 
 **Example pattern** (protecting sensitive files):
+
 ```
 // Permit general file reads
-permit(principal, action == read, resource) 
+permit(principal, action == read, resource)
   when { resource.type == "file" };
 
 // But forbid reading .env or .git (overrides the permit)
-forbid(principal, action, resource) 
+forbid(principal, action, resource)
   when { resource.path like "*/.env" || resource.path like "*/.git/*" };
 ```
 
@@ -61,19 +62,22 @@ forbid(principal, action, resource)
 Policies must support conditional expressions based on attributes:
 
 #### Resource Attributes
-- `resource.path` — filesystem path
-- `resource.host` — URL hostname for network requests
-- `resource.command` — executable name for subprocess spawning
-- `resource.args` — command arguments for process execution
+
+- `resource.path` - filesystem path
+- `resource.host` - URL hostname for network requests
+- `resource.command` - executable name for subprocess spawning
+- `resource.args` - command arguments for process execution
 
 #### Context Attributes
-- `context.timestamp_unix` — current Unix timestamp
-- `context.hour_utc` — hour of day (0-23)
-- `context.day_of_week` — weekday (0=Sunday, 6=Saturday)
-- `context.arguments["0"]` — first argument to an invoked function
-- `context.resource.pathInCwd` — boolean flag (computed by host)
+
+- `context.timestamp_unix` - current Unix timestamp
+- `context.hour_utc` - hour of day (0-23)
+- `context.day_of_week` - weekday (0=Sunday, 6=Saturday)
+- `context.arguments["0"]` - first argument to an invoked function
+- `context.resource.pathInCwd` - boolean flag (computed by host)
 
 **Example** (time-based restriction):
+
 ```
 permit(principal, action == invoke, resource)
   when { context.hour_utc >= 9 && context.hour_utc < 17 };  // Business hours only
@@ -85,15 +89,16 @@ permit(principal, action == invoke, resource)
 
 The language must support wildcard pattern matching (not just equality):
 
-| Pattern | Matches |
-|---------|---------|
-| `resource.path like "*/tmp/*"` | Any file under a tmp directory |
-| `resource.path like "*/.env"` | Any .env file |
-| `resource.url like "https://api.example.com/*"` | API subdomain requests |
+| Pattern                                         | Matches                        |
+| ----------------------------------------------- | ------------------------------ |
+| `resource.path like "*/tmp/*"`                  | Any file under a tmp directory |
+| `resource.path like "*/.env"`                   | Any .env file                  |
+| `resource.url like "https://api.example.com/*"` | API subdomain requests         |
 
 **Critical limitation to document**: Cedar's `like` operator requires **string literals**—it cannot use variables. This means dynamic scoping (e.g., "allow access under current working directory") requires **host-side prefix validation** with a boolean context flag like `context.resource.pathInCwd == true`.
 
 Any alternative must either:
+
 1. Support variable patterns (preferred), or
 2. Accept the same host-side workaround pattern
 
@@ -109,6 +114,7 @@ Principals, actions, and resources are **typed entities**, not bare strings:
 - `Resource::"fetch"` (type = Resource, id = fetch)
 
 This enables:
+
 - Type-safe policy authoring
 - Clear separation between different entity categories
 - Extensibility (new resource types without language changes)
@@ -163,10 +169,11 @@ kodus is written in Go. The policy engine **must** provide:
 kodus uses AST introspection to:
 
 1. **Generate human-readable policy summaries** for `consent show` commands
-2. **Avoid the "Comment Trap"**: Ensuring reported permissions reflect only *active* rules, not commented-out examples
+2. **Avoid the "Comment Trap"**: Ensuring reported permissions reflect only _active_ rules, not commented-out examples
 3. **Extract permissions programmatically** for automated tooling
 
 **Required capabilities**:
+
 - Parse policy text into AST
 - Walk/iterate over policies
 - Extract principal, action, resource scopes from each rule
@@ -178,10 +185,10 @@ kodus uses AST introspection to:
 
 Policy evaluation happens at the WASI boundary—potentially thousands of times per module invocation:
 
-| Operation | Tolerable Latency |
-|-----------|-------------------|
-| Single policy evaluation | < 100μs |
-| Cached decision lookup | < 1μs |
+| Operation                | Tolerable Latency |
+| ------------------------ | ----------------- |
+| Single policy evaluation | < 100μs           |
+| Cached decision lookup   | < 1μs             |
 
 kodus implements a **decision cache** keyed by `(path, action, policyRef)`. Any alternative should support similar caching strategies.
 
@@ -221,6 +228,7 @@ kodus includes a **Policy Recorder** that:
 3. Generates suggested `permit` rules from violations
 
 Any alternative must support:
+
 - Structured diagnostics on denial (which policy denied? why?)
 - Sufficient information to regenerate equivalent permit rules
 
@@ -237,11 +245,13 @@ Policies are authored by developers and reviewed during consent. The syntax shou
 - Editable in standard text editors
 
 **Negative example** (too cryptic):
+
 ```
 p(*, r, *) :- r.t = "f", r.p =~ "^/tmp"
 ```
 
 **Acceptable example**:
+
 ```
 permit(principal, action == read, resource)
   when { resource.type == "file" && resource.path like "/tmp/*" };
@@ -275,19 +285,19 @@ The language should have:
 
 For reference, here are specific Cedar features kodus relies on:
 
-| Feature | Usage |
-|---------|-------|
-| `permit` / `forbid` | All policies |
-| `when` clauses | Attribute-based conditions |
-| `unless` clauses | Negative conditions |
-| `like` operator | Path/URL pattern matching |
-| `==` equality | Entity and attribute comparison |
-| `&&`, `\|\|` | Boolean logic in conditions |
-| `.contains()` | Set membership (limited) |
+| Feature                    | Usage                             |
+| -------------------------- | --------------------------------- |
+| `permit` / `forbid`        | All policies                      |
+| `when` clauses             | Attribute-based conditions        |
+| `unless` clauses           | Negative conditions               |
+| `like` operator            | Path/URL pattern matching         |
+| `==` equality              | Entity and attribute comparison   |
+| `&&`, `\|\|`               | Boolean logic in conditions       |
+| `.contains()`              | Set membership (limited)          |
 | Entity UIDs (`Type::"id"`) | All principal/resource references |
-| `cedar.PolicySet` (Go) | Loading/parsing policies |
-| `ps.IsAuthorized()` (Go) | Policy evaluation |
-| `ast.Policy` (Go) | AST introspection |
+| `cedar.PolicySet` (Go)     | Loading/parsing policies          |
+| `ps.IsAuthorized()` (Go)   | Policy evaluation                 |
+| `ast.Policy` (Go)          | AST introspection                 |
 
 ---
 
@@ -364,5 +374,5 @@ permit(
 
 ---
 
-*Document generated: 2026-02-05*
-*kodus version: current development*
+_Document generated: 2026-02-05_
+_kodus version: current development_

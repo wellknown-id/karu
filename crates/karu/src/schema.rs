@@ -4,7 +4,7 @@
 //! module definitions (`mod`), entity declarations (`actor`/`resource`),
 //! action declarations (`action`), and reusable assertions (`assert`).
 //!
-//! These types form the Schema AST — a layer above the policy AST that
+//! These types form the Schema AST - a layer above the policy AST that
 //! enables type checking, Cedar-compatible namespaces, and strict
 //! evaluation.
 
@@ -42,12 +42,12 @@ pub struct FieldDef {
 // Entity declarations
 // ============================================================================
 
-/// Entity kind — distinguishes principals from resources.
+/// Entity kind - distinguishes principals from resources.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EntityKind {
-    /// `actor` — maps to Cedar principal entity types.
+    /// `actor` - maps to Cedar principal entity types.
     Actor,
-    /// `resource` — maps to Cedar resource entity types.
+    /// `resource` - maps to Cedar resource entity types.
     Resource,
 }
 

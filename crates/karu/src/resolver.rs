@@ -3,8 +3,8 @@
 //! Resolves `import "path";` directives, merging imported programs into
 //! a single [`Program`]. Validates two constraints:
 //!
-//! 1. **No circular imports** — the import graph must be a DAG.
-//! 2. **Schema consistency** — a `use schema;` file can only import other
+//! 1. **No circular imports** - the import graph must be a DAG.
+//! 2. **Schema consistency** - a `use schema;` file can only import other
 //!    `use schema;` files. Untyped files may freely import typed files.
 //!
 //! # Example
@@ -136,7 +136,7 @@ fn resolve_recursive(
         });
     }
 
-    // Diamond import deduplication — already processed this file
+    // Diamond import deduplication - already processed this file
     if visited.contains(&path.to_path_buf()) {
         return Ok(());
     }
@@ -403,7 +403,7 @@ mod { actor User {}; };
         ]);
 
         let program = resolve(Path::new("/a.karu"), &loader).unwrap();
-        // Should have a, b, c, d — each once
+        // Should have a, b, c, d - each once
         let rule_names: Vec<&str> = program.rules.iter().map(|r| r.name.as_str()).collect();
         assert_eq!(
             rule_names.iter().filter(|&&n| n == "d").count(),
