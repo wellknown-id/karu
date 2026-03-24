@@ -8,12 +8,12 @@ _TLDR; Karu is faster at Cedar than Cedar is at Cedar._
 
 | Metric                                   | Karu           | Cedar           | Winner                |
 | ---------------------------------------- | -------------- | --------------- | --------------------- |
-| **WASM Bundle**                          | 320 KB         | 1.8 MB          | **Karu 5.6x smaller** |
-| **Native eval**                          | 16.8 ns        | 1,173 ns        | **Karu 70x faster**   |
-| **WASM eval (precompiled)**              | 486 ns         | 92,786 ns       | **Karu 191x faster**  |
-| **WASM eval (parse+eval)**               | 3,408 ns       | 201,040 ns      | **Karu 59x faster**   |
-| **Complex (20 rules, native)**           | 663 ns         | **14,016 ns\*** | **Karu 21x faster**   |
-| **Complex (20 rules, WASM precompiled)** | **6,856 ns\*** | 202,880 ns      | **Karu 30x faster**   |
+| **WASM Bundle**                          | 319 KB         | 1.8 MB          | **Karu 5.6x smaller** |
+| **Native eval**                          | 16.4 ns        | 1,162 ns        | **Karu 71x faster**   |
+| **WASM eval (precompiled)**              | 459 ns         | 94,054 ns       | **Karu 205x faster**  |
+| **WASM eval (parse+eval)**              | 3,680 ns       | 206,550 ns      | **Karu 56x faster**   |
+| **Complex (20 rules, native)**           | 649 ns         | 13,749 ns       | **Karu 21x faster**   |
+| **Complex (20 rules, WASM precompiled)** | 7,713 ns       | 219,850 ns      | **Karu 29x faster**   |
 
 ## Methodology
 
@@ -44,12 +44,12 @@ cargo bench     # run all benchmarks
 
 ## Native Benchmarks (Rust library calls)
 
-| Scenario               | Karu       | Cedar     | Speedup |
-| ---------------------- | ---------- | --------- | ------- |
-| Simple (1 condition)   | **16.8 ns** | 1,173 ns  | **70x** |
-| Multi-condition (4)    | **124 ns**  | 1,293 ns  | **10x** |
-| Nested path (6 levels) | **39.6 ns** | 1,702 ns  | **43x** |
-| Complex (20 rules)     | **663 ns**  | 14,016 ns | **21x** |
+| Scenario               | Karu        | Cedar      | Speedup |
+| ---------------------- | ----------- | ---------- | ------- |
+| Simple (1 condition)   | **16.4 ns** | 1,162 ns   | **71x** |
+| Multi-condition (4)    | **122 ns**  | 1,276 ns   | **10x** |
+| Nested path (6 levels) | **40.6 ns** | 1,665 ns   | **41x** |
+| Complex (20 rules)     | **649 ns**  | 13,749 ns  | **21x** |
 
 ## Karu Loading Cedar Policies (Native)
 
@@ -58,67 +58,56 @@ Policies are converted from Cedar → Karu via `compile_cedar()`.
 
 | Scenario           | Karu (native) | Karu (Cedar import) | Cedar (native) |
 | ------------------ | ------------- | ------------------- | -------------- |
-| Simple             | 16.8 ns        | **23.3 ns**         | 1,173 ns       |
-| Multi-condition    | 124 ns         | **164 ns**          | 1,293 ns       |
-| Nested path        | 39.6 ns        | **46.1 ns**         | 1,702 ns       |
-| Complex (20 rules) | 663 ns         | **211 ns**          | 14,016 ns      |
+| Simple             | 16.4 ns       | **22.8 ns**         | 1,162 ns       |
+| Multi-condition    | 122 ns        | **146 ns**          | 1,276 ns       |
+| Nested path        | 40.6 ns       | **46.9 ns**         | 1,665 ns       |
+| Complex (20 rules) | 649 ns        | **231 ns**          | 13,749 ns      |
 
-> **Karu loading Cedar policies is 8–65x faster than Cedar native**
+> **Karu loading Cedar policies is 8–60x faster than Cedar native**
 
 ## WASM Benchmarks — Precompiled (eval-only)
 
 Policy compiled once, only evaluation is timed.
 
-| Scenario           | Karu         | Karu (Cedar import) | Karu (wasm-opt -O3) | Karu (Cedar, -O3) | Cedar      | Cedar (wasm-opt -O3) | Speedup vs Cedar |
-| ------------------ | ------------ | ------------------- | ------------------- | ---------------- | ---------- | -------------------- | ---------------- |
-| Simple             | **486 ns**   | 677 ns              | **451 ns**          | 629 ns           | 92,786 ns  | 83,118 ns            | **191x**         |
-| Multi-condition    | **1,266 ns** | 1,501 ns            | **1,184 ns**        | 1,435 ns         | 103,020 ns | 92,274 ns            | **81x**          |
-| Nested path        | **1,348 ns** | 1,560 ns            | **1,134 ns**        | 1,337 ns         | 128,170 ns | 115,960 ns           | **95x**          |
-| Complex (20 rules) | **6,856 ns** | 6,144 ns            | **7,022 ns**        | 6,274 ns         | 202,880 ns | 182,900 ns           | **30x**          |
+| Scenario           | Karu         | Karu (Cedar import) | Cedar       | Speedup vs Cedar |
+| ------------------ | ------------ | ------------------- | ----------- | ---------------- |
+| Simple             | **459 ns**   | 634 ns              | 94,054 ns   | **205x**         |
+| Multi-condition    | **1,292 ns** | 1,563 ns            | 106,320 ns  | **82x**          |
+| Nested path        | **1,222 ns** | 1,471 ns            | 133,440 ns  | **109x**         |
+| Complex (20 rules) | **7,713 ns** | 7,012 ns            | 219,850 ns  | **29x**          |
 
-`wasm-opt -O3` columns use bulk-memory, sign-ext, and nontrapping-float-to-int.
-
-> Karu precompiled WASM (475 ns) is **faster than Cedar native** (1,112 ns)!
-> Karu loading Cedar via WASM (657 ns) is **still faster than Cedar native**!
+> Karu precompiled WASM (459 ns) is **faster than Cedar native** (1,162 ns)!
+> Karu loading Cedar via WASM (634 ns) is **still faster than Cedar native**!
 
 ## WASM Benchmarks — Parse + Eval
 
 Policy parsed and evaluated every iteration.
 
-| Scenario           | Karu          | Karu (Cedar import) | Karu (wasm-opt -O3) | Karu (Cedar, -O3) | Cedar      | Cedar (wasm-opt -O3) | Speedup vs Cedar |
-| ------------------ | ------------- | ------------------- | ------------------- | ---------------- | ---------- | -------------------- | ---------------- |
-| Simple             | **3,408 ns**  | 5,589 ns            | **3,156 ns**        | 5,090 ns         | 201,040 ns | 175,470 ns           | **59x**          |
-| Multi-condition    | **9,736 ns**  | 13,936 ns           | **8,975 ns**        | 12,921 ns        | 262,880 ns | 230,820 ns           | **27x**          |
-| Nested path        | **6,123 ns**  | 7,933 ns            | **5,590 ns**        | 7,261 ns         | 255,110 ns | 225,350 ns           | **42x**          |
-| Complex (20 rules) | **54,562 ns** | 116,330 ns          | **51,722 ns**       | 107,050 ns       | 666,480 ns | 610,400 ns           | **12x**          |
-
-`wasm-opt -O3` columns use bulk-memory, sign-ext, and nontrapping-float-to-int.
+| Scenario           | Karu           | Karu (Cedar import) | Cedar       | Speedup vs Cedar |
+| ------------------ | -------------- | ------------------- | ----------- | ---------------- |
+| Simple             | **3,680 ns**   | 5,740 ns            | 206,550 ns  | **56x**          |
+| Multi-condition    | **10,437 ns**  | 14,362 ns           | 272,240 ns  | **26x**          |
+| Nested path        | **6,571 ns**   | 8,257 ns            | 264,580 ns  | **40x**          |
+| Complex (20 rules) | **59,630 ns**  | 121,150 ns          | 742,280 ns  | **12x**          |
 
 ## Native vs WASM Overhead
 
 | Scenario        | Native    | WASM Precompiled | Overhead |
 | --------------- | --------- | ---------------- | -------- |
-| Simple (Karu)   | 16.8 ns  | 486 ns           | 29x      |
-| Simple (Cedar)  | 1,173 ns | 92,786 ns        | 79x      |
-| Complex (Karu)  | 663 ns   | 6,856 ns         | 10x      |
-| Complex (Cedar) | 14,016 ns | 202,880 ns       | 15x      |
+| Simple (Karu)   | 16.4 ns   | 459 ns           | 28x      |
+| Simple (Cedar)  | 1,162 ns  | 94,054 ns        | 81x      |
+| Complex (Karu)  | 649 ns    | 7,713 ns         | 12x      |
+| Complex (Cedar) | 13,749 ns | 219,850 ns       | 16x      |
 
-Karu's WASM overhead is **9–28x** (vs Cedar's **14–78x**), meaning
+Karu's WASM overhead is **12–28x** (vs Cedar's **16–81x**), meaning
 Karu translates better to the WASM runtime.
 
 ## Bundle Size
 
 | Engine   | WASM Size  |
 | -------- | ---------- |
-| **Karu** | **320 KB** |
+| **Karu** | **319 KB** |
 | Cedar    | 1.8 MB     |
-
-`wasm-opt -Oz` (with bulk-memory, sign-ext, nontrapping-float-to-int):
-
-| Engine   | WASM Size  |
-| -------- | ---------- |
-| **Karu** | **283 KB** |
-| Cedar    | 1.5 MB     |
 
 ## Scale Benchmark: Realistic Authorization Workload
 
@@ -167,6 +156,32 @@ cargo run --release --bin seed -- --full   # 1M users, ~5 min
 > Cedar maxes out at **205K** — a **47x difference**.
 > With 10,000 concurrent users hitting a single node, **Karu handles all evaluations in 1.0ms**.
 
+## Karu Standalone Benchmarks
+
+Additional microbenchmarks from the core crate:
+
+### Evaluation
+
+| Benchmark                    | Time       |
+| ---------------------------- | ---------- |
+| eval_simple                  | 15.95 ns   |
+| eval_multi_condition (4)     | 95.67 ns   |
+| eval_nested_path (6 levels)  | 39.10 ns   |
+| collection_search (10 items) | 182.8 ns   |
+| collection_search (100)      | 1.270 µs   |
+| collection_search (1000)     | 12.07 µs   |
+| throughput_1000              | 19.11 µs   |
+| parse_simple                 | 928 ns     |
+| parse_100_rules              | 154.1 µs   |
+
+### Parser Comparison: Handrolled vs Tree-sitter
+
+| Scenario   | Handrolled | Tree-sitter | Speedup |
+| ---------- | ---------- | ----------- | ------- |
+| Simple     | 757 ns     | 8.78 µs     | **12x** |
+| Medium     | 5.54 µs    | 65.5 µs     | **12x** |
+| 100 rules  | 111 µs     | 1.29 ms     | **12x** |
+
 ## Optimization Notes
 
 The evaluation hot path has been extensively profiled and optimized:
@@ -182,6 +197,6 @@ Path resolution costs ~5.6 ns per dot-segment.
 
 ---
 
-_Benchmarked: 2026-02-13 • AMD Ryzen Threadripper 3960X (24-core, SMT off) •
+_Benchmarked: 2026-03-24 • AMD Ryzen Threadripper 3960X (24-core, SMT off) •
 Ubuntu 24.04.3 LTS (kernel 6.17.0) • 256 GB DDR4 • Rust 1.93.0 •
-Criterion.rs with wasmtime 29 (Cranelift JIT, OptLevel::Speed)_
+Criterion.rs with wasmtime 43 (Cranelift JIT, OptLevel::Speed)_

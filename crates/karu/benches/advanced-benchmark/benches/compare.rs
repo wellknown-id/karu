@@ -186,7 +186,7 @@ fn optimized_engine() -> Engine {
 
 /// A pre-loaded WASM module with alloc/free/eval exports.
 struct WasmEngine {
-    store: Store<wasmtime_wasi::preview1::WasiP1Ctx>,
+    store: Store<wasmtime_wasi::p1::WasiP1Ctx>,
     instance: Instance,
     memory: Memory,
     alloc_fn: TypedFunc<i32, i32>,
@@ -211,7 +211,7 @@ impl WasmEngine {
         let mut linker = Linker::new(&engine);
 
         // Link WASI preview1 imports
-        wasmtime_wasi::preview1::add_to_linker_sync(&mut linker, |ctx| ctx).ok();
+        wasmtime_wasi::p1::add_to_linker_sync(&mut linker, |ctx| ctx).ok();
 
         let instance = linker
             .instantiate(&mut store, &module)
