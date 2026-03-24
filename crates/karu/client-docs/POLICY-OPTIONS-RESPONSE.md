@@ -13,24 +13,24 @@ Karu is a **strong conceptual fit** for kodus's policy model but has a **Go inte
 
 ## Requirements Compatibility
 
-| #   | Requirement                   | Status | Notes                                                          |
-| --- | ----------------------------- | ------ | -------------------------------------------------------------- |
-| 1   | PARC Model                    | ✅     | Native JSON path access for all four dimensions                |
-| 2   | Permit/Forbid + Deny Override | ✅     | `allow`/`deny` with deny-overrides semantics                   |
-| 3   | ABAC Conditions               | ✅     | Full path expressions: `context.hour_utc >= 9`                 |
-| 4   | Path Pattern Matching         | ⚠️     | No `like` glob—requires host-side boolean flag (same as Cedar) |
-| 5   | Typed Entity System           | ⚠️     | Duck-typed JSON, use `principal.type == "Module"` convention   |
-| 6   | Container Membership          | ✅     | Array search with `in` operator                                |
-| 7   | Structured Data Access        | ✅     | `context.arguments["0"].host` works directly                   |
-| 8   | Go Native Library             | ❌     | **Rust-only**—requires wazero WASM or CGO                      |
-| 9   | AST Introspection             | ✅     | `Parser::parse()` returns full AST                             |
-| 10  | Performance (<100μs)          | ✅     | **Verified: 12μs simple, 2.2μs/op batch**                      |
-| 11  | Composable Policies           | ✅     | `Policy::merge()` supported                                    |
-| 12  | Deterministic Hashing         | ✅     | Serialize AST for hashing                                      |
-| 13  | Policy Recorder               | ✅     | Denial + AST = regenerate rules                                |
-| 14  | Human-Readable Syntax         | ✅     | Polar-inspired, very readable                                  |
-| 15  | Error Messages                | ⚠️     | On roadmap, not rich yet                                       |
-| 16  | Docs & Maintenance            | ⚠️     | Active dev, v0.1.0, has ROADMAP                                |
+| #   | Requirement                   | Status | Notes                                                            |
+| --- | ----------------------------- | ------ | ---------------------------------------------------------------- |
+| 1   | PARC Model                    | ✅     | Native JSON path access for all four dimensions                  |
+| 2   | Permit/Forbid + Deny Override | ✅     | `allow`/`deny` with deny-overrides semantics                     |
+| 3   | ABAC Conditions               | ✅     | Full path expressions: `context.hour_utc >= 9`                   |
+| 4   | Path Pattern Matching         | ⚠️     | No `like` glob - requires host-side boolean flag (same as Cedar) |
+| 5   | Typed Entity System           | ⚠️     | Duck-typed JSON, use `principal.type == "Module"` convention     |
+| 6   | Container Membership          | ✅     | Array search with `in` operator                                  |
+| 7   | Structured Data Access        | ✅     | `context.arguments["0"].host` works directly                     |
+| 8   | Go Native Library             | ❌     | **Rust-only** - requires wazero WASM or CGO                      |
+| 9   | AST Introspection             | ✅     | `Parser::parse()` returns full AST                               |
+| 10  | Performance (<100μs)          | ✅     | **Verified: 12μs simple, 2.2μs/op batch**                        |
+| 11  | Composable Policies           | ✅     | `Policy::merge()` supported                                      |
+| 12  | Deterministic Hashing         | ✅     | Serialize AST for hashing                                        |
+| 13  | Policy Recorder               | ✅     | Denial + AST = regenerate rules                                  |
+| 14  | Human-Readable Syntax         | ✅     | Polar-inspired, very readable                                    |
+| 15  | Error Messages                | ⚠️     | On roadmap, not rich yet                                         |
+| 16  | Docs & Maintenance            | ⚠️     | Active dev, v0.1.0, has ROADMAP                                  |
 
 ---
 
@@ -44,7 +44,7 @@ kodus is Go; Karu is Rust. Options:
 | ------------------- | ------ | ------------------------------------------------ |
 | **WASM via wazero** | Medium | kodus already has WASM expertise; proven pattern |
 | **CGO bindings**    | Medium | Adds build complexity                            |
-| **Stay with Cedar** | Zero   | It's working—path of least resistance            |
+| **Stay with Cedar** | Zero   | It's working - path of least resistance          |
 
 ### 2. Typed Entities (Workaround Available)
 

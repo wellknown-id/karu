@@ -4,7 +4,7 @@ This document outlines the policy language requirements for kodus, enabling stak
 
 ## Executive Summary
 
-kodus is a security-first WebAssembly runtime with built-in package management and NATS-based federation. Policy evaluation is a **core architectural pillar**—not a bolt-on feature. The policy language governs:
+kodus is a security-first WebAssembly runtime with built-in package management and NATS-based federation. Policy evaluation is a **core architectural pillar** - not a bolt-on feature. The policy language governs:
 
 - **Filesystem access** (read/write/create/delete)
 - **Network access** (HTTP fetch with domain whitelisting)
@@ -53,7 +53,7 @@ forbid(principal, action, resource)
   when { resource.path like "*/.env" || resource.path like "*/.git/*" };
 ```
 
-**Criticality**: This is essential for "principle of least privilege"—allowing broad access with surgical blacklists.
+**Criticality**: This is essential for "principle of least privilege" - allowing broad access with surgical blacklists.
 
 ---
 
@@ -95,7 +95,7 @@ The language must support wildcard pattern matching (not just equality):
 | `resource.path like "*/.env"`                   | Any .env file                  |
 | `resource.url like "https://api.example.com/*"` | API subdomain requests         |
 
-**Critical limitation to document**: Cedar's `like` operator requires **string literals**—it cannot use variables. This means dynamic scoping (e.g., "allow access under current working directory") requires **host-side prefix validation** with a boolean context flag like `context.resource.pathInCwd == true`.
+**Critical limitation to document**: Cedar's `like` operator requires **string literals** - it cannot use variables. This means dynamic scoping (e.g., "allow access under current working directory") requires **host-side prefix validation** with a boolean context flag like `context.resource.pathInCwd == true`.
 
 Any alternative must either:
 
@@ -183,7 +183,7 @@ kodus uses AST introspection to:
 
 ### 10. Performance Suitable for WASI Interception
 
-Policy evaluation happens at the WASI boundary—potentially thousands of times per module invocation:
+Policy evaluation happens at the WASI boundary - potentially thousands of times per module invocation:
 
 | Operation                | Tolerable Latency |
 | ------------------------ | ----------------- |
@@ -267,7 +267,7 @@ The policy engine must provide:
 - **Type checking** (e.g., comparing string to number should error)
 - **Clear error messages** for invalid policies
 
-Policies are user-provided via `.kodus/policies.cedar`—runtime parsing errors must be actionable.
+Policies are user-provided via `.kodus/policies.cedar` - runtime parsing errors must be actionable.
 
 ---
 

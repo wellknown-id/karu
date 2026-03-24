@@ -306,7 +306,7 @@ fn glob_match(pattern: &str, text: &str) -> bool {
 
 /// Check if ANY element in an array matches a pattern.
 ///
-/// This is the key feature for searching collections—the `in` operator.
+/// This is the key feature for searching collections - the `in` operator.
 /// Uses the allocation-free `matches_ref` path since bindings are not needed.
 #[inline]
 pub fn any_matches(data: &Value, pattern: &Pattern) -> bool {

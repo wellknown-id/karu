@@ -1,7 +1,7 @@
 //! Pattern types for Karu's structural matching.
 //!
 //! Patterns define the shape of data we're looking for. Unlike strict schemas,
-//! patterns match by structure—extra fields are ignored (duck typing).
+//! patterns match by structure - extra fields are ignored (duck typing).
 
 use crate::path::Path;
 use serde_json::Value;

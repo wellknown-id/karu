@@ -8,26 +8,28 @@ Both Cedar and Karu are authorization policy languages. While Cedar uses a decla
 
 ## Key Differences
 
-| Aspect | Cedar | Karu |
-|--------|-------|------|
-| **Input Model** | Typed entities (Principal, Action, Resource) | Flat JSON with `principal`, `action`, `resource` fields |
-| **Type System** | Schema-enforced types | Duck typing (structural matching) |
-| **Syntax** | `permit`/`forbid` with `when`/`unless` | `allow`/`deny` with `if` conditions |
-| **Entity References** | `User::"alice"` | `principal == "alice"` |
-| **Collections** | `resource in Album::"vacation"` | `resource.album == "vacation"` |
-| **OR Conditions** | Native `action in [...]` | Multiple rules or Rust API |
+| Aspect                | Cedar                                        | Karu                                                    |
+| --------------------- | -------------------------------------------- | ------------------------------------------------------- |
+| **Input Model**       | Typed entities (Principal, Action, Resource) | Flat JSON with `principal`, `action`, `resource` fields |
+| **Type System**       | Schema-enforced types                        | Duck typing (structural matching)                       |
+| **Syntax**            | `permit`/`forbid` with `when`/`unless`       | `allow`/`deny` with `if` conditions                     |
+| **Entity References** | `User::"alice"`                              | `principal == "alice"`                                  |
+| **Collections**       | `resource in Album::"vacation"`              | `resource.album == "vacation"`                          |
+| **OR Conditions**     | Native `action in [...]`                     | Multiple rules or Rust API                              |
 
 ## Policy Translation Examples
 
 ### Individual Entity Access
 
 **Cedar:**
+
 ```
 permit(principal == User::"alice", action == Action::"view",
        resource == Photo::"VacationPhoto94.jpg");
 ```
 
 **Karu:**
+
 ```
 allow access if
     principal == "alice" and
@@ -42,12 +44,14 @@ allow access if
 ### Group Membership
 
 **Cedar:**
+
 ```
 permit(principal in Group::"alice_friends", action == Action::"view",
        resource == Photo::"VacationPhoto94.jpg");
 ```
 
 **Karu:**
+
 ```
 allow access if
     "alice_friends" in principal.groups and
@@ -62,12 +66,14 @@ allow access if
 ### Resource Containers
 
 **Cedar:**
+
 ```
 permit(principal == User::"alice", action == Action::"view",
        resource in Album::"alice_vacation");
 ```
 
 **Karu:**
+
 ```
 allow access if
     principal == "alice" and
@@ -82,13 +88,15 @@ allow access if
 ### Multiple Actions
 
 **Cedar:**
+
 ```
 permit(principal == User::"alice",
        action in [Action::"view", Action::"edit", Action::"delete"],
        resource in Album::"alice_vacation");
 ```
 
-**Karu:** *(use multiple rules)*
+**Karu:** _(use multiple rules)_
+
 ```
 allow view if
     principal == "alice" and
@@ -111,12 +119,14 @@ allow delete if
 ### Any Principal (Wildcards)
 
 **Cedar:**
+
 ```
 permit(principal, action == Action::"view",
        resource in Album::"alice_vacation");
 ```
 
 **Karu:**
+
 ```
 allow access if
     action == "view" and
@@ -130,6 +140,7 @@ allow access if
 ### Attribute-Based Access (ABAC)
 
 **Cedar:**
+
 ```
 permit(principal, action in [Action::"listPhotos", Action::"view"],
        resource in Album::"device_prototypes")
@@ -140,6 +151,7 @@ when {
 ```
 
 **Karu:**
+
 ```
 allow access if
     action == "view" and
@@ -155,11 +167,13 @@ allow access if
 ### Path-to-Path Comparison
 
 **Cedar:**
+
 ```
 permit(principal, action, resource) when { principal == resource.owner };
 ```
 
 **Karu:**
+
 ```
 allow access if
     principal.id == resource.ownerId;
@@ -172,12 +186,14 @@ allow access if
 ### Owner OR Admin Access
 
 **Cedar:**
+
 ```
 permit(principal, action, resource)
 when { principal == resource.owner || resource.admins.contains(principal) };
 ```
 
 **Karu:**
+
 ```
 allow owner if principal.id == resource.ownerId;
 allow admin if principal.id in resource.adminIds;
@@ -190,6 +206,7 @@ allow admin if principal.id in resource.adminIds;
 ### Deny Policies
 
 **Cedar:**
+
 ```
 forbid(principal, action, resource)
 when { resource.private }
@@ -197,6 +214,7 @@ unless { principal == resource.owner };
 ```
 
 **Karu:**
+
 ```
 allow general;
 deny private if
@@ -204,29 +222,31 @@ deny private if
     not principal.id == resource.ownerId;
 ```
 
-> **Important:** Karu follows "deny overrides" semantics—a matching `deny` always wins.
+> **Important:** Karu follows "deny overrides" semantics - a matching `deny` always wins.
 
 ---
 
 ## Evaluation Semantics
 
-| Cedar | Karu |
-|-------|------|
+| Cedar                             | Karu                         |
+| --------------------------------- | ---------------------------- |
 | `permit` + `forbid` → forbid wins | `allow` + `deny` → deny wins |
-| No match → default deny | No match → default deny |
-| `unless { cond }` | `not cond` in deny rule |
+| No match → default deny           | No match → default deny      |
+| `unless { cond }`                 | `not cond` in deny rule      |
 
 ## Path-in-Path Membership
 
 Karu supports dynamic membership checks where both sides are paths:
 
 **Cedar:**
+
 ```
 permit(principal, action, resource)
 when { resource.admins.contains(principal.id) };
 ```
 
 **Karu:**
+
 ```
 allow admin_access if principal.id in resource.adminIds;
 ```
@@ -238,6 +258,7 @@ allow admin_access if principal.id in resource.adminIds;
 Cedar's `context` record passes request-time attributes (IP, device, time). Karu supports this as well:
 
 **Cedar:**
+
 ```
 permit(principal, action, resource)
 when {
@@ -247,6 +268,7 @@ when {
 ```
 
 **Karu:**
+
 ```
 allow access if
     context.ipAddress == "10.0.0.1" and
@@ -258,6 +280,7 @@ allow access if
 ## Complete Example: Photo Sharing Policy
 
 **Cedar:**
+
 ```
 permit(principal, action, resource)
 when { principal == resource.owner };
@@ -271,6 +294,7 @@ unless { principal == resource.owner };
 ```
 
 **Karu:**
+
 ```
 # Owners can do anything
 allow owner_access if principal.id == resource.ownerId;
@@ -292,7 +316,11 @@ Karu policies evaluate against JSON. Structure your input like:
 
 ```json
 {
-  "principal": {"id": "alice", "department": "Engineering", "groups": ["admins"]},
+  "principal": {
+    "id": "alice",
+    "department": "Engineering",
+    "groups": ["admins"]
+  },
   "action": "view",
   "resource": {
     "type": "Photo",
@@ -301,7 +329,7 @@ Karu policies evaluate against JSON. Structure your input like:
     "private": false,
     "sharedWith": ["bob", "charlie"]
   },
-  "context": {"readOnly": true}
+  "context": { "readOnly": true }
 }
 ```
 
