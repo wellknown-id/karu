@@ -7,7 +7,7 @@ Karu is an embeddable policy engine focusing on structural pattern matching over
 - **Structure over Schema**: We do not enforce a schema on input data. We enforce patterns on the data we find.
 - **Search, Don't Index**: If you provide a list, we will search it. You shouldn't have to re-map your application data to fit the policy engine.
 - **Partial Matching**: A pattern `{a: 1}` matches `{a: 1, b: 2}`.
-- **Optionally Strict**: When you need Cedar-level rigor, flip a switch. Karu can enforce strict schemas, exhaustive matching, and static analysis—but only when you ask for it. RFCs shouldn't block good ideas.
+- **Optionally Strict**: When you need Cedar-level rigor, flip a switch. Karu can enforce strict schemas, exhaustive matching, and static analysis - but only when you ask for it. RFCs shouldn't block good ideas.
 
 ## Syntax Draft
 
@@ -46,21 +46,21 @@ Karu uses a recursive **Unification Engine** (simplified for matching).
 
 Karu supports full round-trip conversion with [Cedar](https://www.cedarpolicy.com/) policies and schemas. See [Known Cedar Limitations](crates/karu/KNOWN-CEDAR-LIMITATIONS.md) for current gaps.
 
-Even when running Cedar policies through Karu's import pipeline, evaluation is **fast** — Karu's native engine evaluates at ~19 million ops/sec, roughly 10× faster than the Cedar-WASM runtime for equivalent policies. For detailed numbers, see [BENCHMARKS.md](crates/karu/BENCHMARKS.md).
+Even when running Cedar policies through Karu's import pipeline, evaluation is **fast** - Karu's native engine evaluates at ~19 million ops/sec, roughly 10× faster than the Cedar-WASM runtime for equivalent policies. For detailed numbers, see [BENCHMARKS.md](crates/karu/BENCHMARKS.md).
 
 ## Workspace Layout
 
 This repository is organized as a Cargo workspace:
 
-### `crates/karu` — Core Engine
+### `crates/karu` - Core Engine
 
 The core library implementing the unification engine, parser, and pattern matching runtime.
 
-### `crates/karu-cli` — CLI
+### `crates/karu-cli` - CLI
 
 A command-line tool for interacting with the Karu policy engine, used for testing and managing access control policies.
 
-### `crates/karu-lsp` — Language Server
+### `crates/karu-lsp` - Language Server
 
 IDE and editor support for the Karu policy language via the LSP protocol.
 
@@ -95,8 +95,8 @@ ln -s "$(pwd)" ~/.vscode/extensions/karu
 
 ### Configuration
 
-| Setting | Description |
-|---------|-------------|
+| Setting           | Description                                         |
+| ----------------- | --------------------------------------------------- |
 | `karu.serverPath` | Path to `karu-lsp` binary. Leave empty to use PATH. |
 
 ## Integration with Kodus
