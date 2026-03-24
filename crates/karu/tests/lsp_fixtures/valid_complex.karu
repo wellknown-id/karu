@@ -12,4 +12,5 @@ allow search if
     "viewer" in principal.roles;
 
 allow bulk_read if
+    resource.items != null and
     forall item in resource.items: item.public == true;

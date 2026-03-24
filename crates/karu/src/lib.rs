@@ -77,6 +77,7 @@ pub mod diff;
 #[cfg(feature = "dev")]
 pub mod format;
 pub mod lexer;
+pub mod lint;
 pub mod matcher;
 pub mod parser;
 pub mod path;

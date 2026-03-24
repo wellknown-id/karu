@@ -43,6 +43,14 @@ enum Commands {
         /// Path to the Karu policy file
         policy: PathBuf,
     },
+    /// Lint a Karu policy for common pitfalls
+    Lint {
+        /// Path to the Karu policy file
+        policy: PathBuf,
+        /// Treat warnings as errors
+        #[arg(long)]
+        deny: bool,
+    },
     /// Import a Cedar policy and convert to Karu syntax
     #[cfg(feature = "cedar")]
     Import {
@@ -141,8 +149,46 @@ fn run(cli: Cli) -> Result<(), String> {
                 to_cedar(&ast).map_err(|e| format!("Not Cedar-compatible: {}", e))?;
             }
 
-            println!("OK ({} rules)", ast.rules.len());
+            // Run lint and print any warnings
+            let warnings = karu::lint::lint(&ast);
+            for w in &warnings {
+                eprintln!("warning[{}]: {} (rule '{}')", w.code, w.message, w.rule_name);
+                if let Some(ref s) = w.suggestion {
+                    eprintln!("  help: {}", s);
+                }
+            }
+
+            println!("OK ({} rules, {} warnings)", ast.rules.len(), warnings.len());
             Ok(())
+        }
+        Commands::Lint { policy, deny } => {
+            let policy_src = fs::read_to_string(&policy)
+                .map_err(|e| format!("Failed to read policy file: {}", e))?;
+
+            let ast =
+                KaruParser::parse(&policy_src).map_err(|e| e.format_with_source(&policy_src))?;
+
+            let warnings = karu::lint::lint(&ast);
+
+            if warnings.is_empty() {
+                println!("No warnings found in {}", policy.display());
+                return Ok(());
+            }
+
+            for w in &warnings {
+                eprintln!("warning[{}]: {} (rule '{}')", w.code, w.message, w.rule_name);
+                if let Some(ref s) = w.suggestion {
+                    eprintln!("  help: {}", s);
+                }
+            }
+            eprintln!();
+
+            if deny {
+                Err(format!("{} warning(s) treated as errors (--deny)", warnings.len()))
+            } else {
+                println!("{} warning(s)", warnings.len());
+                Ok(())
+            }
         }
         #[cfg(feature = "cedar")]
         Commands::Import { policy } => {

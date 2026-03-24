@@ -666,6 +666,43 @@ fn semantic_diagnostics(source: &str, grammar_tree: &grammar::grammar::Program) 
         check_schema_field_access_from_tree(&program, source, grammar_tree, &mut diagnostics);
     }
 
+    // Lint checks — detect common policy pitfalls
+    let lint_warnings = crate::lint::lint(&program);
+    let lines: Vec<&str> = source.lines().collect();
+    for warning in lint_warnings {
+        // Find the position of the forall keyword in the rule that triggered the warning
+        let position = find_forall_in_rule(source, &lines, &warning.rule_name, warning.forall_path.as_deref());
+        let (line, col, end_col) = position.unwrap_or((0, 0, 6));
+
+        let mut diag = Diagnostic {
+            range: tower_lsp::lsp_types::Range {
+                start: Position {
+                    line: line as u32,
+                    character: col as u32,
+                },
+                end: Position {
+                    line: line as u32,
+                    character: end_col as u32,
+                },
+            },
+            severity: Some(DiagnosticSeverity::WARNING),
+            code: Some(NumberOrString::String(warning.code.to_string())),
+            source: Some("karu".to_string()),
+            message: warning.message.clone(),
+            ..Default::default()
+        };
+
+        // Attach suggestion as data for code actions
+        if let Some(ref suggestion) = warning.suggestion {
+            diag.data = Some(serde_json::json!({
+                "suggestion": suggestion,
+                "lint_code": warning.code,
+            }));
+        }
+
+        diagnostics.push(diag);
+    }
+
     diagnostics
 }
 
@@ -1403,6 +1440,44 @@ fn byte_offset_to_position(source: &str, byte_offset: usize) -> (usize, usize) {
 
 /// Find the position of a rule-name identifier inside an expect block,
 /// scoped to the test with the given name to avoid false matches.
+/// Find the position of a `forall` keyword within a specific rule in the source.
+///
+/// Returns `(line, start_col, end_col)` (all 0-indexed) or None.
+fn find_forall_in_rule(
+    source: &str,
+    _lines: &[&str],
+    rule_name: &str,
+    _forall_path: Option<&str>,
+) -> Option<(usize, usize, usize)> {
+    // Find the rule declaration line
+    let rule_marker_allow = format!("allow {}", rule_name);
+    let rule_marker_deny = format!("deny {}", rule_name);
+    let rule_start = source
+        .find(&rule_marker_allow)
+        .or_else(|| source.find(&rule_marker_deny))?;
+
+    // Search for "forall" after the rule declaration
+    let search_region = &source[rule_start..];
+    let forall_offset = search_region.find("forall")?;
+    let abs_pos = rule_start + forall_offset;
+
+    // Convert byte offset to line/col
+    let mut line = 0;
+    let mut col = 0;
+    for (i, ch) in source.char_indices() {
+        if i == abs_pos {
+            return Some((line, col, col + 6)); // "forall" is 6 chars
+        }
+        if ch == '\n' {
+            line += 1;
+            col = 0;
+        } else {
+            col += 1;
+        }
+    }
+    None
+}
+
 fn find_ident_in_source(source: &str, ident: &str, test_name: &str) -> Option<(usize, usize)> {
     // Find the test block first by looking for `test "name"`
     let test_marker = format!("test \"{}\"", test_name);
