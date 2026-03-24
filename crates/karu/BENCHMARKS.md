@@ -1,19 +1,19 @@
 # Karu Performance Benchmarks
 
-Karu was created to replace Cedar in [kodus](https://github.com/kodus/kodus) - and not because Cedar was slow, but because we realised [along the way](https://en.wikipedia.org/wiki/Coastline_paradox) it wasn't expressive enough for the use cases we planned for. We needed a replacement that could give us something like [Polar's approachableness](https://www.osohq.com/docs/reference/polar/introduction) and keep Cedar's performance characteristics. We had a choice, fork from the archived remnants of Polar or be inspired by it. We took a punt and chose the latter. We didn't expect to beat Cedar in every single performance test we tried. So we attached a `strict mode` to Karu to play fairly. When we were still faster, we added native Cedar support.
+Karu was created to replace Cedar in [kodus](https://github.com/wellknown-id/kodus) - and not because Cedar was slow, but because we realised [along the way](https://en.wikipedia.org/wiki/Coastline_paradox) it wasn't expressive enough for the use cases we planned for. We needed a replacement that could give us something like [Polar's approachableness](https://www.osohq.com/docs/reference/polar/introduction) and keep Cedar's performance characteristics. We had a choice, fork from the archived remnants of Polar or be inspired by it. We took a punt and chose the latter. We didn't expect to beat Cedar in every single performance test we tried. So we attached a `strict mode` to Karu to play fairly. When we were still faster, we added native Cedar support.
 
 _TLDR; Karu is faster at Cedar than Cedar is at Cedar._
 
 ## Summary
 
-| Metric                                   | Karu           | Cedar           | Winner                |
-| ---------------------------------------- | -------------- | --------------- | --------------------- |
-| **WASM Bundle**                          | 319 KB         | 1.8 MB          | **Karu 5.6x smaller** |
-| **Native eval**                          | 16.4 ns        | 1,162 ns        | **Karu 71x faster**   |
-| **WASM eval (precompiled)**              | 459 ns         | 94,054 ns       | **Karu 205x faster**  |
-| **WASM eval (parse+eval)**              | 3,680 ns       | 206,550 ns      | **Karu 56x faster**   |
-| **Complex (20 rules, native)**           | 649 ns         | 13,749 ns       | **Karu 21x faster**   |
-| **Complex (20 rules, WASM precompiled)** | 7,713 ns       | 219,850 ns      | **Karu 29x faster**   |
+| Metric                                   | Karu     | Cedar      | Winner                |
+| ---------------------------------------- | -------- | ---------- | --------------------- |
+| **WASM Bundle**                          | 319 KB   | 1.8 MB     | **Karu 5.6x smaller** |
+| **Native eval**                          | 16.4 ns  | 1,162 ns   | **Karu 71x faster**   |
+| **WASM eval (precompiled)**              | 459 ns   | 94,054 ns  | **Karu 205x faster**  |
+| **WASM eval (parse+eval)**               | 3,680 ns | 206,550 ns | **Karu 56x faster**   |
+| **Complex (20 rules, native)**           | 649 ns   | 13,749 ns  | **Karu 21x faster**   |
+| **Complex (20 rules, WASM precompiled)** | 7,713 ns | 219,850 ns | **Karu 29x faster**   |
 
 ## Methodology
 
@@ -44,12 +44,12 @@ cargo bench     # run all benchmarks
 
 ## Native Benchmarks (Rust library calls)
 
-| Scenario               | Karu        | Cedar      | Speedup |
-| ---------------------- | ----------- | ---------- | ------- |
-| Simple (1 condition)   | **16.4 ns** | 1,162 ns   | **71x** |
-| Multi-condition (4)    | **122 ns**  | 1,276 ns   | **10x** |
-| Nested path (6 levels) | **40.6 ns** | 1,665 ns   | **41x** |
-| Complex (20 rules)     | **649 ns**  | 13,749 ns  | **21x** |
+| Scenario               | Karu        | Cedar     | Speedup |
+| ---------------------- | ----------- | --------- | ------- |
+| Simple (1 condition)   | **16.4 ns** | 1,162 ns  | **71x** |
+| Multi-condition (4)    | **122 ns**  | 1,276 ns  | **10x** |
+| Nested path (6 levels) | **40.6 ns** | 1,665 ns  | **41x** |
+| Complex (20 rules)     | **649 ns**  | 13,749 ns | **21x** |
 
 ## Karu Loading Cedar Policies (Native)
 
@@ -69,12 +69,12 @@ Policies are converted from Cedar → Karu via `compile_cedar()`.
 
 Policy compiled once, only evaluation is timed.
 
-| Scenario           | Karu         | Karu (Cedar import) | Cedar       | Speedup vs Cedar |
-| ------------------ | ------------ | ------------------- | ----------- | ---------------- |
-| Simple             | **459 ns**   | 634 ns              | 94,054 ns   | **205x**         |
-| Multi-condition    | **1,292 ns** | 1,563 ns            | 106,320 ns  | **82x**          |
-| Nested path        | **1,222 ns** | 1,471 ns            | 133,440 ns  | **109x**         |
-| Complex (20 rules) | **7,713 ns** | 7,012 ns            | 219,850 ns  | **29x**          |
+| Scenario           | Karu         | Karu (Cedar import) | Cedar      | Speedup vs Cedar |
+| ------------------ | ------------ | ------------------- | ---------- | ---------------- |
+| Simple             | **459 ns**   | 634 ns              | 94,054 ns  | **205x**         |
+| Multi-condition    | **1,292 ns** | 1,563 ns            | 106,320 ns | **82x**          |
+| Nested path        | **1,222 ns** | 1,471 ns            | 133,440 ns | **109x**         |
+| Complex (20 rules) | **7,713 ns** | 7,012 ns            | 219,850 ns | **29x**          |
 
 > Karu precompiled WASM (459 ns) is **faster than Cedar native** (1,162 ns)!
 > Karu loading Cedar via WASM (634 ns) is **still faster than Cedar native**!
@@ -83,12 +83,12 @@ Policy compiled once, only evaluation is timed.
 
 Policy parsed and evaluated every iteration.
 
-| Scenario           | Karu           | Karu (Cedar import) | Cedar       | Speedup vs Cedar |
-| ------------------ | -------------- | ------------------- | ----------- | ---------------- |
-| Simple             | **3,680 ns**   | 5,740 ns            | 206,550 ns  | **56x**          |
-| Multi-condition    | **10,437 ns**  | 14,362 ns           | 272,240 ns  | **26x**          |
-| Nested path        | **6,571 ns**   | 8,257 ns            | 264,580 ns  | **40x**          |
-| Complex (20 rules) | **59,630 ns**  | 121,150 ns          | 742,280 ns  | **12x**          |
+| Scenario           | Karu          | Karu (Cedar import) | Cedar      | Speedup vs Cedar |
+| ------------------ | ------------- | ------------------- | ---------- | ---------------- |
+| Simple             | **3,680 ns**  | 5,740 ns            | 206,550 ns | **56x**          |
+| Multi-condition    | **10,437 ns** | 14,362 ns           | 272,240 ns | **26x**          |
+| Nested path        | **6,571 ns**  | 8,257 ns            | 264,580 ns | **40x**          |
+| Complex (20 rules) | **59,630 ns** | 121,150 ns          | 742,280 ns | **12x**          |
 
 ## Native vs WASM Overhead
 
@@ -162,25 +162,25 @@ Additional microbenchmarks from the core crate:
 
 ### Evaluation
 
-| Benchmark                    | Time       |
-| ---------------------------- | ---------- |
-| eval_simple                  | 15.95 ns   |
-| eval_multi_condition (4)     | 95.67 ns   |
-| eval_nested_path (6 levels)  | 39.10 ns   |
-| collection_search (10 items) | 182.8 ns   |
-| collection_search (100)      | 1.270 µs   |
-| collection_search (1000)     | 12.07 µs   |
-| throughput_1000              | 19.11 µs   |
-| parse_simple                 | 928 ns     |
-| parse_100_rules              | 154.1 µs   |
+| Benchmark                    | Time     |
+| ---------------------------- | -------- |
+| eval_simple                  | 15.95 ns |
+| eval_multi_condition (4)     | 95.67 ns |
+| eval_nested_path (6 levels)  | 39.10 ns |
+| collection_search (10 items) | 182.8 ns |
+| collection_search (100)      | 1.270 µs |
+| collection_search (1000)     | 12.07 µs |
+| throughput_1000              | 19.11 µs |
+| parse_simple                 | 928 ns   |
+| parse_100_rules              | 154.1 µs |
 
 ### Parser Comparison: Handrolled vs Tree-sitter
 
-| Scenario   | Handrolled | Tree-sitter | Speedup |
-| ---------- | ---------- | ----------- | ------- |
-| Simple     | 757 ns     | 8.78 µs     | **12x** |
-| Medium     | 5.54 µs    | 65.5 µs     | **12x** |
-| 100 rules  | 111 µs     | 1.29 ms     | **12x** |
+| Scenario  | Handrolled | Tree-sitter | Speedup |
+| --------- | ---------- | ----------- | ------- |
+| Simple    | 757 ns     | 8.78 µs     | **12x** |
+| Medium    | 5.54 µs    | 65.5 µs     | **12x** |
+| 100 rules | 111 µs     | 1.29 ms     | **12x** |
 
 ## Optimization Notes
 
