@@ -259,52 +259,49 @@ fn pattern_needs_bindings(pattern: &Pattern) -> bool {
     }
 }
 
-/// Simple glob pattern matching.
+/// Simple glob pattern matching (iterative, O(n*m) worst-case).
 ///
 /// Supports `*` (any characters) and `?` (single character).
+///
+/// Uses an iterative two-pointer algorithm with backtracking bookmarks
+/// to avoid the exponential blowup of recursive approaches.
 fn glob_match(pattern: &str, text: &str) -> bool {
-    let mut pat_chars = pattern.chars().peekable();
-    let mut text_chars = text.chars().peekable();
+    let pat: Vec<char> = pattern.chars().collect();
+    let txt: Vec<char> = text.chars().collect();
+    let (plen, tlen) = (pat.len(), txt.len());
 
-    while let Some(p) = pat_chars.next() {
-        match p {
-            '*' => {
-                // Skip consecutive stars
-                while pat_chars.peek() == Some(&'*') {
-                    pat_chars.next();
-                }
-                // If pattern ends with *, match rest of text
-                if pat_chars.peek().is_none() {
-                    return true;
-                }
-                // Try to match remaining pattern at each position
-                let remaining_pattern: String = pat_chars.collect();
-                loop {
-                    if glob_match(&remaining_pattern, &text_chars.clone().collect::<String>()) {
-                        return true;
-                    }
-                    if text_chars.next().is_none() {
-                        return false;
-                    }
-                }
-            }
-            '?' => {
-                // Match any single character
-                if text_chars.next().is_none() {
-                    return false;
-                }
-            }
-            c => {
-                // Match exact character
-                if text_chars.next() != Some(c) {
-                    return false;
-                }
-            }
+    let mut pi = 0; // pattern index
+    let mut ti = 0; // text index
+    let mut star_pi = usize::MAX; // pattern index after last '*'
+    let mut star_ti = usize::MAX; // text index when last '*' was hit
+
+    while ti < tlen {
+        if pi < plen && (pat[pi] == '?' || pat[pi] == txt[ti]) {
+            // Exact or single-char wildcard match — advance both
+            pi += 1;
+            ti += 1;
+        } else if pi < plen && pat[pi] == '*' {
+            // Star: bookmark this position and advance pattern
+            star_pi = pi + 1;
+            star_ti = ti;
+            pi += 1;
+        } else if star_pi != usize::MAX {
+            // Mismatch but we have a star bookmark — backtrack:
+            // let the star consume one more character from text
+            star_ti += 1;
+            ti = star_ti;
+            pi = star_pi;
+        } else {
+            return false;
         }
     }
 
-    // Pattern consumed, text should also be consumed
-    text_chars.peek().is_none()
+    // Consume trailing stars in pattern
+    while pi < plen && pat[pi] == '*' {
+        pi += 1;
+    }
+
+    pi == plen
 }
 
 /// Check if ANY element in an array matches a pattern.

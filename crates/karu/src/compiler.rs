@@ -108,7 +108,8 @@ fn compile_rule(
     };
 
     let body = if let Some(ref body) = rule.body {
-        Some(compile_expr(body, assertions, types, host_asserts)?)
+        let mut expanding = HashSet::new();
+        Some(compile_expr_inner(body, assertions, types, host_asserts, &mut expanding)?)
     } else {
         None
     };
@@ -116,17 +117,18 @@ fn compile_rule(
     Ok(Rule::with_body(&rule.name, effect, body))
 }
 
-fn compile_expr(
+fn compile_expr_inner(
     expr: &ExprAst,
     assertions: &AssertionRegistry,
     types: &TypeRegistry,
     host_asserts: &HashSet<String>,
+    expanding: &mut HashSet<String>,
 ) -> Result<ConditionExpr, ParseError> {
     match expr {
         ExprAst::And(exprs) => {
             let compiled: Vec<ConditionExpr> = exprs
                 .iter()
-                .map(|e| compile_expr(e, assertions, types, host_asserts))
+                .map(|e| compile_expr_inner(e, assertions, types, host_asserts, expanding))
                 .collect::<Result<_, _>>()?;
             Ok(match compiled.len() {
                 1 => compiled.into_iter().next().unwrap(),
@@ -136,7 +138,7 @@ fn compile_expr(
         ExprAst::Or(exprs) => {
             let compiled: Vec<ConditionExpr> = exprs
                 .iter()
-                .map(|e| compile_expr(e, assertions, types, host_asserts))
+                .map(|e| compile_expr_inner(e, assertions, types, host_asserts, expanding))
                 .collect::<Result<_, _>>()?;
             Ok(match compiled.len() {
                 1 => compiled.into_iter().next().unwrap(),
@@ -152,8 +154,22 @@ fn compile_expr(
             {
                 if let PathSegmentAst::Field(name) = &left.segments[0] {
                     if let Some(assertion_body) = assertions.get(name) {
+                        // Cycle detection: check if we're already expanding this assertion
+                        if !expanding.insert(name.clone()) {
+                            return Err(ParseError {
+                                message: format!(
+                                    "circular assertion reference: `{}` references itself",
+                                    name
+                                ),
+                                line: 0,
+                                column: 0,
+                                token: None,
+                            });
+                        }
                         // Inline the assertion's body expression
-                        return compile_expr(assertion_body, assertions, types, host_asserts);
+                        let result = compile_expr_inner(assertion_body, assertions, types, host_asserts, expanding);
+                        expanding.remove(name);
+                        return result;
                     }
                     // Check host-registered asserts (bare identifier like `resource_is_package_local`)
                     if host_asserts.contains(name) {
@@ -168,12 +184,12 @@ fn compile_expr(
             Ok(ConditionExpr::Leaf(Condition::new(path, operator, pattern)))
         }
         ExprAst::In { pattern, path } => {
-            let path = compile_path(path);
-            let pattern = compile_pattern(pattern);
+            let compiled_path = compile_path(path);
+            let compiled_pattern = compile_pattern(pattern);
             Ok(ConditionExpr::Leaf(Condition::new(
-                path,
+                compiled_path,
                 Operator::In,
-                pattern,
+                compiled_pattern,
             )))
         }
         ExprAst::InLiteral { path, values } => {
@@ -200,19 +216,19 @@ fn compile_expr(
             )))
         }
         ExprAst::Like { path, pattern } => {
-            let path = compile_path(path);
+            let compiled_path = compile_path(path);
             Ok(ConditionExpr::Leaf(Condition::new(
-                path,
+                compiled_path,
                 Operator::Like,
                 Pattern::Literal(serde_json::Value::String(pattern.clone())),
             )))
         }
         ExprAst::Not(inner) => {
-            let compiled = compile_expr(inner, assertions, types, host_asserts)?;
+            let compiled = compile_expr_inner(inner, assertions, types, host_asserts, expanding)?;
             Ok(ConditionExpr::Not(Box::new(compiled)))
         }
         ExprAst::Forall { var, path, body } => {
-            let body_expr = compile_expr(body, assertions, types, host_asserts)?;
+            let body_expr = compile_expr_inner(body, assertions, types, host_asserts, expanding)?;
             let source_path = compile_path(path);
             Ok(ConditionExpr::Leaf(Condition {
                 path: Path::root(),
@@ -227,7 +243,7 @@ fn compile_expr(
             }))
         }
         ExprAst::Exists { var, path, body } => {
-            let body_expr = compile_expr(body, assertions, types, host_asserts)?;
+            let body_expr = compile_expr_inner(body, assertions, types, host_asserts, expanding)?;
             let source_path = compile_path(path);
             Ok(ConditionExpr::Leaf(Condition {
                 path: Path::root(),

@@ -487,8 +487,9 @@ impl Condition {
             }
             Operator::ForAll => all_match(data, pattern),
             Operator::Exists => any_matches(data, pattern),
-            // Has: if we reach dispatch_op, the path already resolved, so it exists
-            Operator::Has => !data.is_null(),
+            // Has: if we reach dispatch_op, the path already resolved, so the attribute exists.
+            // This is true even for null values — {field: null} means the field EXISTS.
+            Operator::Has => true,
             Operator::Like => {
                 if let (Some(text), Pattern::Literal(Value::String(pat))) = (data.as_str(), pattern)
                 {
