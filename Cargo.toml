@@ -9,4 +9,8 @@ default-members = [
     "crates/karu-cli",
     "crates/karu-lsp",
 ]
+exclude = [
+    "crates/karu/fuzz",
+    "crates/karu/benches/advanced-benchmark",
+]
 resolver = "2"

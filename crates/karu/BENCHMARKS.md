@@ -127,34 +127,34 @@ cargo run --release --bin seed -- --full   # 1M users, ~5 min
 
 | Threads | Karu ops/sec | Cedar ops/sec | Speedup |
 | ------- | ------------ | ------------- | ------- |
-| **1**   | **1.93 M**   | 80 K          | **24x** |
-| **2**   | **3.07 M**   | 123 K         | **25x** |
-| **4**   | **5.99 M**   | 178 K         | **34x** |
-| **8**   | **9.60 M**   | 205 K         | **47x** |
-| **16**  | **7.48 M**   | 242 K         | **31x** |
+| **1**   | **1.79 M**   | 77 K          | **23x** |
+| **2**   | **3.67 M**   | 141 K         | **26x** |
+| **4**   | **6.06 M**   | 194 K         | **31x** |
+| **8**   | **8.44 M**   | 244 K         | **35x** |
+| **16**  | **10.62 M**  | 270 K         | **39x** |
 
 ### Delete Authorization (2 rules, ~400 diverse queries)
 
 | Threads | Karu ops/sec | Cedar ops/sec | Speedup |
 | ------- | ------------ | ------------- | ------- |
-| **1**   | **2.83 M**   | 126 K         | **23x** |
-| **2**   | **3.82 M**   | 222 K         | **17x** |
-| **4**   | **5.60 M**   | 355 K         | **16x** |
-| **8**   | **5.61 M**   | 534 K         | **10x** |
-| **16**  | **6.57 M**   | 571 K         | **11.5x** |
+| **1**   | **2.63 M**   | 121 K         | **22x** |
+| **2**   | **4.84 M**   | 226 K         | **21x** |
+| **4**   | **7.00 M**   | 336 K         | **21x** |
+| **8**   | **7.84 M**   | 469 K         | **17x** |
+| **16**  | **7.90 M**   | 515 K         | **15x** |
 
 ### Thread Scaling Efficiency
 
 | Threads | Karu (read) | Cedar (read) |
 | ------- | ----------- | ------------ |
-| 1→2     | **1.59x**   | 1.54x        |
-| 1→4     | **3.10x**   | 2.22x        |
-| 1→8     | **4.97x**   | 2.56x        |
-| 1→16    | **3.87x**   | 3.03x        |
+| 1→2     | **2.05x**   | 1.83x        |
+| 1→4     | **3.39x**   | 2.52x        |
+| 1→8     | **4.72x**   | 3.17x        |
+| 1→16    | **5.93x**   | 3.51x        |
 
-> At 8 threads, Karu evaluates **9.60 million authorization decisions per second**.
-> Cedar maxes out at **205K** — a **47x difference**.
-> With 10,000 concurrent users hitting a single node, **Karu handles all evaluations in 1.0ms**.
+> At 16 threads, Karu evaluates **10.62 million authorization decisions per second**.
+> Cedar maxes out at **270K** — a **39x difference**.
+> With 10,000 concurrent users hitting a single node, **Karu handles all evaluations in 0.9ms**.
 
 ## Karu Standalone Benchmarks
 
