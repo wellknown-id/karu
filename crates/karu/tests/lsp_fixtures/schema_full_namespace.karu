@@ -1,0 +1,45 @@
+use schema;
+mod Acme {
+    abstract Ownable {
+        owner User,
+    };
+
+    actor User {
+        name string,
+        role string,
+    };
+
+    actor ServiceAccount {
+        name string,
+    };
+
+    resource Folder {};
+
+    resource Document in Folder is Ownable {
+        title string,
+        public bool,
+    };
+
+    action "View" appliesTo {
+        actor User | ServiceAccount,
+        resource Document | Folder,
+    };
+
+    action "Delete" appliesTo {
+        actor User,
+        resource Document,
+        context {
+            reason? string,
+        }
+    };
+};
+
+allow view if
+    resource is Document and
+    actor is User and
+    actor == resource.owner;
+
+deny delete if
+    action == "Delete" and
+    actor is User and
+    not actor.role == "admin";

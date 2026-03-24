@@ -1,0 +1,27 @@
+use schema;
+mod {
+    actor User {
+        name string,
+        age long,
+    };
+    resource Document {
+        owner User,
+        title string,
+        public boolean,
+    };
+};
+
+// Valid: entity == entity
+allow entity_eq if resource is Document and resource.owner == actor;
+
+// Valid: string == string
+allow string_eq if resource is Document and resource.title == "readme";
+
+// Valid: long == long
+allow long_eq if actor is User and actor.age == 21;
+
+// Valid: boolean == boolean
+allow bool_eq if resource is Document and resource.public == true;
+
+// Valid: entity field chain — resource.owner.name is string
+allow chain if resource is Document and resource.owner.name == "alice";

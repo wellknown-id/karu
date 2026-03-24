@@ -1,0 +1,23 @@
+[package]
+name = "karu-lsp"
+version = "0.1.0"
+edition = "2021"
+description = "Language server for the Karu policy engine"
+license = "MIT"
+repository = "https://github.com/wellknown-id/karu"
+
+[[bin]]
+name = "karu-lsp"
+path = "src/main.rs"
+
+[features]
+default = ["cedar", "dev"]
+cedar = ["karu/cedar"]
+dev = ["karu/dev"]
+
+[dependencies]
+karu = { path = "../karu", features = ["lsp"] }
+tower-lsp = "0.20"
+tokio = { version = "1", features = ["io-std", "macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

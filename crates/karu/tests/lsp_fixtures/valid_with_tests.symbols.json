@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Rules",
+    "kind": "Namespace"
+  },
+  {
+    "name": "Tests",
+    "kind": "Namespace"
+  }
+]

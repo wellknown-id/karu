@@ -1,0 +1,14 @@
+[
+  {
+    "line": 0,
+    "character": 6,
+    "severity": "error",
+    "message_contains": "Parse error"
+  },
+  {
+    "line": 1,
+    "character": 5,
+    "severity": "error",
+    "message_contains": "Parse error"
+  }
+]

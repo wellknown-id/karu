@@ -1,0 +1,47 @@
+[package]
+name = "karu-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+serde_json = "1.0"
+
+[dependencies.karu]
+path = ".."
+
+# Parser fuzzing - tests error recovery
+[[bin]]
+name = "fuzz_parser"
+path = "fuzz_targets/fuzz_parser.rs"
+test = false
+doc = false
+bench = false
+
+# Lexer fuzzing - tests tokenization
+[[bin]]
+name = "fuzz_lexer"
+path = "fuzz_targets/fuzz_lexer.rs"
+test = false
+doc = false
+bench = false
+
+# Full compile pipeline fuzzing
+[[bin]]
+name = "fuzz_compile"
+path = "fuzz_targets/fuzz_compile.rs"
+test = false
+doc = false
+bench = false
+
+# Transpiler fuzzing - tests Cedar output generation
+[[bin]]
+name = "fuzz_transpile"
+path = "fuzz_targets/fuzz_transpile.rs"
+test = false
+doc = false
+bench = false

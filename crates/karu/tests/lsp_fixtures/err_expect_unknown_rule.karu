@@ -1,0 +1,12 @@
+allow view if
+    principal == "alice";
+
+test "ghost rules" {
+    principal {
+        id: "alice",
+    }
+    expect {
+        allow view,
+        deny nonexistent_rule,
+    }
+}

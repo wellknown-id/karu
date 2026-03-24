@@ -1,0 +1,22 @@
+use schema;
+mod {
+    actor User {
+        roles Set<string>,
+    };
+    resource Document {
+        owner User,
+    };
+};
+
+// Valid: assert narrows actor to User via type param
+assert is_admin<User> if "admin" in actor.roles;
+
+// Valid: `actor is User` guard precedes field access
+allow view if
+    actor is User and
+    "viewer" in actor.roles;
+
+// Valid: resource.owner is a declared field on Document
+allow own if
+    resource is Document and
+    resource.owner == actor;

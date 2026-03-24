@@ -1,0 +1,11 @@
+use schema;
+mod Acme {
+    actor User {
+        name String,
+    };
+    resource File {};
+};
+
+allow view if
+    principal == "alice" and
+    action == "view";

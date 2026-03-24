@@ -1,0 +1,2 @@
+allow greeting if
+    principal == "hello world;

@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "crates/karu",
+    "crates/karu-cli",
+    "crates/karu-lsp",
+]
+default-members = [
+    "crates/karu",
+    "crates/karu-cli",
+    "crates/karu-lsp",
+]
+resolver = "2"

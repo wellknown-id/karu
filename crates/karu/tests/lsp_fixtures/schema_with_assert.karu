@@ -1,0 +1,12 @@
+use schema;
+mod NS {
+    actor User {
+        roles Set<String>,
+    };
+    resource File {};
+};
+assert is_admin<User> if "admin" in principal.roles;
+
+allow manage_files if
+    is_admin and
+    resource == "file";

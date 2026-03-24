@@ -1,0 +1,18 @@
+use schema;
+mod {
+    abstract Ownable {
+        owner User,
+    };
+    actor User {
+        name string,
+    };
+    resource File is Ownable {};
+};
+
+// Valid: File `is Ownable` so it inherits the `owner` field
+allow view if
+    resource is File and
+    resource.owner == actor;
+
+// Valid: assert with <User, File> narrows both types
+assert file_owner<User, File> if resource.owner == actor;

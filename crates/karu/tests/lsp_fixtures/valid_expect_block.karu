@@ -1,0 +1,20 @@
+allow view if
+    principal == "alice" and
+    action == "view";
+
+deny admin_only if
+    action == "admin" and
+    principal != "admin";
+
+test "per-rule expectations" {
+    principal {
+        id: "alice",
+    }
+    action {
+        id: "view",
+    }
+    expect {
+        allow view,
+        deny admin_only,
+    }
+}

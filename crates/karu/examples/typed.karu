@@ -1,0 +1,55 @@
+// new keyword syntax tells the parser (runtime and devtime) to expect schema
+// indicated by "mod" keyword(s), otherwise the file is as usual
+use schema;
+
+// note: a karu file can contain both schema and policy definitions at the same time!
+// this is useful for small policies, but for larger policies it's recommended
+// to use separate files, in which case we'd do:
+//   import "schema.karu";
+//   import "policy.karu";
+// and so on...
+
+// this "mod" should be cedar namespace compatible!
+mod MyCedarNamespace {
+
+  actor User {
+    name String,
+  };
+
+  resource Folder {};
+
+  resource File in Folder {
+    owner    User,
+    name     String,
+    modified DateTime,
+  };
+
+  // action name can be in optional double quotes
+  action "Delete" appliesTo {
+    actor User,
+    resource File | Folder,
+    context {
+      authenticated Boolean,
+      somethingOptional? String,
+      somethingNullable String | null,
+    }
+  };
+
+  // the "abstract" defines a part of a type and in works like cedar schema "type" keyword ie. can be used with actor, resource and action
+  abstract SomeFields {
+    field1 String,
+    field2 Int,
+  };
+
+};
+
+// assert keyword makes a "macro" fact that is inlined at compile time
+// the <User, action, File> is the minimum compatible type signature
+assert user_is_owner<User, action, File> if actor.name == resource.owner.name;
+
+// without <Types> the assertion can be used with any type that has the fields
+assert user_has_roles if actor is User and actor has roles;
+
+allow delete_file if MyCedarNamespace:Delete and resource is File and context.authenticated and user_is_owner;
+
+// notes: https://docs.cedarpolicy.com/schema/human-readable-schema.html

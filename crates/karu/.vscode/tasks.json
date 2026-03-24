@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "install",
+            "path": "editors/vscode",
+            "label": "npm: install - editors/vscode",
+            "detail": "Install dependencies for the Karu VS Code extension"
+        },
+        {
+            "type": "cargo",
+            "command": "build",
+            "args": [
+                "--bin",
+                "karu-lsp"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "label": "cargo: build karu-lsp",
+            "group": "build",
+            "detail": "Build the Karu language server"
+        },
+        {
+            "label": "Build Extension + LSP",
+            "dependsOn": [
+                "cargo: build karu-lsp",
+                "npm: install - editors/vscode"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        }
+    ]
+}

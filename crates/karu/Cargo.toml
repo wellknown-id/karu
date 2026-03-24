@@ -1,0 +1,53 @@
+[package]
+name = "karu"
+version = "0.1.0"
+edition = "2021"
+description = "An embeddable policy engine focusing on structural pattern matching over arbitrary JSON data"
+license = "MIT"
+repository = "https://github.com/wellknown-id/karu"
+keywords = ["policy", "authorization", "pattern-matching", "access-control"]
+categories = ["authentication"]
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[features]
+default = ["lsp", "cedar"]
+cedar = []
+wasm = ["wasm-bindgen", "js-sys"]
+parallel = ["rayon"]
+lsp = ["tower-lsp", "tokio", "dev", "cedar"]
+dev = ["dep:rust-sitter", "dep:rust-sitter-tool"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
+rayon = { version = "1.10", optional = true }
+
+# LSP dependencies (optional for WASM builds)
+tower-lsp = { version = "0.20", optional = true }
+tokio = { version = "1", features = ["io-std", "macros", "rt-multi-thread"], optional = true }
+
+# Tree-sitter parser for dev tooling (LSP, diagnostics)
+rust-sitter = { git = "https://github.com/benbenbenbenbenben/krust-sitter", optional = true }
+
+[build-dependencies]
+rust-sitter-tool = { git = "https://github.com/benbenbenbenbenben/krust-sitter", optional = true }
+serde_json = "1.0"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "evaluation"
+harness = false
+
+[[bench]]
+name = "parser_compare"
+harness = false
+required-features = ["dev"]

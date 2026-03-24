@@ -1,0 +1,65 @@
+// Example Karu policy file
+// Demonstrates multi-line conditions (no special syntax needed!)
+
+allow view if
+    principal == "alice" and
+    action == "view";
+
+deny delete if
+    action == "delete" and
+    principal != "admin";
+
+allow admin if
+    principal == "admin";
+
+test "alice can view" {
+    resource {
+        id: "doc1",
+        type: "document",
+    }
+    principal {
+        id: "alice",
+        type: "user",
+    }
+    action {
+        id: "view",
+        type: "action",
+    }
+    expect allow
+}
+
+test "alice cannot delete" {
+    resource {
+        id: "doc1",
+        type: "document",
+    }
+    principal {
+        id: "alice",
+        type: "user",
+    }
+    action {
+        id: "delete",
+        type: "action",
+    }
+    expect deny
+}
+
+test "bob cannot view" {
+    resource {
+        id: "doc1",
+        type: "document",
+    }
+    principal {
+        id: "bob",
+        type: "user",
+    }
+    action {
+        id: "view",
+        type: "action",
+    }
+    expect deny
+}
+
+test "anything" {
+    expect deny
+}

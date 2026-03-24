@@ -1,0 +1,15 @@
+use schema;
+mod {
+    actor User {
+        roles Set<string>,
+    };
+    resource Document {};
+};
+
+// Invalid: unguarded actor.roles — base actor type has no fields
+assert is_admin_bad if "admin" in actor.roles;
+
+// Invalid: resource.title doesn't exist on Document
+allow view if
+    resource is Document and
+    resource.title == "hello";

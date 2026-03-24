@@ -1,0 +1,24 @@
+use schema;
+mod {
+    actor User {
+        name string,
+        age long,
+    };
+    resource Document {
+        owner User,
+        title string,
+        public boolean,
+    };
+};
+
+// Error: resource.owner is User, cannot compare with number
+allow bad_number if resource is Document and resource.owner == 1;
+
+// Error: resource.owner is User, cannot compare with string
+allow bad_string if resource is Document and resource.owner == "alice";
+
+// Error: resource.title is string, cannot compare with number
+allow bad_field_type if resource is Document and resource.title == 42;
+
+// Error: actor.age is long, cannot compare with boolean
+allow bad_bool if actor is User and actor.age == true;

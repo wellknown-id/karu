@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karu vs Cedar - Comprehensive WASM Benchmarks</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --karu: #38bdf8;
+            --cedar: #fbbf24;
+            --success: #4ade80;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--karu), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid #334155;
+        }
+
+        .card h3 {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .karu {
+            color: var(--karu);
+        }
+
+        .cedar {
+            color: var(--cedar);
+        }
+
+        .metric-unit {
+            font-size: 0.65rem;
+            color: #64748b;
+        }
+
+        button {
+            background: var(--karu);
+            color: var(--bg);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: var(--card);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .faster {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .slower {
+            color: #f87171;
+        }
+
+        .size-row {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .size-item {
+            flex: 1;
+        }
+
+        .size-bar {
+            height: 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 0.65rem;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .size-bar.karu {
+            background: var(--karu);
+            width: 5%;
+            min-width: 50px;
+        }
+
+        .size-bar.cedar {
+            background: var(--cedar);
+            width: 100%;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>⚡ Karu vs Cedar - WASM Benchmarks</h1>
+    <p class="subtitle">Head-to-head policy engine comparison with equivalent policies</p>
+
+    <button id="runBtn" onclick="runBenchmarks()">Run All Benchmarks</button>
+
+    <pre class="status" id="status">Ready. Click "Run All Benchmarks" to start.</pre>
+
+    <div class="card" style="margin: 1rem 0;">
+        <h3>Bundle Size Comparison</h3>
+        <div class="size-row">
+            <div class="size-item">
+                <div style="margin-bottom: 4px;">Karu</div>
+                <div class="size-bar karu">221 KB</div>
+            </div>
+            <div class="size-item">
+                <div style="margin-bottom: 4px;">Cedar</div>
+                <div class="size-bar cedar">4.3 MB</div>
+            </div>
+        </div>
+        <div style="color: var(--success); font-size: 0.8rem; font-weight: 600;">Karu is 20x smaller!</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Karu Init</h3>
+            <div class="metric karu" id="karuInit">--</div>
+            <div class="metric-unit">ms</div>
+        </div>
+        <div class="card">
+            <h3>Cedar Init</h3>
+            <div class="metric cedar" id="cedarInit">--</div>
+            <div class="metric-unit">ms</div>
+        </div>
+        <div class="card">
+            <h3>Karu Batch</h3>
+            <div class="metric karu" id="karuBatch">--</div>
+            <div class="metric-unit">μs/op</div>
+        </div>
+        <div class="card">
+            <h3>Cedar Batch</h3>
+            <div class="metric cedar" id="cedarBatch">--</div>
+            <div class="metric-unit">μs/op</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Detailed Results</h3>
+        <div class="legend">
+            <span><span class="legend-dot" style="background: var(--karu);"></span>Karu</span>
+            <span><span class="legend-dot" style="background: var(--cedar);"></span>Cedar</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Karu (μs)</th>
+                    <th>Cedar (μs)</th>
+                    <th>Karu faster by</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="row-simple">
+                    <td>Simple (1 condition)</td>
+                    <td class="karu-time">--</td>
+                    <td class="cedar-time">--</td>
+                    <td class="diff">--</td>
+                </tr>
+                <tr id="row-multiCondition">
+                    <td>Multi-condition (4 ANDed)</td>
+                    <td class="karu-time">--</td>
+                    <td class="cedar-time">--</td>
+                    <td class="diff">--</td>
+                </tr>
+                <tr id="row-nestedPath">
+                    <td>Nested path (6 levels)</td>
+                    <td class="karu-time">--</td>
+                    <td class="cedar-time">--</td>
+                    <td class="diff">--</td>
+                </tr>
+                <tr id="row-complex">
+                    <td>Complex (20 rules)</td>
+                    <td class="karu-time">--</td>
+                    <td class="cedar-time">--</td>
+                    <td class="diff">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

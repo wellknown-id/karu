@@ -1,0 +1,10 @@
+{
+  "iconDefinitions": {
+    "karu": {
+      "iconPath": "./icons/karu-file.svg"
+    }
+  },
+  "fileExtensions": {
+    "karu": "karu"
+  }
+}

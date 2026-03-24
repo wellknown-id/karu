@@ -1,0 +1,20 @@
+use schema;
+mod {
+    actor User {};
+};
+
+allow access if
+    principal == "alice";
+
+test "alice can access" {
+    principal {
+        id: "alice",
+    }
+    action {
+        id: "access",
+    }
+    resource {
+        id: "r1",
+    }
+    expect allow
+}

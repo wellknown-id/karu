@@ -1,0 +1,10 @@
+// Access control rules
+
+allow view if
+    principal == "alice" and
+    action == "view";
+
+deny delete if
+    action == "delete" and
+    resource == "confidential" and
+    principal != "admin";

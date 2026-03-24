@@ -1,0 +1,18 @@
+use schema;
+mod {
+    actor User {
+        name string,
+    };
+    resource Document {
+        owner User,
+    };
+};
+
+// Error: actor cannot be Document — Document is a resource type
+allow bad_guard if actor is Document and actor.name == "alice";
+
+// Error: resource cannot be User — User is an actor type
+allow bad_guard2 if resource is User and resource.name == "alice";
+
+// Error: Foo is not defined anywhere in the schema
+allow bad_guard3 if actor is Foo and actor.name == "alice";

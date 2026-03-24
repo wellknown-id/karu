@@ -1,0 +1,17 @@
+# Generated
+/target/
+node_modules/
+
+# Cargo.lock for library crates (optional, but common)
+# Uncomment if you want to track it for reproducible builds
+# Cargo.lock
+playground/pkg/
+
+# Advanced benchmark artifacts
+benches/advanced-benchmark/wasm/*.wasm
+benches/advanced-benchmark/target/
+benches/advanced-benchmark/karu-wasm-harness/target/
+benches/advanced-benchmark/cedar-wasm-harness/target/
+benches/advanced-benchmark/perf.data
+benches/advanced-benchmark/data/
+*.swp

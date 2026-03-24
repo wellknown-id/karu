@@ -1,0 +1,26 @@
+[
+  {
+    "line": 14,
+    "character": 45,
+    "severity": "warning",
+    "message_contains": "Type mismatch: comparing entity type 'User' with Long literal"
+  },
+  {
+    "line": 17,
+    "character": 45,
+    "severity": "warning",
+    "message_contains": "Type mismatch: comparing entity type 'User' with String literal"
+  },
+  {
+    "line": 20,
+    "character": 49,
+    "severity": "warning",
+    "message_contains": "Type mismatch: comparing String with Long"
+  },
+  {
+    "line": 23,
+    "character": 36,
+    "severity": "warning",
+    "message_contains": "Type mismatch: comparing Long with Boolean"
+  }
+]

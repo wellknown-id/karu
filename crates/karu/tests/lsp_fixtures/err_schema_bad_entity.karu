@@ -1,0 +1,7 @@
+use schema;
+mod Bad {
+    actor;
+    resource 123 {};
+};
+
+allow broken;

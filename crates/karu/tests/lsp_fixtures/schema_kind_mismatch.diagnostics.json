@@ -1,0 +1,32 @@
+[
+  {
+    "line": 11,
+    "character": 19,
+    "severity": "error",
+    "message_contains": "'actor' cannot be 'Document' — 'Document' is a resource type, but actor is an actor built-in"
+  },
+  {
+    "line": 11,
+    "character": 41,
+    "severity": "error",
+    "message_contains": "Field 'name' does not exist on type 'Document'"
+  },
+  {
+    "line": 14,
+    "character": 20,
+    "severity": "error",
+    "message_contains": "'resource' cannot be 'User' — 'User' is an actor type, but resource is a resource built-in"
+  },
+  {
+    "line": 17,
+    "character": 20,
+    "severity": "error",
+    "message_contains": "Unknown type 'Foo' in type guard — no entity or abstract with this name is defined in the schema"
+  },
+  {
+    "line": 17,
+    "character": 37,
+    "severity": "error",
+    "message_contains": "Field 'name' does not exist on type 'Foo'"
+  }
+]

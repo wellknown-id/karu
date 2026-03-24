@@ -1,0 +1,96 @@
+{
+    "name": "karu",
+    "displayName": "Karu",
+    "description": "Language support for Karu policy files",
+    "version": "0.1.0",
+    "publisher": "karu",
+    "engines": {
+        "vscode": "^1.75.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [],
+    "main": "./extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "karu",
+                "aliases": [
+                    "Karu",
+                    "karu"
+                ],
+                "extensions": [
+                    ".karu"
+                ],
+                "icon": {
+                    "light": "./icons/karu-file.svg",
+                    "dark": "./icons/karu-file.svg"
+                },
+                "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "cedar",
+                "aliases": [
+                    "Cedar",
+                    "cedar"
+                ],
+                "extensions": [
+                    ".cedar"
+                ],
+                "configuration": "./cedar-language-configuration.json"
+            },
+            {
+                "id": "cedarschema",
+                "aliases": [
+                    "CedarSchema",
+                    "cedarschema"
+                ],
+                "extensions": [
+                    ".cedarschema"
+                ],
+                "configuration": "./cedar-language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "karu",
+                "scopeName": "source.karu",
+                "path": "./syntaxes/karu.tmLanguage.json"
+            },
+            {
+                "language": "cedar",
+                "scopeName": "source.cedar",
+                "path": "./syntaxes/cedar.tmLanguage.json"
+            }
+        ],
+        "iconThemes": [
+            {
+                "id": "karu-icons",
+                "label": "Karu Icons",
+                "path": "./karu-icon-theme.json"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Karu",
+            "properties": {
+                "karu.serverPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to karu-lsp binary. Leave empty to use PATH."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "echo 'Ready to publish'"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.75.0",
+        "vscode-languageclient": "^9.0.1"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^9.0.1"
+    }
+}

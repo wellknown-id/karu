@@ -1,0 +1,32 @@
+Annotation := '@' IDENT '(' STR ')'
+Annotations := {Annotations}
+Schema    := {Namespace}
+Namespace := (Annotations 'namespace' Path '{' {Decl} '}') | Decl
+Decl      := Entity | Action | TypeDecl
+Entity    := Annotations 'entity' Idents ['in' EntOrTyps] [['='] RecType] ['tags' Type] ';' | Annotations 'entity' Idents 'enum' '[' STR+ ']' ';'
+Action    := Annotations 'action' Names ['in' RefOrRefs] [AppliesTo]';'
+TypeDecl  := Annotations 'type' TYPENAME '=' Type ';'
+Type      := Path | SetType | RecType
+EntType   := Path
+SetType   := 'Set' '<' Type '>'
+RecType   := '{' [AttrDecls] '}'
+AttrDecls := Annotations Name ['?'] ':' Type [',' | ',' AttrDecls]
+AppliesTo := 'appliesTo' '{' AppDecls '}'
+AppDecls  := ('principal' | 'resource') ':' EntOrTyps [',' | ',' AppDecls]
+           | 'context' ':' (Path | RecType) [',' | ',' AppDecls]
+Path      := IDENT {'::' IDENT}
+Ref       := Path '::' STR | Name
+RefOrRefs := Ref | '[' [RefOrRefs] ']'
+EntTypes  := Path {',' Path}
+EntOrTyps := EntType | '[' [EntTypes] ']'
+Name      := IDENT | STR
+Names     := Name {',' Name}
+Idents    := IDENT {',' IDENT}
+
+IDENT     := ['_''a'-'z''A'-'Z']['_''a'-'z''A'-'Z''0'-'9']*
+TYPENAME  := IDENT - RESERVED
+STR       := Fully-escaped Unicode surrounded by '"'s
+PRIMTYPE  := 'Long' | 'String' | 'Bool'
+WHITESPC  := Unicode whitespace
+COMMENT   := '//' ~NEWLINE* NEWLINE
+RESERVED  := 'Bool' | 'Boolean' | 'Entity' | 'Extension' | 'Long' | 'Record' | 'Set' | 'String'

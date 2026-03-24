@@ -1,0 +1,5 @@
+use schema;
+mod Empty {};
+
+
+allow anything;

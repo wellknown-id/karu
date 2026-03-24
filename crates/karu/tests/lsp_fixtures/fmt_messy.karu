@@ -1,0 +1,9 @@
+// Messy formatting to test the formatter
+  allow   view   if
+      principal=="alice"  and
+        action ==   "view" ;
+
+deny  delete if
+ action =="delete" and
+   resource   == "file"  and
+       principal   != "admin"  ;

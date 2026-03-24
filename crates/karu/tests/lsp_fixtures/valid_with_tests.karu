@@ -1,0 +1,33 @@
+allow view if
+    principal == "alice" and
+    action == "view";
+
+deny admin_only if
+    action == "admin" and
+    principal != "admin";
+
+test "alice can view" {
+    principal {
+        id: "alice",
+    }
+    action {
+        id: "view",
+    }
+    resource {
+        id: "doc1",
+    }
+    expect allow
+}
+
+test "bob cannot admin" {
+    principal {
+        id: "bob",
+    }
+    action {
+        id: "admin",
+    }
+    resource {
+        id: "doc1",
+    }
+    expect deny
+}
