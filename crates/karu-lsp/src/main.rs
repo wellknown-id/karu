@@ -434,6 +434,13 @@ impl LanguageServer for KaruLanguageServer {
     ) -> Result<Option<SemanticTokensResult>> {
         let uri = &params.text_document.uri;
 
+        // Only provide semantic tokens for .karu files — the Karu tokenizer
+        // doesn't understand Cedar/CedarSchema syntax and would produce
+        // incorrect token types that override the correct TextMate grammar.
+        if is_cedar_uri(uri.as_str()) || is_cedarschema_uri(uri.as_str()) {
+            return Ok(None);
+        }
+
         let docs = self.documents.read().await;
         let doc = match docs.get(uri) {
             Some(d) => d,
