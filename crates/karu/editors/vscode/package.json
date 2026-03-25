@@ -86,7 +86,7 @@
     "scripts": {
         "build:vsix": "node build-vsix.js",
         "package:vsix": "npm run build:vsix && npx @vscode/vsce package --allow-star-activation",
-        "vscode:prepublish": "npm run build:vsix"
+        "vscode:prepublish": "node -e \"console.log('Karu VSIX: binaries must be staged before packaging.')\""
     },
     "devDependencies": {
         "@types/vscode": "^1.75.0",
