@@ -122,7 +122,7 @@ function findServerPath(extensionPath) {
 
     // 5. Fall back to PATH
     console.log('Karu LSP: falling back to PATH');
-    return process.platform === 'win32' ? 'karu-lsp.exe' : 'karu-lsp';
+    return hostBinaryName();
 }
 
 function activate(context) {

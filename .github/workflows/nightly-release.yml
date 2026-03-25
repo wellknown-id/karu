@@ -115,7 +115,7 @@ jobs:
           KARU_VSIX_ARTIFACT_DIR: /tmp/karu-vsix-artifacts
 
       - name: Package VSIX
-        run: npx @vscode/vsce package --allow-star-activation --out /tmp/karu-nightly.vsix
+        run: npx @vscode/vsce package --allow-star-activation --skip-license --out /tmp/karu-nightly.vsix
         working-directory: crates/karu/editors/vscode
 
       - name: Upload VSIX release asset

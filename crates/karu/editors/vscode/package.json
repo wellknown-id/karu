@@ -4,6 +4,21 @@
     "description": "Language support for Karu policy files",
     "version": "0.1.0",
     "publisher": "karu",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wellknown-id/karu.git"
+    },
+    "files": [
+        "README.md",
+        "extension.js",
+        "package.json",
+        "cedar-language-configuration.json",
+        "language-configuration.json",
+        "karu-icon-theme.json",
+        "icons/**",
+        "syntaxes/**",
+        "bin/**"
+    ],
     "engines": {
         "vscode": "^1.75.0"
     },
@@ -85,7 +100,7 @@
     },
     "scripts": {
         "build:vsix": "node build-vsix.js",
-        "package:vsix": "npm run build:vsix && npx @vscode/vsce package --allow-star-activation",
+        "package:vsix": "npm run build:vsix && npx @vscode/vsce package --allow-star-activation --skip-license",
         "vscode:prepublish": "node -e \"console.log('Karu VSIX: binaries must be staged before packaging.')\""
     },
     "devDependencies": {
