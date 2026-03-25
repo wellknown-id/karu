@@ -20,8 +20,8 @@ use karu::lsp::{
     cedar_ts_parse_diagnostics, cedarschema_document_symbols, cedarschema_parse_diagnostics,
 };
 use karu::lsp::{
-    document_symbols, find_definition, keyword_completions, keyword_hover, parse_diagnostics,
-    run_inline_tests, semantic_tokens, SEMANTIC_TOKEN_TYPES,
+    cedar_semantic_tokens, document_symbols, find_definition, keyword_completions, keyword_hover,
+    parse_diagnostics, run_inline_tests, semantic_tokens, SEMANTIC_TOKEN_TYPES,
 };
 
 /// Document state for a single file
@@ -434,10 +434,8 @@ impl LanguageServer for KaruLanguageServer {
     ) -> Result<Option<SemanticTokensResult>> {
         let uri = &params.text_document.uri;
 
-        // Only provide semantic tokens for .karu files — the Karu tokenizer
-        // doesn't understand Cedar/CedarSchema syntax and would produce
-        // incorrect token types that override the correct TextMate grammar.
-        if is_cedar_uri(uri.as_str()) || is_cedarschema_uri(uri.as_str()) {
+        // CedarSchema files don't have a dedicated tokenizer yet.
+        if is_cedarschema_uri(uri.as_str()) {
             return Ok(None);
         }
 
@@ -447,7 +445,12 @@ impl LanguageServer for KaruLanguageServer {
             None => return Ok(None),
         };
 
-        let tokens = semantic_tokens(&doc.content);
+        // Use the appropriate tokenizer for the file type.
+        let tokens = if is_cedar_uri(uri.as_str()) {
+            cedar_semantic_tokens(&doc.content)
+        } else {
+            semantic_tokens(&doc.content)
+        };
 
         // Convert to lsp_types::SemanticToken (delta-encoded)
         let mut data = Vec::new();

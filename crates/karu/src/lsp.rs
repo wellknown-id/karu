@@ -154,6 +154,151 @@ pub fn semantic_tokens(source: &str) -> Vec<SemanticToken> {
     result
 }
 
+/// Generate semantic tokens for a Cedar source file.
+///
+/// Uses a lightweight inline tokenizer for Cedar keywords, scope variables,
+/// identifiers, strings, numbers, operators, and `//` line comments.
+#[cfg(all(feature = "dev", feature = "cedar"))]
+pub fn cedar_semantic_tokens(source: &str) -> Vec<SemanticToken> {
+    let mut result = Vec::new();
+    let bytes = source.as_bytes();
+    let mut i = 0;
+    let mut line: u32 = 0;
+    let mut col: u32 = 0;
+
+    while i < bytes.len() {
+        let b = bytes[i];
+
+        // Line comment: // ... \n
+        if b == b'/' && i + 1 < bytes.len() && bytes[i + 1] == b'/' {
+            let start_col = col;
+            let start = i;
+            while i < bytes.len() && bytes[i] != b'\n' {
+                i += 1;
+                col += 1;
+            }
+            result.push(SemanticToken {
+                line,
+                start: start_col,
+                length: (i - start) as u32,
+                token_type: SemanticTokenType::Comment,
+            });
+            continue;
+        }
+
+        // Newline
+        if b == b'\n' {
+            i += 1;
+            line += 1;
+            col = 0;
+            continue;
+        }
+
+        // Whitespace
+        if b.is_ascii_whitespace() {
+            i += 1;
+            col += 1;
+            continue;
+        }
+
+        // String literal
+        if b == b'"' {
+            let start_col = col;
+            let start = i;
+            i += 1;
+            col += 1;
+            while i < bytes.len() && bytes[i] != b'"' {
+                if bytes[i] == b'\\' && i + 1 < bytes.len() {
+                    i += 2;
+                    col += 2;
+                } else {
+                    if bytes[i] == b'\n' {
+                        line += 1;
+                        col = 0;
+                    } else {
+                        col += 1;
+                    }
+                    i += 1;
+                }
+            }
+            if i < bytes.len() {
+                i += 1; // closing "
+                col += 1;
+            }
+            result.push(SemanticToken {
+                line,
+                start: start_col,
+                length: (i - start) as u32,
+                token_type: SemanticTokenType::String,
+            });
+            continue;
+        }
+
+        // Number
+        if b.is_ascii_digit() {
+            let start_col = col;
+            let start = i;
+            while i < bytes.len() && bytes[i].is_ascii_digit() {
+                i += 1;
+                col += 1;
+            }
+            result.push(SemanticToken {
+                line,
+                start: start_col,
+                length: (i - start) as u32,
+                token_type: SemanticTokenType::Number,
+            });
+            continue;
+        }
+
+        // Identifier or keyword
+        if b.is_ascii_alphabetic() || b == b'_' {
+            let start_col = col;
+            let start = i;
+            while i < bytes.len() && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+                col += 1;
+            }
+            let word = &source[start..i];
+            let token_type = match word {
+                "permit" | "forbid" | "when" | "unless" | "if" | "then" | "else" | "in"
+                | "like" | "has" | "is" | "true" | "false" => SemanticTokenType::Keyword,
+                "principal" | "action" | "resource" | "context" => SemanticTokenType::Variable,
+                _ => SemanticTokenType::Property,
+            };
+            result.push(SemanticToken {
+                line,
+                start: start_col,
+                length: (i - start) as u32,
+                token_type,
+            });
+            continue;
+        }
+
+        // Multi-char operators
+        if i + 1 < bytes.len() {
+            let two = &source[i..i + 2];
+            if matches!(two, "==" | "!=" | "<=" | ">=" | "&&" | "||" | "::") {
+                result.push(SemanticToken {
+                    line,
+                    start: col,
+                    length: 2,
+                    token_type: SemanticTokenType::Operator,
+                });
+                i += 2;
+                col += 2;
+                continue;
+            }
+        }
+
+        // Single-char operators / punctuation — skip (let TextMate handle)
+        i += 1;
+        col += 1;
+    }
+
+    result
+}
+
 /// Get the display length of a token.
 fn token_length(token: &Token) -> u32 {
     match token {
