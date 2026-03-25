@@ -627,4 +627,23 @@ mod tests {
             crate::cedar_parser::CedarEffect::Permit
         );
     }
+
+    #[test]
+    fn test_parse_with_comments() {
+        // Line comments at start, inline, and between policies
+        let result = grammar::PolicySet::parse(
+            r#"
+            // This is a leading comment
+            permit(principal, action, resource); // inline comment
+            // Comment between policies
+            forbid(principal, action, resource);
+            "#,
+        );
+        let ps = result.result.expect("should parse with // comments");
+        assert_eq!(ps.policies.len(), 2);
+        assert!(matches!(ps.policies[0].effect, grammar::Effect::Permit(_)));
+        assert!(matches!(ps.policies[1].effect, grammar::Effect::Forbid(_)));
+        // NOTE: result.errors may contain spurious word/extras errors from
+        // tree-sitter; these are filtered in cedar_ts_parse_diagnostics.
+    }
 }

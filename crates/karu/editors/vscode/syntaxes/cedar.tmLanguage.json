@@ -4,6 +4,9 @@
   "scopeName": "source.cedar",
   "patterns": [
     {
+      "include": "#comments"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -70,6 +73,14 @@
     }
   ],
   "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.cedar"
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {

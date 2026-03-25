@@ -116,7 +116,7 @@ dependencies = [
  "bitflags 2.11.0",
  "cexpr",
  "clang-sys",
- "itertools 0.13.0",
+ "itertools 0.10.5",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -746,15 +746,6 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
@@ -1206,7 +1197,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#c8f847eab966b6923fbde51b64a4e884acebb34b"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#4c63bf2532836000ca75b73bf7cb0b5461d2eb1e"
 dependencies = [
  "log",
  "rust-sitter-macro",
@@ -1219,7 +1210,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-common"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#c8f847eab966b6923fbde51b64a4e884acebb34b"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#4c63bf2532836000ca75b73bf7cb0b5461d2eb1e"
 dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
@@ -1232,7 +1223,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-macro"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#c8f847eab966b6923fbde51b64a4e884acebb34b"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#4c63bf2532836000ca75b73bf7cb0b5461d2eb1e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1244,7 +1235,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-tool"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#c8f847eab966b6923fbde51b64a4e884acebb34b"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#4c63bf2532836000ca75b73bf7cb0b5461d2eb1e"
 dependencies = [
  "cc",
  "rust-sitter-common",
@@ -1261,7 +1252,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-types"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#c8f847eab966b6923fbde51b64a4e884acebb34b"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#4c63bf2532836000ca75b73bf7cb0b5461d2eb1e"
 dependencies = [
  "indexmap",
  "serde",

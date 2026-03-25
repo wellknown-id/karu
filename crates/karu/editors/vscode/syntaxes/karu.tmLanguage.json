@@ -4,6 +4,9 @@
   "scopeName": "source.karu",
   "patterns": [
     {
+      "include": "#comments"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -80,6 +83,14 @@
     }
   ],
   "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.karu"
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {

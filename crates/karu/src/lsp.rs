@@ -2469,15 +2469,16 @@ pub fn cedar_document_symbols(source: &str) -> Vec<DocumentSymbol> {
 #[cfg(all(feature = "dev", feature = "cedar"))]
 pub fn cedar_ts_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     let result = crate::cedar_grammar::grammar::PolicySet::parse(source);
-    if result.errors.is_empty() {
-        vec![]
-    } else {
-        result
-            .errors
-            .iter()
-            .map(|e| ts_error_to_diagnostic(e, source))
-            .collect()
-    }
+    // Filter out spurious errors caused by the word/extras interaction:
+    // tree-sitter's `#[word(CedarIdent)]` matches identifier-like content inside
+    // `//` comment extras, producing ERROR nodes that aren't real parse failures.
+    let comment_ranges = collect_comment_byte_ranges(source);
+    result
+        .errors
+        .iter()
+        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .map(|e| ts_error_to_diagnostic(e, source))
+        .collect()
 }
 
 /// Parse a Cedar schema and return diagnostics.
@@ -2486,19 +2487,18 @@ pub fn cedar_ts_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
 #[cfg(all(feature = "dev", feature = "cedar"))]
 pub fn cedarschema_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     let result = crate::cedar_schema_grammar::grammar::Schema::parse(source);
-    if result.errors.is_empty() {
-        vec![]
-    } else {
-        result
-            .errors
-            .iter()
-            .map(|e| {
-                let mut diag = ts_error_to_diagnostic(e, source);
-                diag.source = Some("cedarschema".to_string());
-                diag
-            })
-            .collect()
-    }
+    // Filter out spurious errors caused by the word/extras interaction
+    let comment_ranges = collect_comment_byte_ranges(source);
+    result
+        .errors
+        .iter()
+        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .map(|e| {
+            let mut diag = ts_error_to_diagnostic(e, source);
+            diag.source = Some("cedarschema".to_string());
+            diag
+        })
+        .collect()
 }
 
 /// Extract document symbols from a Cedar schema file.
