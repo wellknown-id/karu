@@ -23,10 +23,6 @@ function hostBinaryName() {
     return process.platform === 'win32' ? 'karu-lsp.exe' : 'karu-lsp';
 }
 
-function firstExistingPath(candidates) {
-    return candidates.find(candidate => fs.existsSync(candidate));
-}
-
 function ensureExecutable(serverPath) {
     if (process.platform === 'win32' || !fs.existsSync(serverPath)) {
         return;
@@ -78,11 +74,11 @@ function findServerPath(extensionPath) {
     const releaseFromCrate = path.join(crateRoot, 'target', 'release', binaryName);
 
     // Prefer debug for development (faster builds, debug symbols)
-    if (firstExistingPath([debugFromCrate])) {
+    if (fs.existsSync(debugFromCrate)) {
         console.log('Karu LSP: found debug binary relative to crate');
         return debugFromCrate;
     }
-    if (firstExistingPath([releaseFromCrate])) {
+    if (fs.existsSync(releaseFromCrate)) {
         console.log('Karu LSP: found release binary relative to crate');
         return releaseFromCrate;
     }
@@ -93,11 +89,11 @@ function findServerPath(extensionPath) {
     const debugFromRoot = path.join(workspaceRoot, 'target', 'debug', binaryName);
     const releaseFromRoot = path.join(workspaceRoot, 'target', 'release', binaryName);
 
-    if (firstExistingPath([debugFromRoot])) {
+    if (fs.existsSync(debugFromRoot)) {
         console.log('Karu LSP: found debug binary in workspace root');
         return debugFromRoot;
     }
-    if (firstExistingPath([releaseFromRoot])) {
+    if (fs.existsSync(releaseFromRoot)) {
         console.log('Karu LSP: found release binary in workspace root');
         return releaseFromRoot;
     }
