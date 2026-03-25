@@ -78,13 +78,15 @@
                 "karu.serverPath": {
                     "type": "string",
                     "default": "",
-                    "description": "Path to karu-lsp binary. Leave empty to use PATH."
+                    "description": "Path to karu-lsp binary. Leave empty to use the bundled server, local builds, or PATH."
                 }
             }
         }
     },
     "scripts": {
-        "vscode:prepublish": "echo 'Ready to publish'"
+        "build:vsix": "node build-vsix.js",
+        "package:vsix": "npm run build:vsix && npx @vscode/vsce package --allow-star-activation",
+        "vscode:prepublish": "npm run build:vsix"
     },
     "devDependencies": {
         "@types/vscode": "^1.75.0",

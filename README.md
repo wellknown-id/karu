@@ -93,6 +93,13 @@ npm install
 ln -s "$(pwd)" ~/.vscode/extensions/karu
 ```
 
+### Nightly Artifacts
+
+The nightly GitHub Actions workflow publishes:
+
+- `karu` CLI archives for Linux, macOS, and Windows on both x64 and arm64.
+- A self-contained VSIX that bundles `karu-lsp` for those same platforms.
+
 ### Configuration
 
 | Setting           | Description                                         |

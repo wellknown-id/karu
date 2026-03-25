@@ -12,7 +12,7 @@ cd /path/to/karu
 cargo build --release --bin karu-lsp
 
 # 2. Install extension dependencies
-cd editors/vscode
+cd crates/karu/editors/vscode
 npm install
 
 # 3. Link extension to VS Code
@@ -22,17 +22,28 @@ ln -s "$(pwd)" ~/.vscode/extensions/karu
 ### Package as VSIX
 
 ```bash
-npm install -g @vscode/vsce
-cd editors/vscode
-vsce package
+cd crates/karu/editors/vscode
+npx @vscode/vsce package --allow-star-activation
 code --install-extension karu-0.1.0.vsix
+```
+
+The nightly release workflow builds a self-contained VSIX by staging `karu-lsp`
+for Linux, macOS, and Windows on both x64 and arm64 before packaging.
+
+To reproduce that packaging flow locally, build each release `karu-lsp` target
+under the workspace `target/` directory and then run:
+
+```bash
+cd crates/karu/editors/vscode
+npm run build:vsix
+npx @vscode/vsce package --allow-star-activation
 ```
 
 ## Configuration
 
 | Setting           | Description                                         |
 | ----------------- | --------------------------------------------------- |
-| `karu.serverPath` | Path to `karu-lsp` binary. Leave empty to use PATH. |
+| `karu.serverPath` | Path to `karu-lsp` binary. Leave empty to use the bundled server, local builds, or PATH. |
 
 Example `settings.json`:
 
