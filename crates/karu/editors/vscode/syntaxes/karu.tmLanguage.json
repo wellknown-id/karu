@@ -52,29 +52,9 @@
       ]
     },
     {
-      "begin": "\\[",
-      "end": "\\]",
-      "name": "meta.block.bracket.karu",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
-    },
-    {
       "begin": "\\{",
       "end": "\\}",
       "name": "meta.block.brace.karu",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
-    },
-    {
-      "begin": "\\[",
-      "end": "\\]",
-      "name": "meta.block.bracket.karu",
       "patterns": [
         {
           "include": "$self"

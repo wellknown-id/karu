@@ -32,16 +32,6 @@
       ]
     },
     {
-      "begin": "\\(",
-      "end": "\\)",
-      "name": "meta.block.paren.cedar",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
-    },
-    {
       "begin": "\\[",
       "end": "\\]",
       "name": "meta.block.bracket.cedar",
@@ -55,16 +45,6 @@
       "begin": "\\{",
       "end": "\\}",
       "name": "meta.block.brace.cedar",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
-    },
-    {
-      "begin": "\\(",
-      "end": "\\)",
-      "name": "meta.block.paren.cedar",
       "patterns": [
         {
           "include": "$self"
