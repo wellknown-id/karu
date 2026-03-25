@@ -10,9 +10,51 @@ let coverageFullDecorationType;
 let coveragePartialDecorationType;
 let coverageNoneDecorationType;
 
+const BUNDLED_SERVER_PATHS = {
+    'linux-x64': { bundleDir: 'linux-x64', binaryName: 'karu-lsp' },
+    'linux-arm64': { bundleDir: 'linux-arm64', binaryName: 'karu-lsp' },
+    'darwin-x64': { bundleDir: 'darwin-x64', binaryName: 'karu-lsp' },
+    'darwin-arm64': { bundleDir: 'darwin-arm64', binaryName: 'karu-lsp' },
+    'win32-x64': { bundleDir: 'win32-x64', binaryName: 'karu-lsp.exe' },
+    'win32-arm64': { bundleDir: 'win32-arm64', binaryName: 'karu-lsp.exe' },
+};
+
+function hostBinaryName() {
+    return process.platform === 'win32' ? 'karu-lsp.exe' : 'karu-lsp';
+}
+
+function ensureExecutable(serverPath) {
+    if (process.platform === 'win32' || !fs.existsSync(serverPath)) {
+        return;
+    }
+
+    try {
+        fs.chmodSync(serverPath, 0o755);
+    } catch (error) {
+        console.warn(`Karu LSP: failed to chmod ${serverPath}: ${error.message}`);
+    }
+}
+
+function findBundledServerPath(extensionPath) {
+    const bundle = BUNDLED_SERVER_PATHS[`${process.platform}-${process.arch}`];
+    if (!bundle) {
+        return null;
+    }
+
+    const bundledPath = path.join(extensionPath, 'bin', bundle.bundleDir, bundle.binaryName);
+    if (!fs.existsSync(bundledPath)) {
+        return null;
+    }
+
+    ensureExecutable(bundledPath);
+    console.log('Karu LSP: using bundled server');
+    return bundledPath;
+}
+
 function findServerPath(extensionPath) {
     const config = vscode.workspace.getConfiguration('karu');
     const configPath = config.get('serverPath');
+    const binaryName = hostBinaryName();
 
     // 1. Use configured path if set
     if (configPath && configPath.length > 0) {
@@ -20,10 +62,16 @@ function findServerPath(extensionPath) {
         return configPath;
     }
 
-    // 2. Try relative to the crate (for ad-hoc local builds)
+    // 2. Use the bundled binary shipped inside the VSIX when available
+    const bundledPath = findBundledServerPath(extensionPath);
+    if (bundledPath) {
+        return bundledPath;
+    }
+
+    // 3. Try relative to the crate (for ad-hoc local builds)
     const crateRoot = path.resolve(extensionPath, '..', '..');
-    const debugFromCrate = path.join(crateRoot, 'target', 'debug', 'karu-lsp');
-    const releaseFromCrate = path.join(crateRoot, 'target', 'release', 'karu-lsp');
+    const debugFromCrate = path.join(crateRoot, 'target', 'debug', binaryName);
+    const releaseFromCrate = path.join(crateRoot, 'target', 'release', binaryName);
 
     // Prefer debug for development (faster builds, debug symbols)
     if (fs.existsSync(debugFromCrate)) {
@@ -35,11 +83,11 @@ function findServerPath(extensionPath) {
         return releaseFromCrate;
     }
 
-    // 2b. Try the Cargo workspace root (works for both the standalone Karu repo
+    // 3b. Try the Cargo workspace root (works for both the standalone Karu repo
     // and the parent Kodus repo with Karu vendored as a submodule).
     const workspaceRoot = path.resolve(crateRoot, '..', '..');
-    const debugFromRoot = path.join(workspaceRoot, 'target', 'debug', 'karu-lsp');
-    const releaseFromRoot = path.join(workspaceRoot, 'target', 'release', 'karu-lsp');
+    const debugFromRoot = path.join(workspaceRoot, 'target', 'debug', binaryName);
+    const releaseFromRoot = path.join(workspaceRoot, 'target', 'release', binaryName);
 
     if (fs.existsSync(debugFromRoot)) {
         console.log('Karu LSP: found debug binary in workspace root');
@@ -50,12 +98,12 @@ function findServerPath(extensionPath) {
         return releaseFromRoot;
     }
 
-    // 3. Try to find in workspace (cargo build output)
+    // 4. Try to find in workspace (cargo build output)
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders) {
         for (const folder of workspaceFolders) {
-            const releasePath = path.join(folder.uri.fsPath, 'target', 'release', 'karu-lsp');
-            const debugPath = path.join(folder.uri.fsPath, 'target', 'debug', 'karu-lsp');
+            const releasePath = path.join(folder.uri.fsPath, 'target', 'release', binaryName);
+            const debugPath = path.join(folder.uri.fsPath, 'target', 'debug', binaryName);
 
             if (fs.existsSync(releasePath)) {
                 console.log('Karu LSP: found release binary in workspace');
@@ -68,9 +116,9 @@ function findServerPath(extensionPath) {
         }
     }
 
-    // 4. Fall back to PATH
+    // 5. Fall back to PATH
     console.log('Karu LSP: falling back to PATH');
-    return 'karu-lsp';
+    return hostBinaryName();
 }
 
 function activate(context) {
