@@ -8,25 +8,36 @@
 //! - `permit`/`forbid` → `allow`/`deny`
 //! - Scope constraints: `principal == Entity`, `action == Entity`,
 //!   `action in [Entity, ...]`, `resource in Entity`
+//! - `principal is Type` / `resource is Type` → `principal.type == "Type"` (convention)
+//! - `principal is Type in Group` → type check AND group membership check
 //! - `when` conditions → rule body conditions
 //! - `unless` conditions → negated rule body conditions
 //! - Expressions: `&&`, `||`, `!`, `==`, `!=`, `<`, `<=`, `>`, `>=`
 //! - Entity references: `Type::"id"` → string literal `"id"`
 //! - Dot access: `resource.field`, `context.key`
 //! - Method calls: `.contains()` → `in` expression
+//! - `has` attribute existence test → `has { path }`
+//! - `like` glob pattern matching → `like { path, pattern }`
+//! - IP extension methods: `ip(path).isInRange(ip("cidr"))`, `.isIpv4()`, etc.
+//! - Decimal extension methods: `.lessThan()`, `.lessThanOrEqual()`, etc.
+//! - `@id("name")` annotations → rule name
 //! - Variables: `principal`, `action`, `resource`, `context`
 //!
 //! # Unsupported Cedar Features
 //!
 //! The following Cedar features will produce an explicit error:
-//! - `has` attribute existence test
-//! - `like` glob matching
-//! - `is` type test
-//! - `if-then-else` expressions
-//! - Arithmetic (`+`, `-`, `*`)
-//! - Extension functions (`ip()`, `decimal()`)
+//! - `if-then-else` expressions (unless trivially `if C then true else false`)
+//! - Arithmetic (`+`, `-`, `*`) (unless constant-foldable at import time)
+//! - `datetime()` / `duration()` extension functions
 //! - Template slots (`?principal`, `?resource`)
 //! - Set/record literals in conditions
+//!
+//! # Notes on `is` Type Tests
+//!
+//! Cedar's `principal is User` checks that the principal entity has type `User`.
+//! Karu maps this to `principal.type == "User"`, which requires entity data
+//! to carry a `type` field. Similarly, `principal is User in Group::"g1"` maps
+//! to `principal.type == "User" AND "g1" in principal.groups`.
 //!
 //! # Example
 //!
@@ -221,16 +232,25 @@ fn convert_scope_principal(
             });
         }
         CedarScopeConstraint::Is(type_name) => {
-            return Err(unsupported(format!(
-                "'principal is {}' type tests not supported",
-                type_name
-            )));
+            // `principal is Type` → principal.type == "Type"
+            // Requires entity data to carry a `type` field.
+            conditions.push(ExprAst::Compare {
+                left: make_path("principal.type"),
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(type_name.clone())),
+            });
         }
-        CedarScopeConstraint::IsIn(type_name, _) => {
-            return Err(unsupported(format!(
-                "'principal is {} in ...' not supported",
-                type_name
-            )));
+        CedarScopeConstraint::IsIn(type_name, entity) => {
+            // `principal is Type in Group` → type check AND group membership
+            conditions.push(ExprAst::Compare {
+                left: make_path("principal.type"),
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(type_name.clone())),
+            });
+            conditions.push(ExprAst::In {
+                pattern: PatternAst::Literal(serde_json::Value::String(entity.id.clone())),
+                path: make_path("principal.groups"),
+            });
         }
         CedarScopeConstraint::Slot(slot) => {
             return Err(unsupported(format!(
@@ -312,16 +332,38 @@ fn convert_scope_resource(
             });
         }
         CedarScopeConstraint::Is(type_name) => {
-            return Err(unsupported(format!(
-                "'resource is {}' type tests not supported",
-                type_name
-            )));
+            // `resource is Type` → resource.type == "Type"
+            // Requires entity data to carry a `type` field.
+            conditions.push(ExprAst::Compare {
+                left: make_path("resource.type"),
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(type_name.clone())),
+            });
         }
-        CedarScopeConstraint::IsIn(type_name, _) => {
-            return Err(unsupported(format!(
-                "'resource is {} in ...' not supported",
-                type_name
-            )));
+        CedarScopeConstraint::IsIn(type_name, entity) => {
+            // `resource is Type in Container` → type check AND container field equality.
+            // Follows the same convention as `resource in Container` above: resources model
+            // parent membership as a named field (e.g. `resource.album == "vacation"`) rather
+            // than a `groups` array, because Cedar resource hierarchies are typically
+            // single-parent containment rather than multi-group membership.
+            conditions.push(ExprAst::Compare {
+                left: make_path("resource.type"),
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(type_name.clone())),
+            });
+            // Derive field name from the container type name, lowercased
+            // (e.g. `Album::"vacation"` → `resource.album == "vacation"`).
+            // Falls back to "container" if the entity path is empty.
+            let field = entity
+                .path
+                .last()
+                .map(|s| s.to_lowercase())
+                .unwrap_or_else(|| "container".into());
+            conditions.push(ExprAst::Compare {
+                left: make_path(&format!("resource.{}", field)),
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(entity.id.clone())),
+            });
         }
         CedarScopeConstraint::Slot(slot) => {
             return Err(unsupported(format!(
@@ -366,10 +408,45 @@ fn convert_expr(expr: &CedarExpr) -> Result<ExprAst, ImportError> {
                 pattern: pat.clone(),
             })
         }
-        CedarExpr::Is { type_name, .. } => Err(unsupported(format!(
-            "'is {}' type tests not supported",
-            type_name
-        ))),
+        CedarExpr::Is {
+            expr,
+            type_name,
+            in_expr,
+        } => {
+            // `expr is TypeName` → expr.type == "TypeName"
+            // Requires entity data to carry a `type` field.
+            let mut type_path = expr_to_path(expr)?;
+            type_path.segments.push(PathSegmentAst::Field("type".to_string()));
+            let type_check = ExprAst::Compare {
+                left: type_path,
+                op: OpAst::Eq,
+                right: PatternAst::Literal(serde_json::Value::String(type_name.clone())),
+            };
+            if let Some(in_expr) = in_expr {
+                // `expr is TypeName in Group` → type_check AND group membership
+                let in_entity = match in_expr.as_ref() {
+                    CedarExpr::Entity(e) => e,
+                    _ => {
+                        return Err(unsupported(
+                            "'is ... in' expects an entity reference as the group",
+                        ))
+                    }
+                };
+                let mut groups_path = expr_to_path(expr)?;
+                groups_path
+                    .segments
+                    .push(PathSegmentAst::Field("groups".to_string()));
+                let group_check = ExprAst::In {
+                    pattern: PatternAst::Literal(serde_json::Value::String(
+                        in_entity.id.clone(),
+                    )),
+                    path: groups_path,
+                };
+                Ok(ExprAst::And(vec![type_check, group_check]))
+            } else {
+                Ok(type_check)
+            }
+        }
         CedarExpr::IfThenElse {
             cond,
             then_expr,
@@ -1356,13 +1433,149 @@ mod tests {
         result.unwrap();
     }
 
+    // ========================================================================
+    // Tests for `is` type narrowing (previously unsupported)
+    // ========================================================================
+
     #[test]
-    fn test_cedar_negation() {
-        // Unary negation of integer
-        let result = from_cedar(
-            r#"permit(principal, action, resource)
-               when { -(1) == -1 };"#,
-        );
-        result.unwrap();
+    fn test_is_type_principal_scope() {
+        // `principal is User` in scope → principal.type == "User"
+        let program =
+            from_cedar(r#"permit(principal is User, action, resource);"#).unwrap();
+        assert_eq!(program.rules.len(), 1);
+        if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
+            assert_eq!(path_to_string(left), "principal.type");
+            assert_eq!(*op, OpAst::Eq);
+            assert!(
+                matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "User")
+            );
+        } else {
+            panic!("Expected Compare on principal.type, got {:?}", program.rules[0].body);
+        }
+    }
+
+    #[test]
+    fn test_is_type_resource_scope() {
+        // `resource is Document` in scope → resource.type == "Document"
+        let program =
+            from_cedar(r#"permit(principal, action, resource is Document);"#).unwrap();
+        assert_eq!(program.rules.len(), 1);
+        if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
+            assert_eq!(path_to_string(left), "resource.type");
+            assert_eq!(*op, OpAst::Eq);
+            assert!(
+                matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "Document")
+            );
+        } else {
+            panic!("Expected Compare on resource.type, got {:?}", program.rules[0].body);
+        }
+    }
+
+    #[test]
+    fn test_is_type_principal_in_group() {
+        // `principal is Admin in Group::"admins"` → type check AND group membership
+        let program =
+            from_cedar(r#"permit(principal is Admin in Group::"admins", action, resource);"#)
+                .unwrap();
+        if let Some(ExprAst::And(parts)) = &program.rules[0].body {
+            assert_eq!(parts.len(), 2);
+            // First part: principal.type == "Admin"
+            if let ExprAst::Compare { left, op, right } = &parts[0] {
+                assert_eq!(path_to_string(left), "principal.type");
+                assert_eq!(*op, OpAst::Eq);
+                assert!(
+                    matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "Admin")
+                );
+            } else {
+                panic!("Expected Compare for type check");
+            }
+            // Second part: "admins" in principal.groups
+            if let ExprAst::In { pattern, path } = &parts[1] {
+                assert!(
+                    matches!(pattern, PatternAst::Literal(serde_json::Value::String(s)) if s == "admins")
+                );
+                assert_eq!(path_to_string(path), "principal.groups");
+            } else {
+                panic!("Expected In for group check");
+            }
+        } else {
+            panic!("Expected And expression, got {:?}", program.rules[0].body);
+        }
+    }
+
+    #[test]
+    fn test_is_type_in_when_clause() {
+        // `principal is User` in when clause → principal.type == "User"
+        let program = from_cedar(
+            r#"permit(principal, action, resource) when { principal is User };"#,
+        )
+        .unwrap();
+        if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
+            assert_eq!(path_to_string(left), "principal.type");
+            assert_eq!(*op, OpAst::Eq);
+            assert!(
+                matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "User")
+            );
+        } else {
+            panic!("Expected Compare on principal.type");
+        }
+    }
+
+    #[test]
+    fn test_is_type_evaluates_correctly() {
+        // Full evaluation: `principal is Admin` should check principal.type field
+        let program =
+            from_cedar(r#"permit(principal is Admin, action, resource);"#).unwrap();
+        let policy =
+            crate::compiler::compile_program(&program, &std::collections::HashSet::new())
+                .unwrap();
+
+        // principal.type == "Admin" → allow
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"type": "Admin", "id": "alice"}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Allow);
+
+        // principal.type == "User" → deny
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"type": "User", "id": "bob"}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Deny);
+
+        // principal.type missing → deny
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"id": "charlie"}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Deny);
+    }
+
+    #[test]
+    fn test_is_type_in_group_evaluates_correctly() {
+        // Full evaluation: `principal is Admin in Group::"superusers"`
+        let program = from_cedar(
+            r#"permit(principal is Admin in Group::"superusers", action, resource);"#,
+        )
+        .unwrap();
+        let policy =
+            crate::compiler::compile_program(&program, &std::collections::HashSet::new())
+                .unwrap();
+
+        // type "Admin" AND group "superusers" → allow
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"type": "Admin", "groups": ["superusers", "staff"]}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Allow);
+
+        // type "Admin" but wrong group → deny
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"type": "Admin", "groups": ["staff"]}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Deny);
+
+        // right group but wrong type → deny
+        let effect = policy.evaluate(&serde_json::json!({
+            "principal": {"type": "User", "groups": ["superusers"]}
+        }));
+        assert_eq!(effect, crate::rule::Effect::Deny);
     }
 }

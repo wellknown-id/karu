@@ -6,13 +6,14 @@
 //! # Supported Cedar Schema Features
 //!
 //! - `namespace Ns { ... }` → `ModuleDef { name: Some("Ns"), ... }`
-//! - `entity User { ... }` → `EntityDef { kind: Actor, ... }`
+//! - `entity User { ... }` → `EntityDef { kind: Resource, ... }` (Cedar schemas don't
+//!   distinguish actor vs resource; all entities default to `Resource`)
 //! - `entity File in [Folder] { ... }` → `EntityDef { parents: ["Folder"], ... }`
 //! - `action "Delete" appliesTo { ... }` → `ActionDef { ... }`
 //! - `type Ownable = { ... }` → `AbstractDef { ... }`
 //! - `Set<T>` → `TypeRef::Set(T)`
 //! - Inline record types `{ field: Type }` → `TypeRef::Record(...)`
-//! - Annotations `@id("value")` are parsed and discarded
+//! - Annotations `@doc("...")` are parsed and discarded (not preserved in AST)
 //!
 //! # Example
 //!

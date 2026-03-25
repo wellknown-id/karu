@@ -482,7 +482,7 @@ fn emit_fields(out: &mut String, fields: &[FieldDef], indent: &str) {
                 "{}\"{}\"?: {},",
                 inner,
                 field.name,
-                type_ref_to_cedar(&field.ty)
+                type_ref_to_cedar(&field.ty, &inner)
             )
             .unwrap();
         } else {
@@ -491,48 +491,52 @@ fn emit_fields(out: &mut String, fields: &[FieldDef], indent: &str) {
                 "{}\"{}\": {},",
                 inner,
                 field.name,
-                type_ref_to_cedar(&field.ty)
+                type_ref_to_cedar(&field.ty, &inner)
             )
             .unwrap();
         }
     }
 }
 
-fn type_ref_to_cedar(ty: &TypeRef) -> String {
+fn type_ref_to_cedar(ty: &TypeRef, indent: &str) -> String {
     match ty {
         TypeRef::Named(name) => name.clone(),
-        TypeRef::Set(inner) => format!("Set<{}>", type_ref_to_cedar(inner)),
+        TypeRef::Set(inner) => format!("Set<{}>", type_ref_to_cedar(inner, indent)),
         TypeRef::Record(fields) => {
             if fields.is_empty() {
                 "{}".to_string()
             } else {
+                let inner_indent = format!("{}    ", indent);
                 let mut s = String::from("{\n");
                 for field in fields {
                     if field.optional {
                         writeln!(
                             s,
-                            "    \"{}\"?: {},",
+                            "{}\"{}\"?: {},",
+                            inner_indent,
                             field.name,
-                            type_ref_to_cedar(&field.ty)
+                            type_ref_to_cedar(&field.ty, &inner_indent)
                         )
                         .unwrap();
                     } else {
                         writeln!(
                             s,
-                            "    \"{}\": {},",
+                            "{}\"{}\": {},",
+                            inner_indent,
                             field.name,
-                            type_ref_to_cedar(&field.ty)
+                            type_ref_to_cedar(&field.ty, &inner_indent)
                         )
                         .unwrap();
                     }
                 }
+                s.push_str(indent);
                 s.push('}');
                 s
             }
         }
         TypeRef::Union(variants) => variants
             .iter()
-            .map(type_ref_to_cedar)
+            .map(|v| type_ref_to_cedar(v, indent))
             .collect::<Vec<_>>()
             .join(" | "),
     }
