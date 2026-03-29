@@ -350,7 +350,10 @@ impl Parser {
         if self.current_token() == &Token::Is {
             self.advance();
             traits.push(self.expect_ident()?);
-            // TODO: Allow `is A, B` multiple traits
+            while self.current_token() == &Token::Comma {
+                self.advance();
+                traits.push(self.expect_ident()?);
+            }
         }
 
         // Fields: `{ name Type, ... }` or `{}`
@@ -1809,6 +1812,25 @@ mod schema_tests {
         let file_entity = &prog.modules[0].entities[0];
         assert_eq!(file_entity.name, "File");
         assert_eq!(file_entity.traits, vec!["Ownable"]);
+        assert_eq!(file_entity.fields.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_entity_with_multiple_traits() {
+        let src = concat!(
+            "use schema;\n",
+            "mod Ns {\n",
+            "    abstract Ownable { owner String };\n",
+            "    abstract Shareable {};\n",
+            "    resource File is Ownable, Shareable { name String };\n",
+            "};\n",
+        );
+        let prog = Parser::parse(src).unwrap();
+        // entities[0] and entities[1] are abstracts, not entities. They go to prog.modules[0].abstracts.
+        // File is the only resource (EntityDef), so it's at index 0.
+        let file_entity = &prog.modules[0].entities[0];
+        assert_eq!(file_entity.name, "File");
+        assert_eq!(file_entity.traits, vec!["Ownable", "Shareable"]);
         assert_eq!(file_entity.fields.len(), 1);
     }
 

@@ -4,6 +4,9 @@
   "scopeName": "source.karu",
   "patterns": [
     {
+      "include": "#comments"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -49,16 +52,6 @@
       ]
     },
     {
-      "begin": "\\[",
-      "end": "\\]",
-      "name": "meta.block.bracket.karu",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
-    },
-    {
       "begin": "\\{",
       "end": "\\}",
       "name": "meta.block.brace.karu",
@@ -67,19 +60,17 @@
           "include": "$self"
         }
       ]
-    },
-    {
-      "begin": "\\[",
-      "end": "\\]",
-      "name": "meta.block.bracket.karu",
-      "patterns": [
-        {
-          "include": "$self"
-        }
-      ]
     }
   ],
   "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.karu"
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {
