@@ -171,6 +171,29 @@ mod cedar_api {
     }
 
     impl std::error::Error for CompileCedarError {}
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_compile_cedar_error_display() {
+            let import_err = CompileCedarError::Import("invalid syntax".to_string());
+            assert_eq!(
+                format!("{}", import_err),
+                "Cedar import error: invalid syntax"
+            );
+
+            let compile_err = CompileCedarError::Compile("type error".to_string());
+            assert_eq!(format!("{}", compile_err), "Compile error: type error");
+        }
+
+        #[test]
+        fn test_compile_cedar_import_error() {
+            let result = compile_cedar("not a cedar policy");
+            assert!(matches!(result, Err(CompileCedarError::Import(_))));
+        }
+    }
 }
 
 #[cfg(feature = "cedar")]
