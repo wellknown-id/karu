@@ -1260,12 +1260,14 @@ impl Parser {
 
     /// Parse a JSON-like value inside a test entity block.
     fn parse_test_value(&mut self) -> Result<serde_json::Value, ParseError> {
-        match self.current_token().clone() {
+        match self.current_token() {
             Token::String(s) => {
+                let s = s.clone();
                 self.advance();
                 Ok(serde_json::Value::String(s))
             }
             Token::Number(n) => {
+                let n = *n;
                 self.advance();
                 Ok(serde_json::json!(n))
             }
