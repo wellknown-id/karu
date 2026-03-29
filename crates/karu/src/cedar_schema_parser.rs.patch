@@ -1,0 +1,40 @@
+--- crates/karu/src/cedar_schema_parser.rs
++++ crates/karu/src/cedar_schema_parser.rs
+@@ -412,14 +412,12 @@
+     }
+
+     fn consume_ident(&mut self) -> Result<String, CedarSchemaError> {
+-        let (is_match, name) = match self.peek() {
+-            Token::Ident(s) => (true, Some(s.clone())),
+-            _ => (false, None),
+-        };
+-        if is_match {
++        let peeked = self.peek();
++        if let Token::Ident(s) = peeked {
++            let name = s.clone();
+             self.advance();
+-            Ok(name.unwrap())
++            Ok(name)
+         } else {
+             Err(self.err(format!("expected identifier, got {:?}", self.peek())))
+         }
+     }
+@@ -428,15 +426,12 @@
+
+     fn consume_name(&mut self) -> Result<String, CedarSchemaError> {
+         // A Name is either an IDENT or a STR.
+-        let (is_match, name) = match self.peek() {
+-            Token::Ident(s) | Token::Str(s) => (true, Some(s.clone())),
+-            _ => (false, None),
+-        };
+-        if is_match {
++        let peeked = self.peek();
++        if let Token::Ident(s) | Token::Str(s) = peeked {
++            let name = s.clone();
+             self.advance();
+-            Ok(name.unwrap())
++            Ok(name)
+         } else {
+             Err(self.err(format!(
+                 "expected name (ident or string), got {:?}",
+                 self.peek()
