@@ -1,5 +1,9 @@
 # Karu
 
+<p align="center">
+  <img src="assets/karu-hero-1280px-640px.png" alt="Karu - Structural Pattern Matching for JSON" width="640" />
+</p>
+
 Karu is an embeddable policy engine focusing on structural pattern matching over arbitrary JSON data. It is the spiritual successor to the ideas found in logic-based policy languages, designed to solve complex hierarchical data validation that strict-schema engines cannot handle.
 
 ## Core Philosophy
