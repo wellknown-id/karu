@@ -151,10 +151,28 @@ impl Path {
         bindings: &HashMap<String, &Value>,
     ) -> Option<&'a Value> {
         let mut current = value;
+        let mut used_binding = false;
 
-        for segment in &self.segments {
+        for (i, segment) in self.segments.iter().enumerate() {
             current = match segment {
-                PathSegment::Field(name) => current.get(name)?,
+                PathSegment::Field(name) => {
+                    // If this is the first segment and the name matches a binding variable,
+                    // use the bound value instead of field lookup. This handles paths like
+                    // `item.approved` inside `forall item in resource.items: item.approved == true`.
+                    if i == 0 && !used_binding {
+                        if let Some(&bound) = bindings.get(name) {
+                            used_binding = true;
+                            // SAFETY: The binding value comes from iterating over input data,
+                            // which has the same lifetime as `value`. We transmute to satisfy
+                            // the borrow checker since both share the 'a lifetime in practice.
+                            unsafe { std::mem::transmute::<&Value, &'a Value>(bound) }
+                        } else {
+                            current.get(name)?
+                        }
+                    } else {
+                        current.get(name)?
+                    }
+                }
                 PathSegment::Index(idx) => current.get(idx)?,
                 PathSegment::Variable(var_name) => {
                     // Check for @path: prefix indicating a path expression
