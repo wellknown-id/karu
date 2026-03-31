@@ -20,6 +20,8 @@ It came to be because a coming soon wellknown.id project needed an expressive po
 
 > Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](docs/BENCHMARKS.md)
 
+**[Try it in the browser →](https://wellknown-id.github.io/karu/)**
+
 ## Core Philosophy
 
 - **Structure over Schema**: We do not enforce a schema on input data. We enforce patterns on the data we find.
