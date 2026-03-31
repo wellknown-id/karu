@@ -42,14 +42,14 @@ Source (.karu)
 
 Patterns use **structural subtyping** — a pattern matches any JSON value that contains at least the specified fields:
 
-| Pattern | Matches | Doesn't Match |
-| --- | --- | --- |
-| `"alice"` | `"alice"` | `"bob"` |
-| `42` | `42` | `43` |
-| `true` | `true` | `false` |
-| `_` | anything | — |
+| Pattern    | Matches                      | Doesn't Match    |
+| ---------- | ---------------------------- | ---------------- |
+| `"alice"`  | `"alice"`                    | `"bob"`          |
+| `42`       | `42`                         | `43`             |
+| `true`     | `true`                       | `false`          |
+| `_`        | anything                     | —                |
 | `{ a: 1 }` | `{ a: 1 }`, `{ a: 1, b: 2 }` | `{ a: 2 }`, `{}` |
-| `[1, 2]` | `[1, 2]`, `[1, 2, 3]` | `[2, 1]` |
+| `[1, 2]`   | `[1, 2]`, `[1, 2, 3]`        | `[2, 1]`         |
 
 ### Variable Bindings
 
