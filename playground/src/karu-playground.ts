@@ -145,57 +145,42 @@ export class KaruPlayground extends LitElement {
       background: rgba(255,255,255,0.08);
     }
 
-    /* ── Right pane tabs ────────────────────────── */
+    /* ── Right pane ─────────────────────────────── */
     .right-pane {
       display: flex;
       flex-direction: column;
     }
-    .tab-bar {
+    .input-area {
+      flex: 1;
+      min-height: 0;
       display: flex;
-      gap: 0;
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      flex-direction: column;
     }
-    .tab {
-      padding: 8px 16px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-      user-select: none;
-    }
-    .tab:hover { color: var(--text-secondary); }
-    .tab.active {
-      color: var(--accent-light);
-      border-bottom-color: var(--accent);
-    }
-    .tab-content {
+    .input-area .pane-body {
       flex: 1;
       min-height: 0;
       overflow: hidden;
     }
 
-    /* ── Result panel ───────────────────────────── */
-    .result-panel {
-      height: 100%;
+    /* ── Result strip ──────────────────────────── */
+    .result-strip {
+      flex-shrink: 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 24px;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      min-height: 44px;
+      transition: background 0.2s;
     }
+    .result-strip.has-result { background: var(--bg-raised); }
     .result-badge {
-      font-size: 36px;
+      font-size: 14px;
       font-weight: 800;
-      letter-spacing: 0.04em;
-      padding: 16px 48px;
-      border-radius: 12px;
+      letter-spacing: 0.06em;
+      padding: 4px 14px;
+      border-radius: 6px;
       animation: result-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     @keyframes result-pop {
@@ -203,47 +188,30 @@ export class KaruPlayground extends LitElement {
       100% { transform: scale(1); opacity: 1; }
     }
     .result-badge.allow {
-      background: rgba(52, 211, 153, 0.12);
+      background: rgba(52, 211, 153, 0.15);
       color: #34d399;
-      box-shadow: 0 0 40px rgba(52, 211, 153, 0.15);
     }
     .result-badge.deny {
-      background: rgba(248, 113, 113, 0.12);
+      background: rgba(248, 113, 113, 0.15);
       color: #f87171;
-      box-shadow: 0 0 40px rgba(248, 113, 113, 0.15);
     }
     .matched-rules {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-secondary);
     }
     .matched-rules strong { color: var(--text-primary); }
     .result-empty {
       color: var(--text-tertiary);
-      font-size: 14px;
-      text-align: center;
-    }
-    .result-empty kbd {
-      display: inline-block;
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-family: inherit;
       font-size: 12px;
     }
-
-    /* ── Error display ──────────────────────────── */
-    .error-panel {
-      padding: 16px;
-      background: rgba(248, 113, 113, 0.06);
-      border-left: 3px solid #f87171;
+    .result-error {
       color: #f87171;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      font-size: 12px;
       white-space: pre-wrap;
       word-break: break-word;
       overflow: auto;
-      height: 100%;
+      max-height: 80px;
     }
 
     /* ── Engine status ──────────────────────────── */
@@ -268,7 +236,6 @@ export class KaruPlayground extends LitElement {
   @state() private result: EvalResult | null = null;
   @state() private engineReady = false;
   @state() private engineError: string | null = null;
-  @state() private rightTab: 'input' | 'result' = 'input';
   @state() private selectedExample = 0;
 
   async connectedCallback() {
@@ -280,7 +247,6 @@ export class KaruPlayground extends LitElement {
 
   private handleRun() {
     this.result = evaluate(this.policy, this.input);
-    this.rightTab = 'result';
   }
 
   private handlePolicyChange(e: CustomEvent<{ value: string }>) {
@@ -297,7 +263,6 @@ export class KaruPlayground extends LitElement {
     this.policy = examples[idx].policy;
     this.input = examples[idx].input;
     this.result = null;
-    this.rightTab = 'input';
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -307,29 +272,21 @@ export class KaruPlayground extends LitElement {
     }
   }
 
-  private renderResult() {
+  private renderResultStrip() {
     if (!this.result) {
-      return html`
-        <div class="result-empty">
-          <p>Press <kbd>Run</kbd> or <kbd>Ctrl+Enter</kbd> to evaluate</p>
-        </div>
-      `;
+      return html`<span class="result-empty">Press <strong>Run</strong> or <strong>Ctrl+Enter</strong></span>`;
     }
     if (this.result.error) {
-      return html`<div class="error-panel">${this.result.error}</div>`;
+      return html`<span class="result-error">${this.result.error}</span>`;
     }
     const cls = this.result.decision.toLowerCase();
     return html`
-      <div class="result-panel">
-        <div class="result-badge ${cls}" key=${Date.now()}>
-          ${this.result.decision}
-        </div>
-        ${this.result.matchedRules.length > 0 ? html`
-          <div class="matched-rules">
-            <strong>Matched rules:</strong> ${this.result.matchedRules.join(', ')}
-          </div>
-        ` : nothing}
-      </div>
+      <span class="result-badge ${cls}" key=${Date.now()}>${this.result.decision}</span>
+      ${this.result.matchedRules.length > 0 ? html`
+        <span class="matched-rules">
+          <strong>Matched:</strong> ${this.result.matchedRules.join(', ')}
+        </span>
+      ` : nothing}
     `;
   }
 
@@ -363,28 +320,20 @@ export class KaruPlayground extends LitElement {
 
         <div class="divider"></div>
 
-        <!-- Right: Input + Result -->
+        <!-- Right: Input JSON + Result Strip -->
         <div class="pane right-pane">
-          <div class="tab-bar">
-            <div
-              class="tab ${this.rightTab === 'input' ? 'active' : ''}"
-              @click=${() => this.rightTab = 'input'}
-            >Input JSON</div>
-            <div
-              class="tab ${this.rightTab === 'result' ? 'active' : ''}"
-              @click=${() => this.rightTab = 'result'}
-            >Result ${this.result && !this.result.error ? html`<span style="color: ${this.result.decision === 'ALLOW' ? '#34d399' : '#f87171'}">●</span>` : nothing}</div>
+          <div class="input-area">
+            <div class="pane-header">Input JSON</div>
+            <div class="pane-body">
+              <karu-editor
+                language="json"
+                .value=${this.input}
+                @change=${this.handleInputChange}
+              ></karu-editor>
+            </div>
           </div>
-          <div class="tab-content">
-            ${this.rightTab === 'input'
-              ? html`
-                <karu-editor
-                  language="json"
-                  .value=${this.input}
-                  @change=${this.handleInputChange}
-                ></karu-editor>`
-              : this.renderResult()
-            }
+          <div class="result-strip ${this.result ? 'has-result' : ''}">
+            ${this.renderResultStrip()}
           </div>
         </div>
       </div>
