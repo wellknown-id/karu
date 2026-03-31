@@ -6,7 +6,7 @@ Karu supports importing from and interoperating with multiple policy formats. Fu
 
 | Format                             | File     | Module                               | Maturity      |
 | ---------------------------------- | -------- | ------------------------------------ | ------------- |
-| [Cedar](CEDAR-SUPPORT-TRACKING.md) | `.cedar` | `cedar_parser.rs`, `cedar_import.rs` | 🟢 Production |
+| [Cedar](../../docs/CEDAR-SUPPORT-TRACKING.md) | `.cedar` | `cedar_parser.rs`, `cedar_import.rs` | 🟢 Production |
 
 ## Maturity Levels
 

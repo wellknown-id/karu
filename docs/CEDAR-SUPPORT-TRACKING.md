@@ -26,13 +26,15 @@ The Cedar parser covers the complete Cedar grammar specification. All features b
 | `\|\|`                                     | `Or(...)`                                                        |
 | `!`                                        | `Not(...)`                                                       |
 | `==`, `!=`, `<`, `>`, `<=`, `>=`           | `Compare(path, op, pattern)`                                     |
-| `Entity::"id"` (entity refs)               | String literal `"id"`                                            |
+| `Entity::"id"` (entity refs)              | String literal `"id"`                                            |
 | `resource.field` (dot access)              | `PathAst` segments                                               |
 | `.contains(x)`                             | `In(x, collection)`                                              |
 | `.containsAll([set])`                      | `Compare(path, ContainsAll, [array])`                            |
 | `.containsAny([set])`                      | `Compare(path, ContainsAny, [array])`                            |
 | `has field`                                | `Has { path }` (true if non-null)                                |
 | `like "glob*"`                             | `Like { path, pattern }` (glob match)                            |
+| `is TypeName`                              | `Compare(expr.type, Eq, "TypeName")` — requires `type` field     |
+| `is TypeName in Entity`                    | Type check AND `In("id", expr.groups)` group membership          |
 | Set literals `[a, b]` in patterns          | `PatternAst::Array(...)`                                         |
 | Record literals `{k: v}` in patterns       | `PatternAst::Object(...)`                                        |
 | `@id("name")` annotation                   | Rule name                                                        |
@@ -52,21 +54,19 @@ The Cedar parser covers the complete Cedar grammar specification. All features b
 
 These features parse correctly but fail at import because Karu's AST/evaluator has no equivalent. Each produces a clear error message.
 
-| Feature                                    | Reason                        | Potential Fix                                     |
-| ------------------------------------------ | ----------------------------- | ------------------------------------------------- |
-| `is TypeName`                              | No entity type system in Karu | Add `IsType(path, type)` to `ExprAst` + evaluator |
-| Template slots (`?principal`, `?resource`) | No template instantiation     | Add template parameter system                     |
+| Feature                                   | Reason                    | Potential Fix              |
+| ----------------------------------------- | ------------------------- | -------------------------- |
+| Template slots (`?principal`, `?resource`) | No template instantiation | Add template parameter system |
 
 ## LSP Support
 
 - ✅ Syntax error diagnostics for `.cedar` files (via Cedar parser)
 - ✅ Karu import compatibility warnings
 - ✅ Document symbols (policy outline)
-- ❌ Semantic tokens / syntax highlighting (via TextMate grammar only, not LSP)
+- ✅ Semantic tokens for `.cedar` files (via `cedar_semantic_tokens`)
 - ❌ Hover information for Cedar keywords
 - ❌ Go-to-definition for Cedar entities
 - ❌ Completion for Cedar keywords
-- ❌ Convert to Karu feature that resaves a file as a .karu
 
 ## VS Code Extension
 
