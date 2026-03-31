@@ -18,7 +18,7 @@ It came to be because a coming soon wellknown.id project needed an expressive po
 | Complex (20 rules, native)   | **649 ns**        | 13,749 ns    | **21× faster**   |
 | Realistic authz (16 threads) | **10.6M ops/sec** | 270K ops/sec | **39× faster**   |
 
-> Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](crates/karu/BENCHMARKS.md)
+> Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](docs/BENCHMARKS.md)
 
 ## Core Philosophy
 
@@ -133,7 +133,7 @@ For architecture details, see [docs/INTERNALS.md](docs/INTERNALS.md).
 
 Karu supports full round-trip conversion with [Cedar](https://www.cedarpolicy.com/) policies and schemas. See [Known Cedar Limitations](docs/KNOWN-CEDAR-LIMITATIONS.md) for current gaps.
 
-Even when running Cedar policies through Karu's import pipeline, evaluation is **fast** - Karu's native engine evaluates at ~19 million ops/sec, roughly 10× faster than the Cedar-WASM runtime for equivalent policies. For detailed numbers, see [BENCHMARKS.md](crates/karu/BENCHMARKS.md).
+Even when running Cedar policies through Karu's import pipeline, evaluation is **fast** - Karu's native engine evaluates at ~19 million ops/sec, roughly 10× faster than the Cedar-WASM runtime for equivalent policies. For detailed numbers, see [BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Workspace Layout
 

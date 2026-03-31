@@ -1,7 +1,7 @@
 # Karu Language Specification
 
 Karu is a policy language for authorization. It compiles to a [fast, embeddable
-evaluator](../crates/karu/BENCHMARKS.md) that answers one question: **given a request, should we allow or deny?**
+evaluator](BENCHMARKS.md) that answers one question: **given a request, should we allow or deny?**
 
 Karu inherits ideas from [Cedar](https://www.cedarpolicy.com/) and
 [Polar](https://docs.osohq.com/), but aims for a syntax that is readable by
