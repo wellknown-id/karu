@@ -2,7 +2,7 @@
 
 ## How It Works
 
-Karu uses a recursive **Unification Engine** (simplified for matching).
+Karu uses a **recursive structural matcher**.
 
 1. **Traverse**: It walks the JSON tree to the target path (e.g. `resource.context.namedArguments`).
 2. **Iterate**: The `in` operator triggers an array iterator over the resolved value.
@@ -34,7 +34,7 @@ Source (.karu)
     │
     └─ Runtime ──→ Effect (Allow | Deny)
                     ├─ Recursive JSON traversal
-                    ├─ Structural unification
+                    ├─ Structural pattern matching
                     └─ Variable binding extraction
 ```
 
@@ -66,7 +66,7 @@ During each iteration, `item` is bound to the current array element, and `item.s
 ```
 Cedar Source (.cedar)             Cedar Schema (.cedarschema)
     │                                 │
-    ├─ cedar_parser ──→ CedarAST     ├─ cedar_schema_parser ──→ ModuleDef[]
+    ├─ cedar_parser ──→ CedarAST      ├─ cedar_schema_parser ──→ ModuleDef[]
     │                                 │
     └─ cedar_import ──→ Karu AST ←────┘
                            │

@@ -141,7 +141,7 @@ This repository is organized as a Cargo workspace:
 
 ### `crates/karu` - Core Engine
 
-The core library implementing the unification engine, parser, and pattern matching runtime.
+The core library implementing the structural matcher, parser, and pattern matching runtime.
 
 ### `crates/karu-cli` - CLI
 

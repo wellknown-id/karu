@@ -1,4 +1,4 @@
-//! The unification/matcher engine - the heart of Karu.
+//! The structural pattern matcher - the heart of Karu.
 //!
 //! This module determines if JSON data matches a Pattern using structural
 //! matching with duck typing semantics.
