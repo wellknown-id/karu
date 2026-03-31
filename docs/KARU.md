@@ -1,7 +1,7 @@
 # Karu Language Specification
 
 Karu is a policy language for authorization. It compiles to a [fast, embeddable
-evaluator](BENCHMARKS.md) that answers one question: **given a request, should we allow or deny?**
+evaluator](../crates/karu/BENCHMARKS.md) that answers one question: **given a request, should we allow or deny?**
 
 Karu inherits ideas from [Cedar](https://www.cedarpolicy.com/) and
 [Polar](https://docs.osohq.com/), but aims for a syntax that is readable by
@@ -592,7 +592,7 @@ Karu ships with a built-in formatter (`karu fmt`). Canonical style:
 
 The repository includes a collection of `.karu` files that exercise all
 language features, located at
-[`./tests/lsp_fixtures/`](tests/lsp_fixtures/). These serve as both
+[`tests/lsp_fixtures/`](../crates/karu/tests/lsp_fixtures/). These serve as both
 integration tests and living examples of the syntax:
 
 | File                      | Covers                                           |
@@ -603,7 +603,7 @@ integration tests and living examples of the syntax:
 | `schema_basic.karu`       | Schema mode with modules and entities            |
 | `schema_with_assert.karu` | Assertions and abstract types                    |
 | `schema_with_tests.karu`  | Schema + inline tests together                   |
-| `invalid_*.karu`          | Intentional syntax errors for diagnostic testing |
-| `formatting_messy.karu`   | Unformatted input for formatter testing          |
+| `err_*.karu`              | Intentional syntax errors for diagnostic testing |
+| `fmt_messy.karu`          | Unformatted input for formatter testing          |
 
 Run `cargo test --test lsp_snapshot_tests --features lsp` to verify them.
