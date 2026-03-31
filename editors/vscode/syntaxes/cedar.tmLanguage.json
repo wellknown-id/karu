@@ -4,9 +4,6 @@
   "scopeName": "source.cedar",
   "patterns": [
     {
-      "include": "#comments"
-    },
-    {
       "include": "#keywords"
     },
     {
@@ -20,6 +17,16 @@
     },
     {
       "include": "#identifiers"
+    },
+    {
+      "begin": "\\(",
+      "end": "\\)",
+      "name": "meta.block.paren.cedar",
+      "patterns": [
+        {
+          "include": "$self"
+        }
+      ]
     },
     {
       "begin": "\\(",
@@ -50,17 +57,19 @@
           "include": "$self"
         }
       ]
+    },
+    {
+      "begin": "\\(",
+      "end": "\\)",
+      "name": "meta.block.paren.cedar",
+      "patterns": [
+        {
+          "include": "$self"
+        }
+      ]
     }
   ],
   "repository": {
-    "comments": {
-      "patterns": [
-        {
-          "match": "//.*$",
-          "name": "comment.line.double-slash.cedar"
-        }
-      ]
-    },
     "keywords": {
       "patterns": [
         {
