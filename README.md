@@ -131,7 +131,7 @@ For architecture details, see [docs/INTERNALS.md](docs/INTERNALS.md).
 
 ## Cedar Interop
 
-Karu supports full round-trip conversion with [Cedar](https://www.cedarpolicy.com/) policies and schemas. See [Known Cedar Limitations](crates/karu/KNOWN-CEDAR-LIMITATIONS.md) for current gaps.
+Karu supports full round-trip conversion with [Cedar](https://www.cedarpolicy.com/) policies and schemas. See [Known Cedar Limitations](docs/KNOWN-CEDAR-LIMITATIONS.md) for current gaps.
 
 Even when running Cedar policies through Karu's import pipeline, evaluation is **fast** - Karu's native engine evaluates at ~19 million ops/sec, roughly 10× faster than the Cedar-WASM runtime for equivalent policies. For detailed numbers, see [BENCHMARKS.md](crates/karu/BENCHMARKS.md).
 
