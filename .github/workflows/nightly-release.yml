@@ -96,11 +96,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: crates/karu/editors/vscode/package-lock.json
+          cache-dependency-path: editors/vscode/package-lock.json
 
       - name: Install extension dependencies
         run: npm ci
-        working-directory: crates/karu/editors/vscode
+        working-directory: editors/vscode
 
       - name: Download bundled LSP binaries
         uses: actions/download-artifact@v4
@@ -110,13 +110,13 @@ jobs:
 
       - name: Stage self-contained binaries
         run: npm run build:vsix
-        working-directory: crates/karu/editors/vscode
+        working-directory: editors/vscode
         env:
           KARU_VSIX_ARTIFACT_DIR: /tmp/karu-vsix-artifacts
 
       - name: Package VSIX
         run: npx @vscode/vsce package --allow-star-activation --skip-license --out /tmp/karu-nightly.vsix
-        working-directory: crates/karu/editors/vscode
+        working-directory: editors/vscode
 
       - name: Upload VSIX release asset
         uses: actions/upload-artifact@v4

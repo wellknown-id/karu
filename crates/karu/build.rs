@@ -22,7 +22,7 @@ fn main() {
             .scope_name("karu")
             .build(&std::path::PathBuf::from("src/grammar.rs"))
         {
-            let out = std::path::PathBuf::from("editors/vscode/syntaxes/karu.tmLanguage.json");
+            let out = std::path::PathBuf::from("../../editors/vscode/syntaxes/karu.tmLanguage.json");
             std::fs::write(&out, serde_json::to_string_pretty(&json).unwrap()).unwrap();
         }
     }
@@ -35,7 +35,7 @@ fn main() {
             .scope_name("cedar")
             .build(&std::path::PathBuf::from("src/cedar_grammar.rs"))
         {
-            let out = std::path::PathBuf::from("editors/vscode/syntaxes/cedar.tmLanguage.json");
+            let out = std::path::PathBuf::from("../../editors/vscode/syntaxes/cedar.tmLanguage.json");
             std::fs::write(&out, serde_json::to_string_pretty(&json).unwrap()).unwrap();
         }
     }

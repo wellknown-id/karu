@@ -4,7 +4,7 @@
         {
             "type": "npm",
             "script": "install",
-            "path": "crates/karu/editors/vscode",
+            "path": "editors/vscode",
             "label": "npm: install - editors/vscode",
             "detail": "Install dependencies for the Karu VS Code extension"
         },

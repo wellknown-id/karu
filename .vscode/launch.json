@@ -8,10 +8,10 @@
             "request": "launch",
             "args": [
                 "${workspaceFolder}/karu.code-workspace",
-                "--extensionDevelopmentPath=${workspaceFolder}/crates/karu/editors/vscode"
+                "--extensionDevelopmentPath=${workspaceFolder}/editors/vscode"
             ],
             "outFiles": [
-                "${workspaceFolder}/crates/karu/editors/vscode/**/*.js"
+                "${workspaceFolder}/editors/vscode/**/*.js"
             ],
             "preLaunchTask": "Build Extension + LSP"
         }

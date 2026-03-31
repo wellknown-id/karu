@@ -30,7 +30,7 @@ IDE and editor support for the Karu policy language via the LSP protocol.
 
 ## VS Code Extension
 
-Language support for Karu policy files lives in [`crates/karu/editors/vscode/`](crates/karu/editors/vscode/).
+Language support for Karu policy files lives in [`editors/vscode/`](editors/vscode/).
 
 Features include syntax highlighting, diagnostics, hover, completion, document symbols, go-to-definition, and semantic tokens.
 
@@ -45,7 +45,7 @@ Open the workspace in VS Code and press **F5** to launch the Extension Developme
 cargo build --release --bin karu-lsp
 
 # 2. Install extension dependencies
-cd crates/karu/editors/vscode
+cd editors/vscode
 npm install
 
 # 3. Link extension to VS Code
