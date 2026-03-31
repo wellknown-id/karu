@@ -41,7 +41,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```rust
 //! use karu::cedar_import::from_cedar;
 //!
 //! let cedar = r#"

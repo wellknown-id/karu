@@ -133,7 +133,7 @@ mod cedar_api {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use karu::compile_cedar;
     /// use karu::rule::Effect;
     /// use serde_json::json;

@@ -15,10 +15,13 @@ use rust_sitter::Language;
 /// Returns the canonically formatted source, or an error if parsing fails.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```rust,no_run
+/// # #[cfg(feature = "dev")]
+/// # fn example() {
 /// let messy = r#"allow   view   if   principal  ==  "alice"  and action  == "view";"#;
 /// let formatted = karu::format::format_source(messy).unwrap();
 /// assert!(formatted.starts_with("allow view if"));
+/// # }
 /// ```
 pub fn format_source(source: &str) -> Result<String, String> {
     // Schema files: the formatter's comment/ordering logic doesn't yet handle

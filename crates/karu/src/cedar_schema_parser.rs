@@ -17,7 +17,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```rust
 //! use karu::cedar_schema_parser::parse_cedarschema;
 //!
 //! let schema = r#"
