@@ -151,4 +151,3 @@ assert_eq!(policy.evaluate(&input), Effect::Allow);
 ```
 
 For development setup and contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
-

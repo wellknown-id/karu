@@ -5,6 +5,7 @@ Relationship-Based Access Control (ReBAC) grants permissions based on relationsh
 ## Files & Folders Pattern
 
 **Polar equivalent:**
+
 ```polar
 resource File {
   relations = { folder: Folder };
@@ -17,7 +18,7 @@ resource File {
 
 ```json
 {
-  "principal": {"id": "alice", "folderRoles": {"folder-123": ["reader"]}},
+  "principal": { "id": "alice", "folderRoles": { "folder-123": ["reader"] } },
   "action": "read",
   "resource": {
     "type": "File",
@@ -39,7 +40,7 @@ Users who create a resource get special permissions:
 
 ```json
 {
-  "principal": {"id": "alice"},
+  "principal": { "id": "alice" },
   "resource": {
     "type": "Issue",
     "id": "537",
@@ -65,14 +66,14 @@ Permissions cascade through resource hierarchies:
 
 ```json
 {
-  "principal": {"id": "alice"},
+  "principal": { "id": "alice" },
   "resource": {
     "type": "Document",
     "id": "doc-1",
     "organizationId": "acme"
   },
   "context": {
-    "orgRoles": {"acme": ["member"]}
+    "orgRoles": { "acme": ["member"] }
   }
 }
 ```
@@ -95,7 +96,7 @@ Share resources with specific users:
 
 ```json
 {
-  "principal": {"id": "bob"},
+  "principal": { "id": "bob" },
   "resource": {
     "type": "Photo",
     "id": "vacation.jpg",

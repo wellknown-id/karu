@@ -73,15 +73,15 @@ Karu is the core authorization engine for the Kodus platform. It is utilized by 
 
 All project documentation lives in [`docs/`](docs/):
 
-| Document                                                          | Description                            |
-| ----------------------------------------------------------------- | -------------------------------------- |
-| [KARU.md](docs/KARU.md)                                          | Full language specification (EBNF)     |
-| [INTERNALS.md](docs/INTERNALS.md)                                | Engine architecture and WASM API       |
-| [BENCHMARKS.md](docs/BENCHMARKS.md)                              | Performance benchmarks vs Cedar        |
-| [ROADMAP.md](docs/ROADMAP.md)                                    | Development roadmap                    |
-| [CEDAR-COMPARISON.md](docs/CEDAR-COMPARISON.md)                  | Cedar-to-Karu translation guide        |
-| [CEDAR-SUPPORT-TRACKING.md](docs/CEDAR-SUPPORT-TRACKING.md)      | Cedar feature compatibility matrix     |
-| [KNOWN-CEDAR-LIMITATIONS.md](docs/KNOWN-CEDAR-LIMITATIONS.md)    | Current Cedar interop gaps             |
-| [MODELING-ABAC.md](docs/MODELING-ABAC.md)                        | Attribute-based access control guide   |
-| [MODELING-RBAC.md](docs/MODELING-RBAC.md)                        | Role-based access control guide        |
-| [MODELING-REBAC.md](docs/MODELING-REBAC.md)                      | Relationship-based access control guide |
+| Document                                                      | Description                             |
+| ------------------------------------------------------------- | --------------------------------------- |
+| [KARU.md](docs/KARU.md)                                       | Full language specification (EBNF)      |
+| [INTERNALS.md](docs/INTERNALS.md)                             | Engine architecture and WASM API        |
+| [BENCHMARKS.md](docs/BENCHMARKS.md)                           | Performance benchmarks vs Cedar         |
+| [ROADMAP.md](docs/ROADMAP.md)                                 | Development roadmap                     |
+| [CEDAR-COMPARISON.md](docs/CEDAR-COMPARISON.md)               | Cedar-to-Karu translation guide         |
+| [CEDAR-SUPPORT-TRACKING.md](docs/CEDAR-SUPPORT-TRACKING.md)   | Cedar feature compatibility matrix      |
+| [KNOWN-CEDAR-LIMITATIONS.md](docs/KNOWN-CEDAR-LIMITATIONS.md) | Current Cedar interop gaps              |
+| [MODELING-ABAC.md](docs/MODELING-ABAC.md)                     | Attribute-based access control guide    |
+| [MODELING-RBAC.md](docs/MODELING-RBAC.md)                     | Role-based access control guide         |
+| [MODELING-REBAC.md](docs/MODELING-REBAC.md)                   | Relationship-based access control guide |

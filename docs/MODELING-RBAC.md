@@ -5,6 +5,7 @@ Role-Based Access Control (RBAC) groups permissions into roles. Users are assign
 ## Basic Organization Roles
 
 **Polar equivalent:**
+
 ```polar
 resource Organization {
   roles = ["admin", "member"];
@@ -35,11 +36,12 @@ allow read if
 ```
 
 **Input data:**
+
 ```json
 {
-  "principal": {"id": "alice", "roles": ["admin"]},
+  "principal": { "id": "alice", "roles": ["admin"] },
   "action": "read",
-  "resource": {"type": "Organization", "id": "acme"}
+  "resource": { "type": "Organization", "id": "acme" }
 }
 ```
 
@@ -58,6 +60,7 @@ For complex hierarchies, pre-compute effective roles in your application:
 ```
 
 **Simplified policy:**
+
 ```karu
 allow read if "viewer" in principal.effectiveRoles;
 allow write if "member" in principal.effectiveRoles;
@@ -77,11 +80,12 @@ Users can have different roles on different resources:
       "repo:other": ["member"]
     }
   },
-  "resource": {"type": "Repository", "id": "anvil"}
+  "resource": { "type": "Repository", "id": "anvil" }
 }
 ```
 
 **Policy using path construction:**
+
 ```karu
 # Build the lookup key and check roles
 allow admin if
@@ -91,12 +95,13 @@ allow admin if
 This dynamically looks up the role list using `resource.id` as the key.
 
 **Alternative - flatten to resource:**
+
 ```json
 {
-  "principal": {"id": "alice"},
+  "principal": { "id": "alice" },
   "resource": {
     "id": "anvil",
-    "userRoles": {"alice": ["admin"]}
+    "userRoles": { "alice": ["admin"] }
   }
 }
 ```
@@ -110,8 +115,8 @@ allow admin if
 
 ```json
 {
-  "principal": {"id": "alice"},
-  "context": {"globalRoles": ["super_admin"]}
+  "principal": { "id": "alice" },
+  "context": { "globalRoles": ["super_admin"] }
 }
 ```
 

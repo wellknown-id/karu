@@ -6,7 +6,7 @@ Attribute-Based Access Control (ABAC) controls access based on resource attribut
 
 ```json
 {
-  "principal": {"id": "anonymous"},
+  "principal": { "id": "anonymous" },
   "action": "read",
   "resource": {
     "type": "Repository",
