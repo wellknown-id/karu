@@ -20,14 +20,14 @@ Karu supports full Cedar round-trip (`.cedar` ↔ `.karu` ↔ `.cedarschema`), b
 
 ## Policy Parser
 
-| Feature                          | Status  | Notes                                                                                                                                                                                                                  |
-| -------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`is` type narrowing**          | ✅ Done  | `principal is Admin in Group::"g1"` maps to `principal.type == "Admin" AND "g1" in principal.groups`. Requires entity data to carry a `type` field.                                                                    |
-| **`ip()` / `decimal()` methods** | ✅ Done  | `ip(path).isInRange(ip("cidr"))`, `.isIpv4()`, `.isIpv6()`, `.isLoopback()`, `.isMulticast()` and `decimal(path).lessThan(decimal("v"))` etc. are fully supported.                                                    |
-| **`@id("...")` annotations**     | ✅ Done  | Policy-level `@id("name")` annotations are used to name the imported rule. Other annotations (e.g. `@doc`) are silently dropped.                                                                                       |
-| **`has` / `like`**               | ✅ Done  | Attribute existence tests (`has`) and glob pattern matching (`like`) are fully supported.                                                                                                                               |
-| **`datetime()` / `duration()`**  | Low     | These extension functions are parsed but method calls on them are not yet converted.                                                                                                                                    |
-| **Template slots**               | Low     | `?principal` / `?resource` template slots are not supported.                                                                                                                                                           |
+| Feature                          | Status  | Notes                                                                                                                                                              |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`is` type narrowing**          | ✅ Done | `principal is Admin in Group::"g1"` maps to `principal.type == "Admin" AND "g1" in principal.groups`. Requires entity data to carry a `type` field.                |
+| **`ip()` / `decimal()` methods** | ✅ Done | `ip(path).isInRange(ip("cidr"))`, `.isIpv4()`, `.isIpv6()`, `.isLoopback()`, `.isMulticast()` and `decimal(path).lessThan(decimal("v"))` etc. are fully supported. |
+| **`@id("...")` annotations**     | ✅ Done | Policy-level `@id("name")` annotations are used to name the imported rule. Other annotations (e.g. `@doc`) are silently dropped.                                   |
+| **`has` / `like`**               | ✅ Done | Attribute existence tests (`has`) and glob pattern matching (`like`) are fully supported.                                                                          |
+| **`datetime()` / `duration()`**  | Low     | These extension functions are parsed but method calls on them are not yet converted.                                                                               |
+| **Template slots**               | Low     | `?principal` / `?resource` template slots are not supported.                                                                                                       |
 
 ## Round-Trip Fidelity
 
