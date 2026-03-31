@@ -6,9 +6,12 @@ export interface Example {
   name: string;
   policy: string;
   input: string;
+  /** Language: 'karu' (default) or 'cedar' */
+  language?: 'karu' | 'cedar';
 }
 
 export const examples: Example[] = [
+  // ── Karu Examples ─────────────────────────────────
   {
     name: 'Simple RBAC',
     policy: `// Role-based access control
@@ -104,6 +107,63 @@ deny private if
       principal: { id: 'charlie', authenticated: true },
       action: 'view',
       resource: { id: 'secret-doc', private: true, ownerId: 'alice' },
+    }, null, 2),
+  },
+
+  // ── Cedar Examples ────────────────────────────────
+  {
+    name: '🌲 Cedar: Basic Permit',
+    language: 'cedar',
+    policy: `permit(
+  principal == User::"alice",
+  action == Action::"view",
+  resource == Photo::"vacation.jpg"
+);`,
+    input: JSON.stringify({
+      principal: 'alice',
+      action: 'view',
+      resource: 'vacation.jpg',
+    }, null, 2),
+  },
+  {
+    name: '🌲 Cedar: ABAC',
+    language: 'cedar',
+    policy: `permit(
+  principal,
+  action == Action::"view",
+  resource
+)
+when {
+  principal.department == "Engineering" &&
+  principal.clearance >= 3
+};`,
+    input: JSON.stringify({
+      principal: { id: 'bob', department: 'Engineering', clearance: 4 },
+      action: 'view',
+      resource: { type: 'Document', id: 'secret-plans' },
+    }, null, 2),
+  },
+  {
+    name: '🌲 Cedar: Forbid',
+    language: 'cedar',
+    policy: `permit(
+  principal,
+  action,
+  resource
+)
+when { principal.authenticated == true };
+
+forbid(
+  principal,
+  action,
+  resource
+)
+when { resource.private == true }
+unless { principal == resource.owner };`,
+    input: JSON.stringify({
+      principal: { id: 'eve', authenticated: true },
+      action: 'read',
+      resource: { id: 'secret', private: true, owner: 'alice' },
     }, null, 2),
   },
 ];

@@ -5,8 +5,10 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import './karu-editor';
-import { initEngine, isReady, getLoadError, evaluate, type EvalResult } from './karu-engine';
+import { initEngine, isReady, getLoadError, evaluate, evaluateCedar, type EvalResult } from './karu-engine';
 import { examples } from './examples';
+
+const REPO_URL = 'https://github.com/wellknown-id/karu';
 
 @customElement('karu-playground')
 export class KaruPlayground extends LitElement {
@@ -32,6 +34,18 @@ export class KaruPlayground extends LitElement {
       flex-shrink: 0;
       z-index: 10;
     }
+    .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .logo-link:hover { opacity: 0.85; }
+    .logo-link img {
+      width: 24px;
+      height: 24px;
+    }
     .logo {
       font-weight: 700;
       font-size: 18px;
@@ -47,7 +61,7 @@ export class KaruPlayground extends LitElement {
       -webkit-text-fill-color: var(--text-secondary);
     }
     .spacer { flex: 1; }
-    
+
     select {
       background: var(--bg-raised);
       color: var(--text-primary);
@@ -213,6 +227,16 @@ export class KaruPlayground extends LitElement {
       overflow: auto;
       max-height: 80px;
     }
+    .lang-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+    }
 
     /* ── Engine status ──────────────────────────── */
     .status {
@@ -229,6 +253,23 @@ export class KaruPlayground extends LitElement {
     }
     .status-dot.ready { background: #34d399; }
     .status-dot.error { background: #f87171; }
+
+    /* ── Footer ─────────────────────────────────── */
+    footer {
+      flex-shrink: 0;
+      padding: 6px 16px;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    footer a:hover { color: var(--accent-light); text-decoration: underline; }
   `;
 
   @state() private policy = examples[0].policy;
@@ -238,6 +279,10 @@ export class KaruPlayground extends LitElement {
   @state() private engineError: string | null = null;
   @state() private selectedExample = 0;
 
+  private get currentLanguage(): 'karu' | 'cedar' {
+    return examples[this.selectedExample]?.language || 'karu';
+  }
+
   async connectedCallback() {
     super.connectedCallback();
     await initEngine();
@@ -246,7 +291,11 @@ export class KaruPlayground extends LitElement {
   }
 
   private handleRun() {
-    this.result = evaluate(this.policy, this.input);
+    if (this.currentLanguage === 'cedar') {
+      this.result = evaluateCedar(this.policy, this.input);
+    } else {
+      this.result = evaluate(this.policy, this.input);
+    }
   }
 
   private handlePolicyChange(e: CustomEvent<{ value: string }>) {
@@ -291,9 +340,13 @@ export class KaruPlayground extends LitElement {
   }
 
   render() {
+    const lang = this.currentLanguage;
     return html`
       <header @keydown=${this.handleKeyDown}>
-        <div class="logo">karu <span>playground</span></div>
+        <a class="logo-link" href=${REPO_URL} target="_blank" rel="noopener" title="View on GitHub">
+          <img src="/karu-icon.svg" alt="Karu" />
+          <div class="logo">karu <span>playground</span></div>
+        </a>
         <div class="spacer"></div>
         <select @change=${this.handleExampleChange} .value=${String(this.selectedExample)}>
           ${examples.map((ex, i) => html`<option value=${i}>${ex.name}</option>`)}
@@ -308,7 +361,10 @@ export class KaruPlayground extends LitElement {
       <div class="panes" @keydown=${this.handleKeyDown}>
         <!-- Left: Policy Editor -->
         <div class="pane">
-          <div class="pane-header">Policy</div>
+          <div class="pane-header">
+            Policy
+            <span class="lang-badge">${lang}</span>
+          </div>
           <div class="pane-body">
             <karu-editor
               language="karu"
@@ -337,6 +393,12 @@ export class KaruPlayground extends LitElement {
           </div>
         </div>
       </div>
+
+      <footer>
+        © ${new Date().getFullYear()} <a href="https://wellknown.id" target="_blank" rel="noopener">wellknown.id</a> ltd.
+        wellknown.id is a registered trademark. All rights reserved.
+        · <a href=${REPO_URL} target="_blank" rel="noopener">GitHub</a>
+      </footer>
     `;
   }
 }

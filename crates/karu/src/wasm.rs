@@ -127,6 +127,44 @@ pub fn karu_simulate_js(policy: &str, input: &str) -> JsValue {
     }
 }
 
+/// Evaluate a Cedar policy against JSON input (browser-friendly API).
+/// Imports the Cedar policy to Karu, compiles, and simulates.
+/// Returns { decision, matched_rules } or { error: string }
+#[cfg(all(feature = "wasm", feature = "cedar"))]
+#[wasm_bindgen]
+pub fn karu_eval_cedar_js(cedar_policy: &str, input: &str) -> JsValue {
+    match crate::compile_cedar(cedar_policy) {
+        Ok(compiled) => match serde_json::from_str::<serde_json::Value>(input) {
+            Ok(json) => {
+                let simulator = crate::simulate::Simulator::new(compiled);
+                let result = simulator.simulate(&json);
+
+                let obj = js_sys::Object::new();
+                let decision = match result.decision {
+                    Effect::Allow => "ALLOW",
+                    Effect::Deny => "DENY",
+                };
+                js_sys::Reflect::set(
+                    &obj,
+                    &JsValue::from_str("decision"),
+                    &JsValue::from_str(decision),
+                )
+                .unwrap();
+
+                let rules = js_sys::Array::new();
+                for name in &result.matched_rules {
+                    rules.push(&JsValue::from_str(name));
+                }
+                js_sys::Reflect::set(&obj, &JsValue::from_str("matched_rules"), &rules).unwrap();
+
+                obj.into()
+            }
+            Err(e) => js_object_with_str("error", &format!("Invalid JSON: {}", e)),
+        },
+        Err(e) => js_object_with_str("error", &format!("Cedar import error: {}", e)),
+    }
+}
+
 /// Compare two policies and return diff (browser-friendly API).
 /// Returns { added, removed, modified, summary } or { error: string }
 #[cfg(feature = "wasm")]

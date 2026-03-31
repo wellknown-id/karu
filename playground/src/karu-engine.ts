@@ -11,6 +11,11 @@ interface KaruWasm {
     matched_rules?: string[];
     error?: string;
   };
+  karu_eval_cedar_js?(cedar_policy: string, input: string): {
+    decision?: string;
+    matched_rules?: string[];
+    error?: string;
+  };
 }
 
 let wasmModule: KaruWasm | null = null;
@@ -28,7 +33,7 @@ async function loadWasm(): Promise<void> {
 
     wasmModule = initModule as unknown as KaruWasm;
   } catch (e) {
-    loadError = `WASM not available. Build with:\nwasm-pack build crates/karu --target web --no-default-features --features wasm --out-dir ../../playground/public/wasm`;
+    loadError = `WASM not available. Build with:\nwasm-pack build crates/karu --target web --no-default-features --features wasm,cedar --out-dir ../../playground/public/wasm`;
     console.warn('Karu WASM load failed:', e);
   }
 }
@@ -83,6 +88,27 @@ export function evaluate(policy: string, input: string): EvalResult {
     } catch (e) {
       return { decision: 'DENY', matchedRules: [], error: String(e) };
     }
+  }
+}
+
+export function evaluateCedar(cedarPolicy: string, input: string): EvalResult {
+  if (!wasmModule) {
+    return { decision: 'DENY', matchedRules: [], error: loadError || 'Engine not loaded' };
+  }
+  if (!wasmModule.karu_eval_cedar_js) {
+    return { decision: 'DENY', matchedRules: [], error: 'Cedar support not available in this WASM build' };
+  }
+  try {
+    const sim = wasmModule.karu_eval_cedar_js(cedarPolicy, input);
+    if (sim.error) {
+      return { decision: 'DENY', matchedRules: [], error: sim.error };
+    }
+    return {
+      decision: (sim.decision as 'ALLOW' | 'DENY') || 'DENY',
+      matchedRules: sim.matched_rules || [],
+    };
+  } catch (e) {
+    return { decision: 'DENY', matchedRules: [], error: String(e) };
   }
 }
 
