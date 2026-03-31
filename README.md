@@ -27,27 +27,97 @@ It came to be because a coming soon wellknown.id project needed an expressive po
 - **Partial Matching**: A pattern `{a: 1}` matches `{a: 1, b: 2}`.
 - **Optionally Strict**: When you need Cedar-level rigor, flip a switch. Karu can enforce strict schemas, exhaustive matching, and static analysis - but only when you ask for it. RFCs shouldn't block good ideas.
 
-## Syntax Draft
+## Karu Language
 
-Karu uses a simple rule syntax where the `if` body supports deep pattern matching and the `in` operator.
+### Rules
+
+Rules are `allow` or `deny`, with an optional `if` body:
 
 ```polar
-# The Rule
+allow public_access;
+
+allow view if
+    principal.role == "viewer" and
+    action == "read";
+
+deny delete if
+    action == "delete" and
+    not principal.role == "admin";
+```
+
+### Conditions & Operators
+
+| Operator | Example | Description |
+| --- | --- | --- |
+| `==` `!=` | `action == "read"` | Equality / inequality |
+| `<` `<=` `>` `>=` | `principal.age >= 18` | Numeric comparison |
+| `and` `or` `not` | `a == 1 and not b == 2` | Logical combinators |
+| `in` | `"editor" in user.roles` | Collection search |
+| `is` | `actor is User` | Type guard (schema mode) |
+| `has` | `resource has owner` | Field existence check |
+
+### Pattern Matching
+
+The `in` operator searches arrays with structural patterns — extra fields are ignored:
+
+```polar
 allow access if
-    action == "call" and
-    # The Pattern Match
     { name: "lhs", value: 10 } in resource.context.namedArguments;
 ```
 
-## How it works (Internals)
+Patterns can be literals (`"alice"`, `42`, `true`, `null`), wildcards (`_`), objects (`{ key: value }`), or arrays (`[1, 2]`).
 
-Karu uses a recursive **Unification Engine** (simplified for matching).
+### Quantifiers
 
-1. **Traverse**: It walks the JSON tree to `resource.context.namedArguments`.
-2. **Iterate**: The `in` operator triggers an array iterator.
-3. **Unify**: For every item, it checks if the item is a superset of the pattern `{ name: "lhs", value: 10 }`.
-   - _Item 1_: `{name: "junk"}` -> Fail (name != lhs)
-   - _Item 2_: `{name: "lhs", value: 10, type: "int"}` -> Success (contains name:lhs and value:10. Extra fields ignored.)
+```polar
+# Every item must match
+allow bulk_read if
+    forall item in resource.items: item.public == true;
+
+# At least one item must match
+allow has_permission if
+    exists perm in user.permissions: perm.action == "write";
+```
+
+### Schema Mode
+
+Opt into strict typing with `use schema;` and `mod` blocks:
+
+```polar
+use schema;
+
+mod MyApp {
+    actor User { name String, role String };
+    resource Document in Folder { owner User, title String };
+    action "Delete" appliesTo { actor User, resource Document };
+};
+
+assert is_owner<User, action, Document> if actor.name == resource.owner.name;
+
+allow delete if MyApp:Delete and resource is Document and is_owner;
+```
+
+### Inline Tests
+
+Policies can declare tests alongside rules:
+
+```polar
+test "alice can view" {
+    principal { id: "alice" }
+    action { id: "view" }
+    expect allow
+}
+```
+
+### Multi-File Projects
+
+```polar
+import "shared/roles.karu";
+import "rules.karu";
+```
+
+For architecture details, see [docs/INTERNALS.md](docs/INTERNALS.md).
+
 
 ## Comparison
 
