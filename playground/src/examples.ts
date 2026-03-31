@@ -112,7 +112,7 @@ deny private if
 
   // ── Cedar Examples ────────────────────────────────
   {
-    name: '🌲 Cedar: Basic Permit',
+    name: 'Cedar: Basic Permit',
     language: 'cedar',
     policy: `permit(
   principal == User::"alice",
@@ -126,7 +126,7 @@ deny private if
     }, null, 2),
   },
   {
-    name: '🌲 Cedar: ABAC',
+    name: 'Cedar: ABAC',
     language: 'cedar',
     policy: `permit(
   principal,
@@ -144,7 +144,7 @@ when {
     }, null, 2),
   },
   {
-    name: '🌲 Cedar: Forbid',
+    name: 'Cedar: Forbid',
     language: 'cedar',
     policy: `permit(
   principal,
