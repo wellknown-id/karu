@@ -184,5 +184,5 @@ The `exists` quantifier iterates through each ancestor and checks if the user ha
 
 ## See Also
 
-- [Modeling RBAC](modeling-rbac.md) - Role-based patterns
-- [Modeling ABAC](modeling-abac.md) - Attribute-based patterns
+- [Modeling RBAC](MODELING-RBAC.md) - Role-based patterns
+- [Modeling ABAC](MODELING-ABAC.md) - Attribute-based patterns

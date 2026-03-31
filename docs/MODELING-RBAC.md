@@ -158,6 +158,6 @@ allow repo_delete if
 
 ## See Also
 
-- [Modeling ReBAC](modeling-rebac.md) - Relationship-based patterns
-- [Modeling ABAC](modeling-abac.md) - Attribute-based patterns
-- [Cedar Comparison](cedar-comparison.md) - Migration from Cedar
+- [Modeling ReBAC](MODELING-REBAC.md) - Relationship-based patterns
+- [Modeling ABAC](MODELING-ABAC.md) - Attribute-based patterns
+- [Cedar Comparison](CEDAR-COMPARISON.md) - Migration from Cedar

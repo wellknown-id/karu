@@ -211,5 +211,5 @@ deny beta_api if
 
 ## See Also
 
-- [Modeling RBAC](modeling-rbac.md) - Role-based patterns
-- [Modeling ReBAC](modeling-rebac.md) - Relationship-based patterns
+- [Modeling RBAC](MODELING-RBAC.md) - Role-based patterns
+- [Modeling ReBAC](MODELING-REBAC.md) - Relationship-based patterns
