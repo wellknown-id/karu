@@ -13,7 +13,7 @@ This document outlines the development trajectory for Karu, from the current fou
 | Component           | Description                                                                    |
 | ------------------- | ------------------------------------------------------------------------------ |
 | **Parser & Lexer**  | Full Polar-inspired syntax with `allow`/`deny`, `if`, `and`, `or`, `not`, `in` |
-| **Pattern Matcher** | Structural matching, partial object matching, array search                      |
+| **Pattern Matcher** | Structural matching, partial object matching, array search                     |
 | **Rule Engine**     | Policy evaluation with deny-overrides semantics                                |
 | **CLI**             | `eval`, `transpile`, `check`, `import` commands                                |
 | **Cedar Interop**   | Bidirectional transpilation (Karu ↔ Cedar)                                     |
