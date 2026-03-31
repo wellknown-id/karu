@@ -983,7 +983,7 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 [[package]]
 name = "rust-sitter"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#de85387ef661c4ab886f5f008cb49bcd055cff3d"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#2ff214ba585676a8f7bcd32faf03c3968e6650af"
 dependencies = [
  "log",
  "rust-sitter-macro",
@@ -996,7 +996,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-common"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#de85387ef661c4ab886f5f008cb49bcd055cff3d"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#2ff214ba585676a8f7bcd32faf03c3968e6650af"
 dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
@@ -1009,7 +1009,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-macro"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#de85387ef661c4ab886f5f008cb49bcd055cff3d"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#2ff214ba585676a8f7bcd32faf03c3968e6650af"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1021,7 +1021,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-tool"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#de85387ef661c4ab886f5f008cb49bcd055cff3d"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#2ff214ba585676a8f7bcd32faf03c3968e6650af"
 dependencies = [
  "cc",
  "rust-sitter-common",
@@ -1038,7 +1038,7 @@ dependencies = [
 [[package]]
 name = "rust-sitter-types"
 version = "0.5.0"
-source = "git+https://github.com/benbenbenbenbenben/krust-sitter#de85387ef661c4ab886f5f008cb49bcd055cff3d"
+source = "git+https://github.com/benbenbenbenbenben/krust-sitter#2ff214ba585676a8f7bcd32faf03c3968e6650af"
 dependencies = [
  "indexmap",
  "serde",
