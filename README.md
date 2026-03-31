@@ -10,13 +10,13 @@ It came to be because a coming soon wellknown.id project needed an expressive po
 
 ## How Fast?
 
-| Benchmark | Karu | Cedar | |
-| --- | --- | --- | --- |
-| WASM bundle size | **319 KB** | 1.8 MB | **5.6× smaller** |
-| Native eval (1 rule) | **16 ns** | 1,162 ns | **71× faster** |
-| WASM eval (precompiled) | **459 ns** | 94,054 ns | **205× faster** |
-| Complex (20 rules, native) | **649 ns** | 13,749 ns | **21× faster** |
-| Realistic authz (16 threads) | **10.6M ops/sec** | 270K ops/sec | **39× faster** |
+| Benchmark                    | Karu              | Cedar        |                  |
+| ---------------------------- | ----------------- | ------------ | ---------------- |
+| WASM bundle size             | **319 KB**        | 1.8 MB       | **5.6× smaller** |
+| Native eval (1 rule)         | **16 ns**         | 1,162 ns     | **71× faster**   |
+| WASM eval (precompiled)      | **459 ns**        | 94,054 ns    | **205× faster**  |
+| Complex (20 rules, native)   | **649 ns**        | 13,749 ns    | **21× faster**   |
+| Realistic authz (16 threads) | **10.6M ops/sec** | 270K ops/sec | **39× faster**   |
 
 > Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](crates/karu/BENCHMARKS.md)
 
@@ -47,14 +47,14 @@ deny delete if
 
 ### Conditions & Operators
 
-| Operator | Example | Description |
-| --- | --- | --- |
-| `==` `!=` | `action == "read"` | Equality / inequality |
-| `<` `<=` `>` `>=` | `principal.age >= 18` | Numeric comparison |
-| `and` `or` `not` | `a == 1 and not b == 2` | Logical combinators |
-| `in` | `"editor" in user.roles` | Collection search |
-| `is` | `actor is User` | Type guard (schema mode) |
-| `has` | `resource has owner` | Field existence check |
+| Operator          | Example                  | Description              |
+| ----------------- | ------------------------ | ------------------------ |
+| `==` `!=`         | `action == "read"`       | Equality / inequality    |
+| `<` `<=` `>` `>=` | `principal.age >= 18`    | Numeric comparison       |
+| `and` `or` `not`  | `a == 1 and not b == 2`  | Logical combinators      |
+| `in`              | `"editor" in user.roles` | Collection search        |
+| `is`              | `actor is User`          | Type guard (schema mode) |
+| `has`             | `resource has owner`     | Field existence check    |
 
 ### Pattern Matching
 
@@ -117,7 +117,6 @@ import "rules.karu";
 ```
 
 For architecture details, see [docs/INTERNALS.md](docs/INTERNALS.md).
-
 
 ## Comparison
 
