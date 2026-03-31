@@ -1,6 +1,6 @@
 # Karu Roadmap
 
-> **Last updated:** February 2026
+> **Last updated:** March 2026
 
 This document outlines the development trajectory for Karu, from the current foundation to a production-ready policy engine.
 
@@ -13,7 +13,7 @@ This document outlines the development trajectory for Karu, from the current fou
 | Component           | Description                                                                    |
 | ------------------- | ------------------------------------------------------------------------------ |
 | **Parser & Lexer**  | Full Polar-inspired syntax with `allow`/`deny`, `if`, `and`, `or`, `not`, `in` |
-| **Pattern Matcher** | Structural matching, partial object matching, array search                     |
+| **Pattern Matcher** | Structural matching, partial object matching, array search                      |
 | **Rule Engine**     | Policy evaluation with deny-overrides semantics                                |
 | **CLI**             | `eval`, `transpile`, `check`, `import` commands                                |
 | **Cedar Interop**   | Bidirectional transpilation (Karu ↔ Cedar)                                     |
@@ -23,14 +23,15 @@ This document outlines the development trajectory for Karu, from the current fou
 
 ---
 
-## Phase 1: Developer Experience
+## Phase 1: Developer Experience ✅
 
 **Goal:** Make Karu easy to adopt and integrate.
 
 - [x] **Error Messages** - Human-readable parse errors with line/column spans
-- [x] **Playground** - Browser-based WASM playground for live policy testing (`/playground`)
-- [/] **Language Server** - LSP for editor integration (see below)
+- [x] **Playground** - Browser-based WASM playground for live policy testing
+- [x] **Language Server** - Full LSP (see below)
 - [x] **Crate Docs** - Comprehensive `rustdoc` with examples for all public APIs
+- [x] **Formatter** - Canonical formatting with comment preservation
 
 ### Language Server Status
 
@@ -43,18 +44,12 @@ This document outlines the development trajectory for Karu, from the current fou
 | Completion       | ✅     | Keywords with snippets                                              |
 | Go to Definition | ✅     | Jump to rule by name                                                |
 | Semantic Tokens  | ✅     | Syntax highlighting via LSP                                         |
-| Tests            | ✅     | 14 tests in `src/lsp.rs`                                            |
+| Formatting       | ✅     | Canonical formatting via `format_source`                            |
 | **Code Actions** | ❌     | Quick fixes, refactors                                              |
-| **Formatting**   | ❌     | Auto-format policies                                                |
-
-**Next steps:**
-
-1. Implement code actions (e.g., add semicolon fix)
-2. Implement formatting
 
 ---
 
-## Phase 2: Performance & Scale
+## Phase 2: Performance & Scale ✅
 
 **Goal:** Production-ready performance for high-throughput evaluation.
 
@@ -64,7 +59,7 @@ This document outlines the development trajectory for Karu, from the current fou
 
 ---
 
-## Phase 3: Advanced Matching
+## Phase 3: Advanced Matching ✅
 
 **Goal:** Extend pattern matching capabilities for complex use cases.
 
@@ -76,7 +71,7 @@ This document outlines the development trajectory for Karu, from the current fou
 
 ---
 
-## Phase 4: Ecosystem & Integration
+## Phase 4: Ecosystem & Integration ✅
 
 **Goal:** First-class integrations with authorization infrastructure.
 
@@ -84,7 +79,7 @@ This document outlines the development trajectory for Karu, from the current fou
 
 ---
 
-## Phase 5: Governance & Enterprise
+## Phase 5: Governance & Enterprise ✅
 
 **Goal:** Features for multi-team policy management at scale.
 
@@ -103,16 +98,6 @@ These are explicitly out of scope to keep Karu focused:
 - **Full Datalog** - We're pattern-matching, not logic programming
 - **Built-in Identity Provider** - Bring your own user/group data
 - **Distributed Consensus** - Policies are local; sync is your concern
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) _(coming soon)_ for how to get involved. Priority areas:
-
-1. Error message improvements
-2. Benchmark suite
-3. SDKs for non-Rust languages
 
 ---
 
