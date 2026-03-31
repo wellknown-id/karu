@@ -335,6 +335,6 @@ Karu policies evaluate against JSON. Structure your input like:
 
 ## Next Steps
 
-1. See [tests/cedar_equivalents.rs](../tests/cedar_equivalents.rs) for runnable examples
+1. See [tests/cedar_equivalents.rs](../crates/karu/tests/cedar_equivalents.rs) for runnable examples
 2. Read the main [README.md](../README.md) for Karu fundamentals
-3. Explore the Rust API in [src/lib.rs](../src/lib.rs)
+3. Explore the Rust API in [src/lib.rs](../crates/karu/src/lib.rs)
