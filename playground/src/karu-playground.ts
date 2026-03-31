@@ -311,7 +311,7 @@ export class KaruPlayground extends LitElement {
     if (!this.result) {
       return html`
         <div class="result-empty">
-          <p>Press <kbd>Run ▶</kbd> or <kbd>Ctrl+Enter</kbd> to evaluate</p>
+          <p>Press <kbd>Run</kbd> or <kbd>Ctrl+Enter</kbd> to evaluate</p>
         </div>
       `;
     }
@@ -341,10 +341,10 @@ export class KaruPlayground extends LitElement {
         <select @change=${this.handleExampleChange} .value=${String(this.selectedExample)}>
           ${examples.map((ex, i) => html`<option value=${i}>${ex.name}</option>`)}
         </select>
-        <button @click=${this.handleRun} title="Ctrl+Enter">Run ▶</button>
+        <button @click=${this.handleRun} title="Ctrl+Enter">Run</button>
         <div class="status">
           <div class="status-dot ${this.engineReady ? 'ready' : this.engineError ? 'error' : ''}"></div>
-          ${this.engineReady ? 'WASM ready' : this.engineError ? 'WASM offline' : 'Loading…'}
+          ${this.engineReady ? 'Ready' : this.engineError ? 'Offline' : 'Loading…'}
         </div>
       </header>
 
