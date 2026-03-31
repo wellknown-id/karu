@@ -6,6 +6,20 @@
 
 Karu is an embeddable policy engine focusing on structural pattern matching over arbitrary JSON data. It is the spiritual successor to the ideas found in logic-based policy languages, designed to solve complex hierarchical data validation that strict-schema engines cannot handle.
 
+It came to be because a coming soon wellknown.id project needed an expressive policy engine as fast as Cedar. That internal project started with Cedar until we accidentally wrote an engine that ran **much faster at Cedar than Cedar!**. _And so it stuck._
+
+## How Fast?
+
+| Benchmark | Karu | Cedar | |
+| --- | --- | --- | --- |
+| WASM bundle size | **319 KB** | 1.8 MB | **5.6× smaller** |
+| Native eval (1 rule) | **16 ns** | 1,162 ns | **71× faster** |
+| WASM eval (precompiled) | **459 ns** | 94,054 ns | **205× faster** |
+| Complex (20 rules, native) | **649 ns** | 13,749 ns | **21× faster** |
+| Realistic authz (16 threads) | **10.6M ops/sec** | 270K ops/sec | **39× faster** |
+
+> Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](crates/karu/BENCHMARKS.md)
+
 ## Core Philosophy
 
 - **Structure over Schema**: We do not enforce a schema on input data. We enforce patterns on the data we find.
