@@ -24,9 +24,10 @@ let loadPromise: Promise<void> | null = null;
 
 async function loadWasm(): Promise<void> {
   try {
-    // Try to load from the public/wasm/ directory
-    const wasmUrl = new URL('/wasm/karu_bg.wasm', window.location.href);
-    const initUrl = new URL('/wasm/karu.js', window.location.href);
+    // Load from the public/wasm/ directory, respecting Vite base path
+    const base = import.meta.env.BASE_URL;
+    const wasmUrl = new URL(`${base}wasm/karu_bg.wasm`, window.location.href);
+    const initUrl = new URL(`${base}wasm/karu.js`, window.location.href);
 
     const initModule = await import(/* @vite-ignore */ initUrl.href);
     await initModule.default(wasmUrl.href);

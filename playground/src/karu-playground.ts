@@ -344,7 +344,7 @@ export class KaruPlayground extends LitElement {
     return html`
       <header @keydown=${this.handleKeyDown}>
         <a class="logo-link" href=${REPO_URL} target="_blank" rel="noopener" title="View on GitHub">
-          <img src="/karu-icon.svg" alt="Karu" />
+          <img src="${import.meta.env.BASE_URL}karu-icon.svg" alt="Karu" />
           <div class="logo">karu <span>playground</span></div>
         </a>
         <div class="spacer"></div>
