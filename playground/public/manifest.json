@@ -1,0 +1,16 @@
+{
+  "name": "Karu Playground",
+  "short_name": "Karu",
+  "description": "Write, test, and evaluate Karu authorization policies in the browser.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
