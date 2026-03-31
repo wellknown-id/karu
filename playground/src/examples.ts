@@ -11,7 +11,7 @@ export interface Example {
 export const examples: Example[] = [
   {
     name: 'Simple RBAC',
-    policy: `# Role-based access control
+    policy: `// Role-based access control
 allow read if
     action == "read" and
     "viewer" in principal.roles;
@@ -34,7 +34,7 @@ deny delete if
   },
   {
     name: 'Pattern Matching',
-    policy: `# Structural pattern matching over arrays
+    policy: `// Structural pattern matching over arrays
 allow access if
     { name: "lhs", value: 10 } in resource.args;`,
     input: JSON.stringify({
@@ -51,12 +51,12 @@ allow access if
   },
   {
     name: 'Quantifiers',
-    policy: `# All items must be approved
+    policy: `// All items must be approved
 allow batch if
     forall item in resource.items:
         item.approved == true;
 
-# At least one tag must be "priority"
+// At least one tag must be "priority"
 deny flagged if
     exists tag in resource.tags:
         tag == "blocked";`,
@@ -74,12 +74,12 @@ deny flagged if
   },
   {
     name: 'ABAC with Context',
-    policy: `# Attribute-based: department + clearance
+    policy: `// Attribute-based: department + clearance
 allow classified if
     principal.department == resource.department and
     principal.clearance >= resource.requiredClearance;
 
-# Time-based restriction
+// Time-based restriction
 allow timed if
     context.hour >= 9 and
     context.hour < 17;`,
@@ -92,11 +92,11 @@ allow timed if
   },
   {
     name: 'Deny Overrides',
-    policy: `# General access
+    policy: `// General access
 allow general if
     principal.authenticated == true;
 
-# But deny private resources to non-owners
+// But deny private resources to non-owners
 deny private if
     resource.private == true and
     not principal.id == resource.ownerId;`,

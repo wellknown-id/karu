@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "wasm": "wasm-pack build ../crates/karu --target web --no-default-features --features wasm && mkdir -p public/wasm && cp ../crates/karu/pkg/karu_bg.wasm ../crates/karu/pkg/karu.js ../crates/karu/pkg/karu.d.ts ../crates/karu/pkg/karu_bg.wasm.d.ts public/wasm/",
+    "predev": "npm run wasm",
     "dev": "vite",
+    "prebuild": "npm run wasm",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

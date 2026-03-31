@@ -34,8 +34,8 @@ const karuParser: StreamParser<KaruState> = {
     // Skip whitespace
     if (stream.eatSpace()) return null;
 
-    // Comments
-    if (stream.match('#')) {
+    // Comments (// style)
+    if (stream.match('//')) {
       stream.skipToEnd();
       return 'lineComment';
     }
