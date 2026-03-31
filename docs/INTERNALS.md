@@ -84,22 +84,22 @@ wasm-pack build --target web --no-default-features --features wasm
 
 **C-FFI exports** (for wazero, CGO, or any WASM host):
 
-| Function         | Signature                                        | Returns                   |
-| ---------------- | ------------------------------------------------ | ------------------------- |
-| `karu_alloc`     | `(size: usize)`                                  | `*mut u8`                 |
-| `karu_free`      | `(ptr: *mut u8, size: usize)`                    | void                      |
-| `karu_compile`   | `(source_ptr, source_len)`                       | `*mut KaruPolicy` or null |
-| `karu_policy_free` | `(policy: *mut KaruPolicy)`                    | void                      |
-| `karu_evaluate`  | `(policy, input_ptr, input_len)`                 | `1` / `0` / `-1`         |
-| `karu_eval_once` | `(policy_ptr, policy_len, input_ptr, input_len)` | `1` / `0` / `-1`         |
+| Function           | Signature                                        | Returns                   |
+| ------------------ | ------------------------------------------------ | ------------------------- |
+| `karu_alloc`       | `(size: usize)`                                  | `*mut u8`                 |
+| `karu_free`        | `(ptr: *mut u8, size: usize)`                    | void                      |
+| `karu_compile`     | `(source_ptr, source_len)`                       | `*mut KaruPolicy` or null |
+| `karu_policy_free` | `(policy: *mut KaruPolicy)`                      | void                      |
+| `karu_evaluate`    | `(policy, input_ptr, input_len)`                 | `1` / `0` / `-1`          |
+| `karu_eval_once`   | `(policy_ptr, policy_len, input_ptr, input_len)` | `1` / `0` / `-1`          |
 
 **wasm-bindgen exports** (browser/JS):
 
-| Function            | Signature                              | Returns                                       |
-| ------------------- | -------------------------------------- | --------------------------------------------- |
-| `karu_eval_js`      | `(policy: &str, input: &str)`         | `{result: "ALLOW"\|"DENY"}` or `{error: ...}` |
-| `karu_check_js`     | `(policy: &str)`                      | `{ok: bool, rules: number}` or `{error: ...}` |
-| `karu_simulate_js`  | `(policy: &str, input: &str)`         | `{decision, matched_rules}` or error          |
-| `karu_diff_js`      | `(old: &str, new: &str)`              | `{added, removed, modified, summary}` or error |
-| `karu_batch_js`     | `(policy: &str, inputs: &str)`        | `{results: ["ALLOW"\|"DENY", ...]}` or error  |
-| `karu_transpile_js` | `(policy: &str)` *(cedar feature)*    | `{cedar: string}` or `{error: ...}`           |
+| Function            | Signature                          | Returns                                        |
+| ------------------- | ---------------------------------- | ---------------------------------------------- |
+| `karu_eval_js`      | `(policy: &str, input: &str)`      | `{result: "ALLOW"\|"DENY"}` or `{error: ...}`  |
+| `karu_check_js`     | `(policy: &str)`                   | `{ok: bool, rules: number}` or `{error: ...}`  |
+| `karu_simulate_js`  | `(policy: &str, input: &str)`      | `{decision, matched_rules}` or error           |
+| `karu_diff_js`      | `(old: &str, new: &str)`           | `{added, removed, modified, summary}` or error |
+| `karu_batch_js`     | `(policy: &str, inputs: &str)`     | `{results: ["ALLOW"\|"DENY", ...]}` or error   |
+| `karu_transpile_js` | `(policy: &str)` _(cedar feature)_ | `{cedar: string}` or `{error: ...}`            |

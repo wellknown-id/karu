@@ -26,7 +26,7 @@ The Cedar parser covers the complete Cedar grammar specification. All features b
 | `\|\|`                                     | `Or(...)`                                                        |
 | `!`                                        | `Not(...)`                                                       |
 | `==`, `!=`, `<`, `>`, `<=`, `>=`           | `Compare(path, op, pattern)`                                     |
-| `Entity::"id"` (entity refs)              | String literal `"id"`                                            |
+| `Entity::"id"` (entity refs)               | String literal `"id"`                                            |
 | `resource.field` (dot access)              | `PathAst` segments                                               |
 | `.contains(x)`                             | `In(x, collection)`                                              |
 | `.containsAll([set])`                      | `Compare(path, ContainsAll, [array])`                            |
@@ -54,8 +54,8 @@ The Cedar parser covers the complete Cedar grammar specification. All features b
 
 These features parse correctly but fail at import because Karu's AST/evaluator has no equivalent. Each produces a clear error message.
 
-| Feature                                   | Reason                    | Potential Fix              |
-| ----------------------------------------- | ------------------------- | -------------------------- |
+| Feature                                    | Reason                    | Potential Fix                 |
+| ------------------------------------------ | ------------------------- | ----------------------------- |
 | Template slots (`?principal`, `?resource`) | No template instantiation | Add template parameter system |
 
 ## LSP Support
