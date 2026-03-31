@@ -19,17 +19,17 @@ resource Organization {
 **Karu approach:**
 
 ```karu
-# Members can read
+// Members can read
 allow read if
     action == "read" and
     "member" in principal.roles;
 
-# Admins can add members
+// Admins can add members
 allow add_member if
     action == "add_member" and
     "admin" in principal.roles;
 
-# Admins also get member permissions (explicit)
+// Admins also get member permissions (explicit)
 allow read if
     action == "read" and
     "admin" in principal.roles;
@@ -87,7 +87,7 @@ Users can have different roles on different resources:
 **Policy using path construction:**
 
 ```karu
-# Build the lookup key and check roles
+// Build the lookup key and check roles
 allow admin if
     "admin" in principal.resourceRoles[resource.id];
 ```
@@ -121,17 +121,17 @@ allow admin if
 ```
 
 ```karu
-# Super admins can do anything
+// Super admins can do anything
 allow super if "super_admin" in context.globalRoles;
 
-# Regular role checks
+// Regular role checks
 allow read if "member" in principal.roles;
 ```
 
 ## Complete RBAC Example
 
 ```karu
-# Organization permissions
+// Organization permissions
 allow org_read if
     resource.type == "Organization" and
     action == "read" and
@@ -142,7 +142,7 @@ allow org_write if
     action == "write" and
     "admin" in principal.roles;
 
-# Repository inherits from organization
+// Repository inherits from organization
 allow repo_read if
     resource.type == "Repository" and
     action == "read" and

@@ -296,15 +296,15 @@ unless { principal == resource.owner };
 **Karu:**
 
 ```
-# Owners can do anything
+// Owners can do anything
 allow owner_access if principal.id == resource.ownerId;
 
-# Friends can view
+// Friends can view
 allow friend_view if
     action == "view" and
     principal.id in resource.sharedWith;
 
-# Deny access to private photos for non-owners
+// Deny access to private photos for non-owners
 deny private_block if
     resource.private == true and
     not principal.id == resource.ownerId;

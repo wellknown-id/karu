@@ -28,7 +28,7 @@ non-engineers while remaining precise enough for formal verification.
 ## Quick Example
 
 ```karu
-# A simple document access policy
+// A simple document access policy
 
 allow view if
     principal == "alice" and
@@ -62,11 +62,11 @@ test "bob cannot delete" {
 
 ### Comments
 
-Line comments start with `#` and extend to end of line.
+Line comments start with `//` and extend to end of line.
 
 ```karu
-# This is a comment
-allow view; # inline comment
+// This is a comment
+allow view; // inline comment
 ```
 
 ### Identifiers
@@ -276,10 +276,10 @@ A **rule** is the core building block. It declares whether to **allow** or
 **deny** a request, optionally gated by a condition.
 
 ```karu
-# Unconditional rule
+// Unconditional rule
 allow everything;
 
-# Conditional rule
+// Conditional rule
 deny delete if
     action == "delete" and
     principal != "admin";
@@ -304,13 +304,13 @@ Expressions form the conditions in rule bodies.
 ### Boolean Logic
 
 ```karu
-# AND - both must be true
+// AND - both must be true
 allow edit if principal == "alice" and action == "edit";
 
-# OR - either suffices
+// OR - either suffices
 allow view if principal == "alice" or principal == "bob";
 
-# NOT - negation
+// NOT - negation
 deny locked if not resource.active;
 ```
 
@@ -331,24 +331,24 @@ deny locked if not resource.active;
 Dot-delimited access into request fields:
 
 ```karu
-principal.role            # field access
-resource.tags[0]          # array index
-resource.context.args     # nested access
+principal.role            // field access
+resource.tags[0]          // array index
+resource.context.args     // nested access
 ```
 
 ### Collection Operators
 
 ```karu
-# Membership: is value in collection?
+// Membership: is value in collection?
 allow shared if "public" in resource.tags;
 
-# Inline set membership
+// Inline set membership
 allow read if action in ["view", "list", "search"];
 
-# Universal: all items satisfy condition
+// Universal: all items satisfy condition
 allow batch if forall item in resource.items: item.approved;
 
-# Existential: at least one item satisfies condition
+// Existential: at least one item satisfies condition
 deny flagged if exists tag in resource.tags: tag == "blocked";
 ```
 
@@ -367,7 +367,7 @@ allow images if resource.path like "/images/*";
 ### Is (Type Check)
 
 ```karu
-# Schema mode: check entity type
+// Schema mode: check entity type
 allow file_access if resource is File;
 ```
 
@@ -378,21 +378,21 @@ allow file_access if resource is File;
 Patterns appear on the right side of comparisons and in `in` expressions.
 
 ```karu
-# Literal values
+// Literal values
 principal == "alice"
 resource.count == 42
 resource.active == true
 
-# Wildcard - matches anything
+// Wildcard - matches anything
 resource.owner == _
 
-# Object pattern - structural match
+// Object pattern - structural match
 resource == { type: "document", status: "active" }
 
-# Array pattern
+// Array pattern
 resource.tags == ["public", "featured"]
 
-# Path reference - compare two paths
+// Path reference - compare two paths
 resource.ownerId == principal.id
 ```
 
@@ -461,20 +461,20 @@ are merged into the importing file's program.
    - every typed file works fine inside an untyped project.
 
 ```karu
-# ✓ Valid: both files use schema
+// ✓ Valid: both files use schema
 use schema;
 import "types.karu";
 ```
 
 ```karu
-# ✓ Valid: untyped file importing typed file
+// ✓ Valid: untyped file importing typed file
 import "schema_types.karu";
 ```
 
 ```karu
-# ✗ Invalid: typed file importing untyped file
+// ✗ Invalid: typed file importing untyped file
 use schema;
-import "untyped_rules.karu";  # error!
+import "untyped_rules.karu";  // error!
 ```
 
 ### Diamond Imports
@@ -540,8 +540,8 @@ deny delete if
 ### Inheritance
 
 ```karu
-resource File in Folder { ... };    # File is contained in Folder
-resource File is Ownable;           # File has Ownable's fields
+resource File in Folder { ... };    // File is contained in Folder
+resource File is Ownable;           // File has Ownable's fields
 ```
 
 ### Types
@@ -566,10 +566,10 @@ Reusable named conditions, inlined at compile time:
 ```karu
 assert is_owner if principal.id == resource.ownerId;
 
-# With type parameters (documentation only)
+// With type parameters (documentation only)
 assert has_role<User, File> if principal.role in resource.allowedRoles;
 
-# Used in rules
+// Used in rules
 allow edit if is_owner and action == "edit";
 allow manage if has_role;
 ```

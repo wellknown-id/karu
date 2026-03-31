@@ -70,11 +70,11 @@ Patterns can be literals (`"alice"`, `42`, `true`, `null`), wildcards (`_`), obj
 ### Quantifiers
 
 ```polar
-# Every item must match
+// Every item must match
 allow bulk_read if
     forall item in resource.items: item.public == true;
 
-# At least one item must match
+// At least one item must match
 allow has_permission if
     exists perm in user.permissions: perm.action == "write";
 ```

@@ -50,7 +50,7 @@ Users who create a resource get special permissions:
 ```
 
 ```karu
-# Creators can update and close their issues
+// Creators can update and close their issues
 allow update if
     action == "update" and
     principal.id == resource.creatorId;
@@ -79,12 +79,12 @@ Permissions cascade through resource hierarchies:
 ```
 
 ```karu
-# Org members can read documents in their org
+// Org members can read documents in their org
 allow read if
     action == "read" and
     "member" in context.orgRoles[resource.organizationId];
 
-# Org admins can delete documents
+// Org admins can delete documents
 allow delete if
     action == "delete" and
     "admin" in context.orgRoles[resource.organizationId];
@@ -107,10 +107,10 @@ Share resources with specific users:
 ```
 
 ```karu
-# Owner has full access
+// Owner has full access
 allow owner if principal.id == resource.ownerId;
 
-# Shared users can view
+// Shared users can view
 allow view if
     action == "view" and
     principal.id in resource.sharedWith;
@@ -138,7 +138,7 @@ Grant access to team members:
 ```
 
 ```karu
-# Check if user's team has the required permission
+// Check if user's team has the required permission
 allow access if
     resource.teamAccess[principal.teams[0]][action] == true;
 ```
@@ -167,7 +167,7 @@ For deeply nested resources, flatten the ancestry:
 Check if user has role on any ancestor:
 
 ```karu
-# Reader on any ancestor can read
+// Reader on any ancestor can read
 allow read if
     action == "read" and
     exists ancestor in resource.ancestors:

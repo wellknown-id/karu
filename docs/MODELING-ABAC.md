@@ -17,12 +17,12 @@ Attribute-Based Access Control (ABAC) controls access based on resource attribut
 ```
 
 ```karu
-# Anyone can read public resources
+// Anyone can read public resources
 allow read_public if
     action == "read" and
     resource.isPublic == true;
 
-# Private resources require authentication
+// Private resources require authentication
 allow read_private if
     action == "read" and
     resource.isPublic == false and
@@ -41,17 +41,17 @@ allow read_private if
 ```
 
 ```karu
-# Only published documents are viewable
+// Only published documents are viewable
 allow view if
     action == "view" and
     resource.status == "published";
 
-# Only drafts can be edited
+// Only drafts can be edited
 allow edit if
     action == "edit" and
     resource.status == "draft";
 
-# Archived documents are read-only
+// Archived documents are read-only
 deny modify if
     resource.status == "archived" and
     action in ["edit", "delete"];
@@ -73,11 +73,11 @@ deny modify if
 ```
 
 ```karu
-# Same department access
+// Same department access
 allow dept_access if
     principal.department == resource.department;
 
-# Clearance level check
+// Clearance level check
 allow classified if
     principal.clearanceLevel >= resource.requiredClearance;
 ```
@@ -99,7 +99,7 @@ Pass current time in context:
 ```
 
 ```karu
-# Resource available during time window
+// Resource available during time window
 allow timed_access if
     context.currentTime >= resource.availableFrom and
     context.currentTime <= resource.availableUntil;
@@ -119,15 +119,15 @@ allow timed_access if
 ```
 
 ```karu
-# Free content available to all
+// Free content available to all
 allow free if resource.tier == "free";
 
-# Premium content requires premium subscription
+// Premium content requires premium subscription
 allow premium if
     resource.tier == "premium" and
     principal.subscription == "premium";
 
-# Enterprise includes premium
+// Enterprise includes premium
 allow enterprise if
     resource.tier == "premium" and
     principal.subscription == "enterprise";
@@ -167,13 +167,13 @@ allow geo_access if
 ```
 
 ```karu
-# Members can read non-confidential in their department
+// Members can read non-confidential in their department
 allow read if
     "member" in principal.roles and
     principal.department == resource.department and
     resource.confidential == false;
 
-# Admins can read confidential
+// Admins can read confidential
 allow read_confidential if
     "admin" in principal.roles and
     principal.department == resource.department;
