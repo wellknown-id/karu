@@ -733,7 +733,7 @@ pub fn parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     let real_errors: Vec<_> = parse_result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .collect();
 
     if real_errors.is_empty() {
@@ -1841,15 +1841,23 @@ fn collect_comment_byte_ranges(source: &str) -> Vec<std::ops::Range<usize>> {
 fn is_error_in_comment(
     error: &ts_errors::ParseError,
     comment_ranges: &[std::ops::Range<usize>],
+    source: &str,
 ) -> bool {
     // Only filter `Error` reason (not `Missing` or `Extract` which are real issues)
     if !matches!(error.reason, ts_errors::ParseErrorReason::Error) {
         return false;
     }
     let err_range = &error.error_position.bytes;
-    comment_ranges
-        .iter()
-        .any(|cr| err_range.start >= cr.start && err_range.end <= cr.end)
+    let bytes = source.as_bytes();
+    for i in err_range.start..err_range.end {
+        if i >= bytes.len() { break; }
+        let is_space = bytes[i].is_ascii_whitespace();
+        let is_comment = comment_ranges.iter().any(|r| i >= r.start && i < r.end);
+        if !is_space && !is_comment {
+            return false;
+        }
+    }
+    true
 }
 
 /// Convert a byte offset to (line, column), both 0-indexed.
@@ -2625,7 +2633,7 @@ pub fn cedar_ts_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .map(|e| ts_error_to_diagnostic(e, source))
         .collect()
 }
@@ -2641,7 +2649,7 @@ pub fn cedarschema_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .map(|e| {
             let mut diag = ts_error_to_diagnostic(e, source);
             diag.source = Some("cedarschema".to_string());
