@@ -239,6 +239,70 @@ pub fn karu_batch_js(policy: &str, inputs: &str) -> JsValue {
 }
 
 // ============================================================================
+// LSP-core exports for browser playground
+// ============================================================================
+
+/// Get parse diagnostics for a Karu source file (browser-friendly API).
+/// Returns JSON array of diagnostics: [{ line, col, end_col, severity, message, code? }]
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_diagnostics_js(source: &str) -> JsValue {
+    let diags = crate::lsp_core::parse_diagnostics(source);
+    let json = serde_json::to_string(&diags).unwrap_or_else(|_| "[]".into());
+    JsValue::from_str(&json)
+}
+
+/// Get hover documentation for a keyword (browser-friendly API).
+/// Returns JSON: { "docs": "markdown text" } or null.
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_hover_js(word: &str) -> JsValue {
+    match crate::lsp_core::keyword_hover(word) {
+        Some(docs) => {
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &JsValue::from_str("docs"), &JsValue::from_str(docs))
+                .unwrap();
+            obj.into()
+        }
+        None => JsValue::NULL,
+    }
+}
+
+/// Get keyword completions (browser-friendly API).
+/// Returns JSON array: [{ label, detail, insert_text?, kind }]
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_completions_js() -> JsValue {
+    let completions = crate::lsp_core::keyword_completions();
+    let json = serde_json::to_string(&completions).unwrap_or_else(|_| "[]".into());
+    JsValue::from_str(&json)
+}
+
+/// Get semantic tokens for syntax highlighting (browser-friendly API).
+/// Returns JSON array: [{ line, start, length, token_type }]
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_semantic_tokens_js(source: &str) -> JsValue {
+    let tokens = crate::lsp_core::semantic_tokens(source);
+    let json = serde_json::to_string(&tokens).unwrap_or_else(|_| "[]".into());
+    JsValue::from_str(&json)
+}
+
+/// Run inline tests in a Karu source file (browser-friendly API).
+/// Returns JSON: { tests: [...], coverage: [...] } or null if no tests.
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_run_tests_js(source: &str) -> JsValue {
+    match crate::lsp_core::run_inline_tests(source) {
+        Some(results) => {
+            let json = serde_json::to_string(&results).unwrap_or_else(|_| "null".into());
+            JsValue::from_str(&json)
+        }
+        None => JsValue::NULL,
+    }
+}
+
+// ============================================================================
 // C-compatible FFI (original implementation)
 // ============================================================================
 

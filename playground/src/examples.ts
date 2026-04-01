@@ -36,6 +36,48 @@ deny delete if
     }, null, 2),
   },
   {
+    name: 'Inline Tests',
+    policy: `// RBAC policy with inline tests
+allow view if
+    principal == "alice" and
+    action == "view";
+
+deny admin_only if
+    action == "admin" and
+    principal != "admin";
+
+test "alice can view" {
+    principal {
+        id: "alice",
+    }
+    action {
+        id: "view",
+    }
+    resource {
+        id: "doc1",
+    }
+    expect allow
+}
+
+test "bob cannot admin" {
+    principal {
+        id: "bob",
+    }
+    action {
+        id: "admin",
+    }
+    resource {
+        id: "doc1",
+    }
+    expect deny
+}`,
+    input: JSON.stringify({
+      principal: 'alice',
+      action: 'view',
+      resource: 'doc1',
+    }, null, 2),
+  },
+  {
     name: 'Pattern Matching',
     policy: `// Structural pattern matching over arrays
 allow access if

@@ -90,6 +90,9 @@ pub mod transpile;
 pub mod type_registry;
 pub mod wasm;
 
+#[cfg(any(feature = "wasm", feature = "lsp"))]
+pub mod lsp_core;
+
 #[cfg(feature = "lsp")]
 pub mod lsp;
 

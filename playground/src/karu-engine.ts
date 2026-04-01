@@ -1,6 +1,6 @@
 /**
  * WASM bridge for the Karu policy engine.
- * Loads karu_bg.wasm and exposes evaluate/check/simulate.
+ * Loads karu_bg.wasm and exposes evaluate/check/simulate + LSP features.
  */
 
 interface KaruWasm {
@@ -16,6 +16,12 @@ interface KaruWasm {
     matched_rules?: string[];
     error?: string;
   };
+  // LSP-core exports
+  karu_diagnostics_js(source: string): string;
+  karu_hover_js(word: string): { docs: string } | null;
+  karu_completions_js(): string;
+  karu_semantic_tokens_js(source: string): string;
+  karu_run_tests_js(source: string): string | null;
 }
 
 let wasmModule: KaruWasm | null = null;
@@ -125,3 +131,107 @@ export function check(policy: string): { ok: boolean; rules: number; error?: str
     return { ok: false, rules: 0, error: String(e) };
   }
 }
+
+// ============================================================================
+// LSP-core functions
+// ============================================================================
+
+export interface LspDiagnostic {
+  line: number;    // 0-indexed
+  col: number;     // 0-indexed
+  end_col: number; // 0-indexed
+  severity: 'error' | 'warning' | 'info' | 'hint';
+  message: string;
+  code?: string;
+}
+
+export interface LspCompletion {
+  label: string;
+  detail: string;
+  insert_text?: string;
+  kind: string;
+}
+
+export interface LspSemanticToken {
+  line: number;
+  start: number;
+  length: number;
+  token_type: string;
+}
+
+export interface LspTestResult {
+  name: string;
+  line: number;
+  passed: boolean;
+  message: string;
+}
+
+export interface LspRuleCoverage {
+  name: string;
+  line: number;
+  has_positive: boolean;
+  has_negative: boolean;
+  status: string;
+}
+
+export interface LspInlineTestResults {
+  tests: LspTestResult[];
+  coverage: LspRuleCoverage[];
+}
+
+/** Get parse diagnostics for a Karu source file. */
+export function getDiagnostics(source: string): LspDiagnostic[] {
+  if (!wasmModule) return [];
+  try {
+    const json = wasmModule.karu_diagnostics_js(source);
+    return JSON.parse(json) as LspDiagnostic[];
+  } catch {
+    return [];
+  }
+}
+
+/** Get hover documentation for a keyword. */
+export function getHover(word: string): string | null {
+  if (!wasmModule) return null;
+  try {
+    const result = wasmModule.karu_hover_js(word);
+    return result?.docs ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Get keyword completions. */
+export function getCompletions(): LspCompletion[] {
+  if (!wasmModule) return [];
+  try {
+    const json = wasmModule.karu_completions_js();
+    return JSON.parse(json) as LspCompletion[];
+  } catch {
+    return [];
+  }
+}
+
+/** Get semantic tokens for syntax highlighting. */
+export function getSemanticTokens(source: string): LspSemanticToken[] {
+  if (!wasmModule) return [];
+  try {
+    const json = wasmModule.karu_semantic_tokens_js(source);
+    return JSON.parse(json) as LspSemanticToken[];
+  } catch {
+    return [];
+  }
+}
+
+/** Run inline tests in a Karu source file. */
+export function runInlineTests(source: string): LspInlineTestResults | null {
+  if (!wasmModule) return null;
+  try {
+    const json = wasmModule.karu_run_tests_js(source);
+    if (!json) return null;
+    return JSON.parse(json) as LspInlineTestResults;
+  } catch {
+    return null;
+  }
+}
+

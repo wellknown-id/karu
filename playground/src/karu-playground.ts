@@ -5,7 +5,7 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import './karu-editor';
-import { initEngine, isReady, getLoadError, evaluate, evaluateCedar, type EvalResult } from './karu-engine';
+import { initEngine, isReady, getLoadError, evaluate, evaluateCedar, runInlineTests, type EvalResult, type LspInlineTestResults } from './karu-engine';
 import { examples } from './examples';
 
 const REPO_URL = 'https://github.com/wellknown-id/karu';
@@ -227,6 +227,57 @@ export class KaruPlayground extends LitElement {
       overflow: auto;
       max-height: 80px;
     }
+
+    /* ── Test results panel ────────────────────── */
+    .test-panel {
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .test-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+    .test-summary {
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .test-summary.all-pass { color: #34d399; }
+    .test-summary.has-fail { color: #f87171; }
+    .test-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .test-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .test-icon.pass { color: #34d399; }
+    .test-icon.fail { color: #f87171; }
+    .test-name {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .test-message {
+      color: var(--text-tertiary);
+      font-size: 11px;
+    }
     .lang-badge {
       font-size: 10px;
       font-weight: 600;
@@ -278,6 +329,7 @@ export class KaruPlayground extends LitElement {
   @state() private engineReady = false;
   @state() private engineError: string | null = null;
   @state() private selectedExample = 0;
+  @state() private testResults: LspInlineTestResults | null = null;
 
   private get currentLanguage(): 'karu' | 'cedar' {
     return examples[this.selectedExample]?.language || 'karu';
@@ -296,6 +348,8 @@ export class KaruPlayground extends LitElement {
     } else {
       this.result = evaluate(this.policy, this.input);
     }
+    // Also run inline tests if present
+    this.testResults = runInlineTests(this.policy);
   }
 
   private handlePolicyChange(e: CustomEvent<{ value: string }>) {
@@ -312,6 +366,7 @@ export class KaruPlayground extends LitElement {
     this.policy = examples[idx].policy;
     this.input = examples[idx].input;
     this.result = null;
+    this.testResults = null;
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -336,6 +391,32 @@ export class KaruPlayground extends LitElement {
           <strong>Matched:</strong> ${this.result.matchedRules.join(', ')}
         </span>
       ` : nothing}
+    `;
+  }
+
+  private renderTestPanel() {
+    if (!this.testResults) return nothing;
+    const { tests } = this.testResults;
+    const allPass = tests.every(t => t.passed);
+    const passCount = tests.filter(t => t.passed).length;
+    const failCount = tests.length - passCount;
+
+    return html`
+      <div class="test-panel">
+        <div class="test-panel-header">
+          Tests
+          <span class="test-summary ${allPass ? 'all-pass' : 'has-fail'}">
+            ${allPass ? `✓ All ${tests.length} passed` : `${passCount} passed, ${failCount} failed`}
+          </span>
+        </div>
+        ${tests.map(t => html`
+          <div class="test-item">
+            <span class="test-icon ${t.passed ? 'pass' : 'fail'}">${t.passed ? '✓' : '✗'}</span>
+            <span class="test-name">${t.name}</span>
+            ${t.message ? html`<span class="test-message">${t.message}</span>` : nothing}
+          </div>
+        `)}
+      </div>
     `;
   }
 
@@ -391,6 +472,7 @@ export class KaruPlayground extends LitElement {
           <div class="result-strip ${this.result ? 'has-result' : ''}">
             ${this.renderResultStrip()}
           </div>
+          ${this.renderTestPanel()}
         </div>
       </div>
 
