@@ -1,5 +1,5 @@
 {
-  "name": "karu",
+  "name": "@wellknown.id/karu",
   "version": "0.1.0",
   "description": "An embeddable policy engine focusing on structural pattern matching over arbitrary JSON data",
   "type": "module",

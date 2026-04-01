@@ -5,7 +5,7 @@ An embeddable policy engine focusing on structural pattern matching over arbitra
 ## Install
 
 ```bash
-npm install karu
+npm install @wellknown.id/karu
 ```
 
 ## Quick Start
