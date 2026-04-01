@@ -190,7 +190,7 @@ mod {
         owner User,
     };
     actor User {
-        name string,
+        id string,
     };
     resource File is Ownable {};
 };

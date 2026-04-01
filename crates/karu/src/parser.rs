@@ -1277,6 +1277,39 @@ impl Parser {
                 self.advance();
                 Ok(serde_json::Value::Bool(false))
             }
+            Token::Null => {
+                self.advance();
+                Ok(serde_json::Value::Null)
+            }
+            Token::LBrace => {
+                // Nested object: { key: value, ... }
+                self.advance();
+                let mut map = serde_json::Map::new();
+                while self.current_token() != &Token::RBrace {
+                    let key = self.expect_ident()?;
+                    self.expect(Token::Colon)?;
+                    let value = self.parse_test_value()?;
+                    map.insert(key, value);
+                    if self.current_token() == &Token::Comma {
+                        self.advance();
+                    }
+                }
+                self.expect(Token::RBrace)?;
+                Ok(serde_json::Value::Object(map))
+            }
+            Token::LBracket => {
+                // Array: [ value, ... ]
+                self.advance();
+                let mut arr = Vec::new();
+                while self.current_token() != &Token::RBracket {
+                    arr.push(self.parse_test_value()?);
+                    if self.current_token() == &Token::Comma {
+                        self.advance();
+                    }
+                }
+                self.expect(Token::RBracket)?;
+                Ok(serde_json::Value::Array(arr))
+            }
             tok => Err(self.err(format!("Expected value in test entity, found {}", tok))),
         }
     }
