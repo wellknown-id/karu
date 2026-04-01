@@ -330,6 +330,7 @@ export class KaruPlayground extends LitElement {
   @state() private engineError: string | null = null;
   @state() private selectedExample = 0;
   @state() private testResults: LspInlineTestResults | null = null;
+  private _testDebounce: ReturnType<typeof setTimeout> | null = null;
 
   private get currentLanguage(): 'karu' | 'cedar' {
     return examples[this.selectedExample]?.language || 'karu';
@@ -340,6 +341,18 @@ export class KaruPlayground extends LitElement {
     await initEngine();
     this.engineReady = isReady();
     this.engineError = getLoadError();
+    // Auto-run tests for the initial example
+    this.autoRunTests();
+  }
+
+  /** Debounced: auto-run inline tests if the policy contains any. */
+  private autoRunTests() {
+    if (this._testDebounce) clearTimeout(this._testDebounce);
+    this._testDebounce = setTimeout(() => {
+      if (this.currentLanguage === 'karu') {
+        this.testResults = runInlineTests(this.policy);
+      }
+    }, 500);
   }
 
   private handleRun() {
@@ -348,12 +361,13 @@ export class KaruPlayground extends LitElement {
     } else {
       this.result = evaluate(this.policy, this.input);
     }
-    // Also run inline tests if present
+    // Also run inline tests immediately (no debounce on explicit Run)
     this.testResults = runInlineTests(this.policy);
   }
 
   private handlePolicyChange(e: CustomEvent<{ value: string }>) {
     this.policy = e.detail.value;
+    this.autoRunTests();
   }
 
   private handleInputChange(e: CustomEvent<{ value: string }>) {
@@ -450,6 +464,7 @@ export class KaruPlayground extends LitElement {
             <karu-editor
               language="karu"
               .value=${this.policy}
+              .testResults=${this.testResults?.tests ?? null}
               @change=${this.handlePolicyChange}
             ></karu-editor>
           </div>

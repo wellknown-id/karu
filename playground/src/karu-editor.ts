@@ -4,8 +4,8 @@
  */
 import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, rectangularSelection, hoverTooltip, type Tooltip } from '@codemirror/view';
+import { EditorState, StateField, StateEffect, RangeSet, type Extension } from '@codemirror/state';
+import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, rectangularSelection, hoverTooltip, type Tooltip, gutter, GutterMarker } from '@codemirror/view';
 import { defaultKeymap, indentWithTab, history, historyKeymap } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldGutter } from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap, autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
@@ -13,7 +13,71 @@ import { linter, type Diagnostic } from '@codemirror/lint';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { json } from '@codemirror/lang-json';
 import { karuLanguage } from './karu-lang';
-import { getDiagnostics, getHover, getCompletions, getCodeActions, isReady } from './karu-engine';
+import { getDiagnostics, getHover, getCompletions, getCodeActions, isReady, type LspTestResult } from './karu-engine';
+
+// ── Test result gutter markers ────────────────────────────────────
+
+class TestPassMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.textContent = '✓';
+    el.className = 'test-gutter-pass';
+    return el;
+  }
+}
+
+class TestFailMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.textContent = '✗';
+    el.className = 'test-gutter-fail';
+    return el;
+  }
+}
+
+const testPassMarker = new TestPassMarker();
+const testFailMarker = new TestFailMarker();
+
+/** Effect to update the test result markers in the gutter. */
+const setTestMarkers = StateEffect.define<{ line: number; passed: boolean }[]>();
+
+/** State field tracking test result markers. */
+const testMarkerField = StateField.define<RangeSet<GutterMarker>>({
+  create() {
+    return RangeSet.empty;
+  },
+  update(markers, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setTestMarkers)) {
+        const builder: { from: number; to: number; value: GutterMarker }[] = [];
+        for (const { line, passed } of effect.value) {
+          // line is 0-indexed from WASM, CM doc.line() is 1-indexed
+          const cmLine = line + 1;
+          if (cmLine >= 1 && cmLine <= tr.state.doc.lines) {
+            const pos = tr.state.doc.line(cmLine).from;
+            builder.push({ from: pos, to: pos, value: passed ? testPassMarker : testFailMarker });
+          }
+        }
+        // Sort by from position
+        builder.sort((a, b) => a.from - b.from);
+        return RangeSet.of(builder.map(b => b.value.range(b.from)));
+      }
+    }
+    return markers;
+  },
+});
+
+/** Gutter that shows test pass/fail markers. */
+function testResultGutter() {
+  return [
+    testMarkerField,
+    gutter({
+      class: 'test-gutter',
+      markers: (view) => view.state.field(testMarkerField),
+      initialSpacer: () => testPassMarker,
+    }),
+  ];
+}
 
 /** CodeMirror linter that calls the WASM engine for real-time diagnostics. */
 function karuLinter() {
@@ -195,11 +259,29 @@ export class KaruEditor extends LitElement {
     .cm-container .cm-editor .cm-diagnosticAction:hover {
       color: #93c5fd;
     }
+    /* Test result gutter */
+    .cm-container .cm-editor .test-gutter {
+      width: 16px;
+      text-align: center;
+    }
+    .cm-container .cm-editor .test-gutter-pass {
+      color: #34d399;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .cm-container .cm-editor .test-gutter-fail {
+      color: #f87171;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1;
+    }
   `;
 
   @property({ type: String }) language: 'karu' | 'json' = 'karu';
   @property({ type: String }) value = '';
   @property({ type: Boolean }) readonly = false;
+  @property({ attribute: false }) testResults: LspTestResult[] | null = null;
 
   private view?: EditorView;
   private _container?: HTMLDivElement;
@@ -213,6 +295,7 @@ export class KaruEditor extends LitElement {
       karuLinter(),
       karuHoverTooltip(),
       autocompletion({ override: [karuCompletionSource] }),
+      ...testResultGutter(),
     ];
   }
 
@@ -291,6 +374,19 @@ export class KaruEditor extends LitElement {
         });
       }
     }
+    if (changedProperties.has('testResults') && this.view) {
+      this.updateTestMarkers();
+    }
+  }
+
+  /** Dispatch test result markers into the editor gutter. */
+  private updateTestMarkers() {
+    if (!this.view) return;
+    const markers = (this.testResults || []).map(t => ({
+      line: t.line,
+      passed: t.passed,
+    }));
+    this.view.dispatch({ effects: setTestMarkers.of(markers) });
   }
 
   disconnectedCallback() {
