@@ -1020,9 +1020,14 @@ impl Parser {
                 // Check if followed by dot or bracket - if so, it's a path reference
                 let path = self.parse_path()?;
                 if path.segments.len() == 1 {
-                    // Single identifier = variable
                     if let PathSegmentAst::Field(name) = &path.segments[0] {
-                        Ok(PatternAst::Variable(name.clone()))
+                        // Known entity names are path references, not variables
+                        match name.as_str() {
+                            "actor" | "resource" | "principal" | "action" | "context" => {
+                                Ok(PatternAst::PathRef(path))
+                            }
+                            _ => Ok(PatternAst::Variable(name.clone())),
+                        }
                     } else {
                         // Index-only path not valid as pattern
                         Err(self.err("Expected pattern"))

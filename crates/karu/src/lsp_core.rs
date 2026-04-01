@@ -920,4 +920,47 @@ test "alice can view" {
         let actions = code_actions(source);
         assert!(actions.is_empty(), "guarded forall should have no code action");
     }
+
+    #[test]
+    fn test_deny_override_with_allow() {
+        // Reproduces: Schema Traits & Tests "non-owner cannot delete"
+        let source = r#"
+use schema;
+mod {
+    abstract Ownable {
+        owner User,
+    };
+    actor User {
+        id string,
+    };
+    resource File is Ownable {};
+};
+
+allow view if
+    resource is File and
+    resource.owner == actor;
+
+deny delete if
+    action == "delete" and
+    not resource.owner == actor;
+
+test "non-owner cannot delete" {
+    actor {
+        id: "bob",
+    }
+    action "delete"
+    resource {
+        id: "readme.txt",
+        owner: {
+            id: "alice",
+        },
+    }
+    expect deny
+}
+"#;
+        let results = run_inline_tests(source);
+        assert!(results.is_some(), "should have test results");
+        let results = results.unwrap();
+        assert!(results.tests[0].passed, "deny should override: {}", results.tests[0].message);
+    }
 }

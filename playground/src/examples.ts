@@ -205,12 +205,10 @@ deny delete if
     not resource.owner == actor;
 
 test "owner can view" {
-    principal {
+    actor {
         id: "alice",
     }
-    action {
-        id: "view",
-    }
+    action "view"
     resource {
         id: "readme.txt",
         owner: {
@@ -221,12 +219,10 @@ test "owner can view" {
 }
 
 test "non-owner cannot delete" {
-    principal {
+    actor {
         id: "bob",
     }
-    action {
-        id: "delete",
-    }
+    action "delete"
     resource {
         id: "readme.txt",
         owner: {
