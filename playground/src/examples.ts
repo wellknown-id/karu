@@ -232,7 +232,7 @@ test "non-owner cannot delete" {
     expect deny
 }`,
     input: JSON.stringify({
-      principal: { id: 'alice' },
+      actor: { id: 'alice' },
       action: 'view',
       resource: { id: 'readme.txt', owner: { id: 'alice' } },
     }, null, 2),
