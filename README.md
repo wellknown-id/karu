@@ -10,15 +10,15 @@ It came to be because a coming soon wellknown.id project needed an expressive po
 
 ## How Fast?
 
-| Benchmark                    | Karu              | Cedar        |                  |
-| ---------------------------- | ----------------- | ------------ | ---------------- |
-| WASM bundle size             | **319 KB**        | 1.8 MB       | **5.6× smaller** |
-| Native eval (1 rule)         | **16 ns**         | 1,162 ns     | **71× faster**   |
-| WASM eval (precompiled)      | **459 ns**        | 94,054 ns    | **205× faster**  |
-| Complex (20 rules, native)   | **649 ns**        | 13,749 ns    | **21× faster**   |
-| Realistic authz (16 threads) | **10.6M ops/sec** | 270K ops/sec | **39× faster**   |
+| Benchmark                    | Karu               | Cedar        |                  |
+| ---------------------------- | ------------------ | ------------ | ---------------- |
+| WASM bundle size             | **319 KB**         | 1.8 MB       | **5.6× smaller** |
+| Native eval (1 rule)         | **15 ns**          | 1,108 ns     | **72× faster**   |
+| WASM eval (precompiled)      | **465 ns**         | 88,350 ns    | **190× faster**  |
+| Complex (20 rules, native)   | **663 ns**         | 14,137 ns    | **21× faster**   |
+| Realistic authz (16 threads) | **14.3M ops/sec**  | 273K ops/sec | **52× faster**   |
 
-> Karu running in WASM (459 ns) is faster than Cedar running natively (1,162 ns). [Full benchmarks →](docs/BENCHMARKS.md)
+> Karu running in WASM (465 ns) is faster than Cedar running natively (1,108 ns). [Full benchmarks →](docs/BENCHMARKS.md)
 
 **[Try it in the browser →](https://wellknown-id.github.io/karu/)**
 
