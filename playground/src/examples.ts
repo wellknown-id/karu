@@ -213,7 +213,9 @@ test "owner can view" {
     }
     resource {
         id: "readme.txt",
-        owner: "alice",
+        owner: {
+            id: "alice",
+        },
     }
     expect allow
 }
@@ -227,14 +229,16 @@ test "non-owner cannot delete" {
     }
     resource {
         id: "readme.txt",
-        owner: "alice",
+        owner: {
+            id: "alice",
+        },
     }
     expect deny
 }`,
     input: JSON.stringify({
-      principal: 'alice',
+      principal: { id: 'alice' },
       action: 'view',
-      resource: { id: 'readme.txt', owner: 'alice' },
+      resource: { id: 'readme.txt', owner: { id: 'alice' } },
     }, null, 2),
   },
 
