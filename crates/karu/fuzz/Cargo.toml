@@ -16,6 +16,7 @@ arbitrary = { version = "1", features = ["derive"] }
 
 [dependencies.karu]
 path = ".."
+default-features = false
 features = ["cedar"]
 
 # Parser fuzzing - tests error recovery

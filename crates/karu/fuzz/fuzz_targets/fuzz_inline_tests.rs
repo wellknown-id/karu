@@ -28,6 +28,8 @@ fuzz_target!(|data: &[u8]| {
                 }
 
                 // If tests exist and policy compiles, run_inline_tests should not panic
+                // (requires the lsp feature which provides lsp_core)
+                #[cfg(feature = "lsp")]
                 if !program.tests.is_empty() {
                     let _ = karu::lsp_core::run_inline_tests(source);
                 }

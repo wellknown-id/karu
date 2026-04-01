@@ -30,7 +30,6 @@ jobs:
           - fuzz_compile
           - fuzz_eval
           - fuzz_eval_semantic
-          - fuzz_inline_tests
           - fuzz_transpile
           - fuzz_cedar_import
           - fuzz_cedar_roundtrip

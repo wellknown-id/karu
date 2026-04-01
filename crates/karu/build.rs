@@ -26,6 +26,9 @@ fn main() {
         {
             let out =
                 std::path::PathBuf::from("../../editors/vscode/syntaxes/karu.tmLanguage.json");
+            if let Some(parent) = out.parent() {
+                std::fs::create_dir_all(parent).unwrap();
+            }
             std::fs::write(&out, serde_json::to_string_pretty(&json).unwrap()).unwrap();
         }
     }
@@ -40,6 +43,9 @@ fn main() {
         {
             let out =
                 std::path::PathBuf::from("../../editors/vscode/syntaxes/cedar.tmLanguage.json");
+            if let Some(parent) = out.parent() {
+                std::fs::create_dir_all(parent).unwrap();
+            }
             std::fs::write(&out, serde_json::to_string_pretty(&json).unwrap()).unwrap();
         }
     }
