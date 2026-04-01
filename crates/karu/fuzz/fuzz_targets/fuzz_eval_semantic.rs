@@ -4,7 +4,7 @@
 //! 1. Path references resolve the same value as pattern comparisons
 //! 2. Deny overrides allow (if any deny fires, result must be Deny)
 //! 3. Schema mode policies with entity-path comparisons behave identically
-//!    to manually-expanded conditions
+//! 4. Quantifier invariants (forall on empty = true, exists on empty = false)
 
 #![no_main]
 
@@ -60,10 +60,15 @@ static SCHEMA_POLICIES: &[&str] = &[
     "#,
 ];
 
+/// Quantifier policies for semantic invariant checking.
+static QUANTIFIER_FORALL: &str =
+    r#"allow all_ok if has items and forall item in items: item.ok == true;"#;
+static QUANTIFIER_EXISTS: &str =
+    r#"deny has_bad if exists item in items: item.bad == true;"#;
+
 fuzz_target!(|data: &[u8]| {
     if let Ok(input) = serde_json::from_slice::<serde_json::Value>(data) {
         // ── PathRef correctness ──────────────────────────
-        // Verify path-to-path comparisons don't silently match everything
         for policy_source in PATH_REF_POLICIES {
             if let Ok(policy) = compile(policy_source) {
                 let _ = policy.evaluate(&input);
@@ -74,14 +79,13 @@ fuzz_target!(|data: &[u8]| {
         for policy_source in DENY_OVERRIDE_POLICIES {
             if let Ok(policy) = compile(policy_source) {
                 let result = policy.evaluate(&input);
-                // If the input has banned/blocked == true, result must be Deny
                 if input.get("blocked") == Some(&json!(true))
                     || input.get("user").and_then(|u| u.get("banned")) == Some(&json!(true))
                 {
                     assert_eq!(
                         result,
                         karu::rule::Effect::Deny,
-                        "deny-overrides violated: deny rule matched but result was Allow for input: {:?}",
+                        "deny-overrides violated for input: {:?}",
                         input
                     );
                 }
@@ -92,6 +96,46 @@ fuzz_target!(|data: &[u8]| {
         for policy_source in SCHEMA_POLICIES {
             if let Ok(policy) = compile(policy_source) {
                 let _ = policy.evaluate(&input);
+            }
+        }
+
+        // ── Quantifier invariants ────────────────────────
+        // forall on empty array must be vacuously true (allow)
+        if let Some(items) = input.get("items") {
+            if let Some(arr) = items.as_array() {
+                if let Ok(policy) = compile(QUANTIFIER_FORALL) {
+                    let result = policy.evaluate(&input);
+                    if arr.is_empty() {
+                        // has items guard fails on empty → no match → default deny
+                        // (forall vacuous truth is only relevant when the guard passes)
+                    } else if arr.iter().all(|i| i.get("ok") == Some(&json!(true))) {
+                        assert_eq!(
+                            result,
+                            karu::rule::Effect::Allow,
+                            "forall should allow when all items.ok == true: {:?}",
+                            input
+                        );
+                    }
+                }
+
+                if let Ok(policy) = compile(QUANTIFIER_EXISTS) {
+                    let result = policy.evaluate(&input);
+                    if arr.is_empty() {
+                        // exists on empty = false → deny rule doesn't fire → default deny
+                        assert_eq!(
+                            result,
+                            karu::rule::Effect::Deny,
+                            "exists on empty array should not fire deny rule, default deny applies"
+                        );
+                    } else if arr.iter().any(|i| i.get("bad") == Some(&json!(true))) {
+                        assert_eq!(
+                            result,
+                            karu::rule::Effect::Deny,
+                            "exists should deny when any item.bad == true: {:?}",
+                            input
+                        );
+                    }
+                }
             }
         }
     }

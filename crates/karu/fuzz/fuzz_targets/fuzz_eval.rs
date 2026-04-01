@@ -37,6 +37,17 @@ static POLICIES: &[&str] = &[
     r#"allow owner if resource.ownerId == principal.id;"#,
     r#"allow self if actor == resource.creator;"#,
     r#"deny steal if resource.owner != actor;"#,
+    // Quantifier edge cases
+    // forall on empty array = vacuously true
+    r#"allow all_approved if forall item in items: item.ok == true;"#,
+    // exists on empty array = false
+    r#"deny has_bad if exists item in items: item.bad == true;"#,
+    // Nested quantifiers
+    r#"allow nested if forall g in groups: exists m in g.members: m.active == true;"#,
+    // Variable shadowing: bound var same name as a path segment
+    r#"allow shadow if exists resource in resources: resource.id == "target";"#,
+    // Deep iteration path
+    r#"allow deep if exists x in a.b.c.d: x.val == true;"#,
 ];
 
 fuzz_target!(|data: &[u8]| {

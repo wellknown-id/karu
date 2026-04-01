@@ -34,6 +34,9 @@ jobs:
           - fuzz_transpile
           - fuzz_cedar_import
           - fuzz_cedar_roundtrip
+          - fuzz_structured
+          - fuzz_differential
+          - fuzz_indexed_equiv
 
     steps:
       - uses: actions/checkout@v4

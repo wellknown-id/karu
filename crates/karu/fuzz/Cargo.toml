@@ -12,6 +12,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 serde_json = "1.0"
+arbitrary = { version = "1", features = ["derive"] }
 
 [dependencies.karu]
 path = ".."
@@ -85,6 +86,30 @@ bench = false
 [[bin]]
 name = "fuzz_inline_tests"
 path = "fuzz_targets/fuzz_inline_tests.rs"
+test = false
+doc = false
+bench = false
+
+# Structured policy generation via Arbitrary
+[[bin]]
+name = "fuzz_structured"
+path = "fuzz_targets/fuzz_structured.rs"
+test = false
+doc = false
+bench = false
+
+# Differential testing: rule order independence
+[[bin]]
+name = "fuzz_differential"
+path = "fuzz_targets/fuzz_differential.rs"
+test = false
+doc = false
+bench = false
+
+# Policy vs IndexedPolicy equivalence
+[[bin]]
+name = "fuzz_indexed_equiv"
+path = "fuzz_targets/fuzz_indexed_equiv.rs"
 test = false
 doc = false
 bench = false
