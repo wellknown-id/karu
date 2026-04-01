@@ -152,6 +152,92 @@ deny private if
     }, null, 2),
   },
 
+  // ── Schema Examples ──────────────────────────────
+  {
+    name: 'Schema: Typed Entities',
+    policy: `use schema;
+mod Acme {
+    actor User {
+        name string,
+        role string,
+    };
+    resource Document {
+        title string,
+        public bool,
+    };
+};
+
+// Type-checked: actor is User, resource is Document
+allow view if
+    actor is User and
+    resource is Document and
+    resource.public == true;
+
+allow edit if
+    actor is User and
+    actor.role == "editor";`,
+    input: JSON.stringify({
+      actor: { id: 'alice', name: 'Alice', role: 'editor' },
+      action: 'view',
+      resource: { id: 'doc-1', title: 'README', public: true },
+    }, null, 2),
+  },
+  {
+    name: 'Schema: Traits & Tests',
+    policy: `use schema;
+mod {
+    abstract Ownable {
+        owner User,
+    };
+    actor User {
+        name string,
+    };
+    resource File is Ownable {};
+};
+
+// File inherits the 'owner' field from Ownable
+allow view if
+    resource is File and
+    resource.owner == actor;
+
+deny delete if
+    action == "delete" and
+    not resource.owner == actor;
+
+test "owner can view" {
+    principal {
+        id: "alice",
+    }
+    action {
+        id: "view",
+    }
+    resource {
+        id: "readme.txt",
+        owner: "alice",
+    }
+    expect allow
+}
+
+test "non-owner cannot delete" {
+    principal {
+        id: "bob",
+    }
+    action {
+        id: "delete",
+    }
+    resource {
+        id: "readme.txt",
+        owner: "alice",
+    }
+    expect deny
+}`,
+    input: JSON.stringify({
+      principal: 'alice',
+      action: 'view',
+      resource: { id: 'readme.txt', owner: 'alice' },
+    }, null, 2),
+  },
+
   // ── Cedar Examples ────────────────────────────────
   {
     name: 'Cedar: Basic Permit',
