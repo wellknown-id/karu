@@ -77,10 +77,18 @@ impl From<LexError> for ParseError {
     }
 }
 
+/// Maximum nesting depth for expressions and patterns.
+///
+/// Prevents stack overflow from deeply nested inputs like `not not not...`,
+/// `(((...)))`, or `{a: {b: {c: ...}}}`. 256 levels is generous for any
+/// realistic policy while staying well within default stack limits.
+const MAX_DEPTH: usize = 256;
+
 /// Parser for Karu source code.
 pub struct Parser {
     tokens: Vec<Spanned>,
     pos: usize,
+    depth: usize,
 }
 
 impl Parser {
@@ -91,7 +99,7 @@ impl Parser {
     /// Test blocks are silently skipped.
     pub fn parse(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0 };
+        let mut parser = Parser { tokens, pos: 0, depth: 0 };
         parser.parse_program(false)
     }
 
@@ -101,7 +109,7 @@ impl Parser {
     /// `Program::tests`. Used by the `karu test` CLI command.
     pub fn parse_with_tests(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0 };
+        let mut parser = Parser { tokens, pos: 0, depth: 0 };
         parser.parse_program(true)
     }
 
@@ -681,7 +689,13 @@ impl Parser {
     }
 
     fn parse_expr(&mut self) -> Result<ExprAst, ParseError> {
-        self.parse_or_expr()
+        self.depth += 1;
+        if self.depth > MAX_DEPTH {
+            return Err(self.err("Expression nesting depth exceeded (max 256)"));
+        }
+        let result = self.parse_or_expr();
+        self.depth -= 1;
+        result
     }
 
     fn parse_or_expr(&mut self) -> Result<ExprAst, ParseError> {
@@ -722,8 +736,13 @@ impl Parser {
 
     fn parse_unary_expr(&mut self) -> Result<ExprAst, ParseError> {
         if self.current_token() == &Token::Not {
+            self.depth += 1;
+            if self.depth > MAX_DEPTH {
+                return Err(self.err("Expression nesting depth exceeded (max 256)"));
+            }
             self.advance();
             let expr = self.parse_unary_expr()?;
+            self.depth -= 1;
             return Ok(ExprAst::Not(Box::new(expr)));
         }
 
@@ -995,6 +1014,16 @@ impl Parser {
     }
 
     fn parse_pattern(&mut self) -> Result<PatternAst, ParseError> {
+        self.depth += 1;
+        if self.depth > MAX_DEPTH {
+            return Err(self.err("Pattern nesting depth exceeded (max 256)"));
+        }
+        let result = self.parse_pattern_inner();
+        self.depth -= 1;
+        result
+    }
+
+    fn parse_pattern_inner(&mut self) -> Result<PatternAst, ParseError> {
         match self.current_token() {
             Token::String(s) => {
                 let s = s.clone();
