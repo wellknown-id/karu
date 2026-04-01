@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! # Karu
 //!
 //! An embeddable policy engine focusing on structural pattern matching over

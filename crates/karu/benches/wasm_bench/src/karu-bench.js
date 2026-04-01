@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Karu WASM benchmark functions
 import init, { karu_eval_js, karu_check_js, karu_batch_js } from '../pkg/karu.js';
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Tree-sitter grammar for Karu policy language.
 //!
 //! This module defines the Karu grammar using `krust-sitter` annotations,

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Schema types for Karu's typed mode (`use schema`).
 //!
 //! When a Karu source file begins with `use schema;`, the parser recognises

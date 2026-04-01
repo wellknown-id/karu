@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Formatter for Karu policy files.
 //!
 //! Provides canonical formatting with comment preservation.

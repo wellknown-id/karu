@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Snapshot-based tests for LSP functions.
 //!
 //! Each `.karu` fixture in `tests/lsp_fixtures/` can have companion files:

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser for Karu's Polar-inspired syntax.
 //!
 //! Parses token streams into an AST, which can then be compiled into
@@ -1255,7 +1257,11 @@ impl Parser {
                         (vec![("id".to_string(), value)], true)
                     };
 
-                    entities.push(TestEntity { kind, fields, shorthand });
+                    entities.push(TestEntity {
+                        kind,
+                        fields,
+                        shorthand,
+                    });
                 }
             }
         }

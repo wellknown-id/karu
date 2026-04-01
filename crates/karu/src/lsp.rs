@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Language Server Protocol support for Karu.
 //!
 //! This module provides core LSP functionality that can be used by the

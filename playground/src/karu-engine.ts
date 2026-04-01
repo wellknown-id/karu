@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * WASM bridge for the Karu policy engine.
  * Loads karu_bg.wasm and exposes evaluate/check/simulate + LSP features.

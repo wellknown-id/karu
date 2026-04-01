@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Import resolver for multi-file Karu projects.
 //!
 //! Resolves `import "path";` directives, merging imported programs into

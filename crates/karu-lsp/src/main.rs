@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Karu Language Server
 //!
 //! LSP implementation for Karu policy files, providing diagnostics,
@@ -15,13 +17,13 @@ use karu::lsp::{
     cedar_document_symbols, cedar_parse_diagnostics, convert_cedar_to_karu, is_cedar_uri,
     is_cedarschema_uri,
 };
-#[cfg(all(feature = "dev", feature = "cedar"))]
-use karu::lsp::{
-    cedar_ts_parse_diagnostics, cedarschema_document_symbols, cedarschema_parse_diagnostics,
-};
 use karu::lsp::{
     cedar_semantic_tokens, document_symbols, find_definition, keyword_completions, keyword_hover,
     parse_diagnostics, run_inline_tests, semantic_tokens, SEMANTIC_TOKEN_TYPES,
+};
+#[cfg(all(feature = "dev", feature = "cedar"))]
+use karu::lsp::{
+    cedar_ts_parse_diagnostics, cedarschema_document_symbols, cedarschema_parse_diagnostics,
 };
 
 /// Document state for a single file
@@ -573,8 +575,14 @@ impl LanguageServer for KaruLanguageServer {
                         let line = edit.line;
                         text_edits.push(TextEdit {
                             range: Range {
-                                start: Position { line, character: edit.col },
-                                end: Position { line, character: edit.end_col },
+                                start: Position {
+                                    line,
+                                    character: edit.col,
+                                },
+                                end: Position {
+                                    line,
+                                    character: edit.end_col,
+                                },
                             },
                             new_text: edit.new_text.clone(),
                         });
@@ -583,10 +591,14 @@ impl LanguageServer for KaruLanguageServer {
                     // Attach the relevant diagnostic so the editor associates this
                     // action with the squiggly underline
                     let diagnostic = la.diagnostic_code.as_ref().and_then(|_code| {
-                        params.context.diagnostics.iter().find(|d| {
-                            d.source.as_deref() == Some("karu")
-                                && d.message.contains("forall")
-                        }).cloned()
+                        params
+                            .context
+                            .diagnostics
+                            .iter()
+                            .find(|d| {
+                                d.source.as_deref() == Some("karu") && d.message.contains("forall")
+                            })
+                            .cloned()
                     });
 
                     let mut changes = std::collections::HashMap::new();

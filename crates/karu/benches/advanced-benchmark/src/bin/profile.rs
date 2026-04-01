@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use karu::compile;
 use serde_json::json;
 use std::hint::black_box;

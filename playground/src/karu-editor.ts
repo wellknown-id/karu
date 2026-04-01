@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * Reusable CodeMirror 6 editor as a Lit web component.
  * Includes LSP-powered linting, hover tooltips, and autocomplete for Karu.

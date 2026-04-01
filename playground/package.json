@@ -2,6 +2,7 @@
   "name": "karu-playground",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "wasm": "wasm-pack build ../crates/karu --target web --no-default-features --features wasm,cedar && mkdir -p public/wasm && cp ../crates/karu/pkg/karu_bg.wasm ../crates/karu/pkg/karu.js ../crates/karu/pkg/karu.d.ts ../crates/karu/pkg/karu_bg.wasm.d.ts public/wasm/",

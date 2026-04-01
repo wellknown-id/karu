@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser comparison benchmarks: handrolled vs tree-sitter.
 //!
 //! Run with: `cargo bench --bench parser_compare --features dev`

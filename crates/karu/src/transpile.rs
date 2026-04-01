@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Transpile Karu policies to Cedar syntax.
 //!
 //! This module converts Karu AST to Cedar policy language for interoperability

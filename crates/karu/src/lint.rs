@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Policy linter - detects common pitfalls in Karu policies.
 //!
 //! The linter walks a parsed AST and produces [`LintWarning`] diagnostics.

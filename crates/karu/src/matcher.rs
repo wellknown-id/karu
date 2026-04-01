@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! The structural pattern matcher - the heart of Karu.
 //!
 //! This module determines if JSON data matches a Pattern using structural

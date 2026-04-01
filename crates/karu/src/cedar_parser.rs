@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser for Cedar policy language.
 //!
 //! Provides a proper recursive-descent parser for the full Cedar grammar

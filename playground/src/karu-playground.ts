@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * Main Karu Playground application shell.
  * Split-pane layout: policy editor | JSON input + results.

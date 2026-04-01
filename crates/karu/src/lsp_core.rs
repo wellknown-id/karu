@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Portable LSP-like functionality for Karu.
 //!
 //! This module provides core language intelligence (diagnostics, hover,
@@ -497,12 +499,9 @@ pub fn code_actions(source: &str) -> Vec<LspCodeAction> {
         if warning.code == "W001" {
             if let Some(ref forall_path) = warning.forall_path {
                 // Find the forall keyword position
-                if let Some((line_idx, col, _end_col)) = find_forall_in_rule(
-                    source,
-                    &lines,
-                    &warning.rule_name,
-                    Some(forall_path),
-                ) {
+                if let Some((line_idx, col, _end_col)) =
+                    find_forall_in_rule(source, &lines, &warning.rule_name, Some(forall_path))
+                {
                     // Build the guard text: "has <path> and\n<indent>"
                     let indent = &lines[line_idx][..col];
                     let guard = format!("has {} and\n{}", forall_path, indent);
@@ -830,7 +829,11 @@ mod tests {
     fn test_parse_diagnostics_valid() {
         let source = r#"allow access if role == "admin";"#;
         let diags = parse_diagnostics(source);
-        assert!(diags.is_empty(), "expected no diagnostics, got: {:?}", diags);
+        assert!(
+            diags.is_empty(),
+            "expected no diagnostics, got: {:?}",
+            diags
+        );
     }
 
     #[test]
@@ -873,7 +876,9 @@ mod tests {
     fn test_semantic_tokens_comment() {
         let source = "// this is a comment\nallow access;";
         let tokens = semantic_tokens(source);
-        let comment = tokens.iter().find(|t| t.token_type == SemanticTokenType::Comment);
+        let comment = tokens
+            .iter()
+            .find(|t| t.token_type == SemanticTokenType::Comment);
         assert!(comment.is_some(), "should find a comment token");
     }
 
@@ -895,7 +900,11 @@ test "alice can view" {
         assert!(results.is_some());
         let results = results.unwrap();
         assert_eq!(results.tests.len(), 1);
-        assert!(results.tests[0].passed, "test should pass: {}", results.tests[0].message);
+        assert!(
+            results.tests[0].passed,
+            "test should pass: {}",
+            results.tests[0].message
+        );
     }
 
     #[test]
@@ -906,7 +915,8 @@ test "alice can view" {
 
     #[test]
     fn test_code_actions_w001() {
-        let source = "allow batch if\n    forall item in resource.items:\n        item.approved == true;";
+        let source =
+            "allow batch if\n    forall item in resource.items:\n        item.approved == true;";
         let actions = code_actions(source);
         assert!(!actions.is_empty(), "should have a W001 quick-fix");
         assert_eq!(actions[0].diagnostic_code, Some("W001".into()));
@@ -918,7 +928,10 @@ test "alice can view" {
     fn test_code_actions_no_warning() {
         let source = "allow batch if\n    has resource.items and\n    forall item in resource.items:\n        item.approved == true;";
         let actions = code_actions(source);
-        assert!(actions.is_empty(), "guarded forall should have no code action");
+        assert!(
+            actions.is_empty(),
+            "guarded forall should have no code action"
+        );
     }
 
     #[test]
@@ -961,6 +974,10 @@ test "non-owner cannot delete" {
         let results = run_inline_tests(source);
         assert!(results.is_some(), "should have test results");
         let results = results.unwrap();
-        assert!(results.tests[0].passed, "deny should override: {}", results.tests[0].message);
+        assert!(
+            results.tests[0].passed,
+            "deny should override: {}",
+            results.tests[0].message
+        );
     }
 }

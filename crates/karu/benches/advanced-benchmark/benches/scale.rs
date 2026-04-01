@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Scale benchmark: realistic authorization workload.
 //!
 //! Pre-seed the database first:

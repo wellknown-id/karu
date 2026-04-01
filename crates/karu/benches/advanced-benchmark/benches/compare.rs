@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Advanced benchmark: Karu vs Cedar - Native + WASM comparison.
 //!
 //! Uses Criterion for statistically rigorous benchmarking.

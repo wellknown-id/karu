@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Tree-sitter grammar for Cedar policy language (dev-time parser).
 //!
 //! Provides error-tolerant parsing with span information for LSP tooling.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * Built-in example policies for the playground.
  */

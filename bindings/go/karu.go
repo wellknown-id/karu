@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Package karu provides Go bindings for the Karu policy engine.
 //
 // Karu is an embeddable policy engine focusing on structural pattern matching

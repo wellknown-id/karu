@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /// After the fix, cedar_ts_parse_diagnostics should return no diagnostics
 /// for source with valid Cedar + comments.
 #[test]

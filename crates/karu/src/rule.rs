@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Rule definitions and evaluation for Karu.
 //!
 //! Rules combine patterns, paths, and operators to express authorization logic.

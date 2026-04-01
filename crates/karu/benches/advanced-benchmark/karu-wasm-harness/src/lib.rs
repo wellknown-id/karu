@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Thin WASM harness for Karu.
 //!
 //! Re-exports the C-FFI functions from karu::wasm so they appear

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Thin WASM harness for Cedar.
 //!
 //! Provides a C-FFI wrapper around cedar-policy so it can be loaded

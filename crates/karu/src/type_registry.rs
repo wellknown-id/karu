@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Type registry for Karu's structural type system.
 //!
 //! Provides compile-time type shape computation and runtime value fingerprinting.

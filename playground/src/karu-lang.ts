@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /**
  * CodeMirror 6 language support for Karu policy syntax.
  * Uses StreamLanguage for a lightweight, tokenizer-based approach.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser for Cedar schema language (`.cedarschema` files).
 //!
 //! Converts Cedar schema source into Karu's `ModuleDef` AST types for

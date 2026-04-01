@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! JSON path traversal for Karu.
 //!
 //! Allows navigating into nested JSON structures using dot-separated paths

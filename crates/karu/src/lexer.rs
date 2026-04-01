@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Lexer for Karu's Polar-inspired syntax.
 //!
 //! Tokenizes source code into a stream of tokens for the parser.

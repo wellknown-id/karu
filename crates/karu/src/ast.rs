@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Abstract Syntax Tree for Karu policies.
 
 use crate::schema::{AssertDef, ModuleDef};

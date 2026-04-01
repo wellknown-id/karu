@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Compiler from AST to executable Policy.
 //!
 //! Converts parsed AST into runtime [`Policy`] structures that can be evaluated.
