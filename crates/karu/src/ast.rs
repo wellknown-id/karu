@@ -43,10 +43,14 @@ pub enum ExpectedOutcome {
 /// An entity in a test case (resource, principal, or action).
 #[derive(Debug, Clone)]
 pub struct TestEntity {
-    /// Entity kind: "resource", "principal", or "action".
+    /// Entity kind: "resource", "principal", "actor", or "action".
     pub kind: String,
     /// Key-value pairs describing the entity fields.
     pub fields: Vec<(String, serde_json::Value)>,
+    /// True when parsed from shorthand form (e.g. `action "view"` → id="view").
+    /// In shorthand mode, the single `id` value is used directly as the entity
+    /// value instead of wrapping in an object.
+    pub shorthand: bool,
 }
 
 /// A rule definition.

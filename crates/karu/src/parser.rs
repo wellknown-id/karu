@@ -1223,24 +1223,34 @@ impl Parser {
                     });
                 }
                 _ => {
-                    // Parse an entity block: kind { key: value, ... }
+                    // Parse an entity: either a full block or shorthand
+                    //   Full:      kind { key: value, ... }
+                    //   Shorthand: kind "value"  →  { id: "value" }
                     let kind = self.expect_ident()?;
-                    self.expect(Token::LBrace)?;
 
-                    let mut fields = Vec::new();
-                    while self.current_token() != &Token::RBrace {
-                        let key = self.expect_ident()?;
-                        self.expect(Token::Colon)?;
-                        let value = self.parse_test_value()?;
-                        fields.push((key, value));
-                        // Optional trailing comma
-                        if self.current_token() == &Token::Comma {
-                            self.advance();
+                    let (fields, shorthand) = if self.current_token() == &Token::LBrace {
+                        // Full record form
+                        self.advance();
+                        let mut fields = Vec::new();
+                        while self.current_token() != &Token::RBrace {
+                            let key = self.expect_ident()?;
+                            self.expect(Token::Colon)?;
+                            let value = self.parse_test_value()?;
+                            fields.push((key, value));
+                            // Optional trailing comma
+                            if self.current_token() == &Token::Comma {
+                                self.advance();
+                            }
                         }
-                    }
-                    self.expect(Token::RBrace)?;
+                        self.expect(Token::RBrace)?;
+                        (fields, false)
+                    } else {
+                        // Shorthand: treat the next value as the `id` field
+                        let value = self.parse_test_value()?;
+                        (vec![("id".to_string(), value)], true)
+                    };
 
-                    entities.push(TestEntity { kind, fields });
+                    entities.push(TestEntity { kind, fields, shorthand });
                 }
             }
         }

@@ -677,15 +677,20 @@ pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
     for test in &program.tests {
         let mut flat = serde_json::Map::new();
         for entity in &test.entities {
-            let mut id_value = None;
-            for (key, value) in &entity.fields {
-                if key == "id" {
-                    id_value = Some(value.clone());
+            if entity.shorthand {
+                // Shorthand: `action "view"` → { "action": "view" }
+                if let Some((_, value)) = entity.fields.first() {
+                    flat.insert(entity.kind.clone(), value.clone());
                 }
-                flat.insert(format!("{}.{}", entity.kind, key), value.clone());
-            }
-            if let Some(id) = id_value {
-                flat.insert(entity.kind.clone(), id);
+            } else {
+                // Record: `actor { id: "alice", name: "Alice" }`
+                // → { "actor": {"id":"alice","name":"Alice"}, "actor.id": "alice", "actor.name": "Alice" }
+                let mut obj = serde_json::Map::new();
+                for (key, value) in &entity.fields {
+                    flat.insert(format!("{}.{}", entity.kind, key), value.clone());
+                    obj.insert(key.clone(), value.clone());
+                }
+                flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
             }
         }
         test_inputs.push(serde_json::Value::Object(flat));
@@ -880,15 +885,9 @@ allow view if
     action == "view";
 
 test "alice can view" {
-    principal {
-        id: "alice",
-    }
-    action {
-        id: "view",
-    }
-    resource {
-        id: "doc1",
-    }
+    principal "alice"
+    action "view"
+    resource "doc1"
     expect allow
 }
 "#;
