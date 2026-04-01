@@ -9,8 +9,8 @@ use crate::ast::{ExpectedOutcome, RuleAst};
 use crate::grammar;
 use crate::lexer::{Lexer, Token};
 use crate::parser::ParseError;
-use rust_sitter::error as ts_errors;
-use rust_sitter::Language;
+use krust_sitter::error as ts_errors;
+use krust_sitter::Language;
 
 /// Semantic token types used by the Karu LSP.
 /// The order must match SEMANTIC_TOKEN_TYPES.

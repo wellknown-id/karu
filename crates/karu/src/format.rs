@@ -8,7 +8,7 @@
 //! 4. Re-attaches comments at their original relative positions
 
 use crate::grammar::grammar;
-use rust_sitter::Language;
+use krust_sitter::Language;
 
 /// Format a Karu policy source file.
 ///

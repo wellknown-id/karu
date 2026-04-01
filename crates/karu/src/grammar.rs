@@ -1,6 +1,6 @@
 //! Tree-sitter grammar for Karu policy language.
 //!
-//! This module defines the Karu grammar using `rust-sitter` annotations,
+//! This module defines the Karu grammar using `krust-sitter` annotations,
 //! providing error-tolerant parsing with span information for dev tooling (LSP).
 //!
 //! The grammar produces its own AST types which can be converted to the
@@ -8,7 +8,7 @@
 
 #[allow(clippy::module_inception, clippy::manual_non_exhaustive)]
 pub mod grammar {
-    use rust_sitter::{Rule, Spanned};
+    use krust_sitter::{Rule, Spanned};
 
     // ── Token types ──────────────────────────────────────────────────────
 
@@ -713,7 +713,7 @@ impl Pattern {
 #[cfg(test)]
 mod tests {
     use super::grammar;
-    use rust_sitter::Language;
+    use krust_sitter::Language;
 
     #[test]
     fn test_parse_simple_allow() {
