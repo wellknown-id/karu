@@ -176,6 +176,9 @@ impl Parser {
                 Token::String(s) => {
                     let s = s.clone();
                     self.advance();
+                    if s.is_empty() {
+                        return Err(self.err("Import path must not be empty"));
+                    }
                     s
                 }
                 tok => {
@@ -417,6 +420,9 @@ impl Parser {
     fn parse_action(&mut self) -> Result<ActionDef, ParseError> {
         self.expect(Token::Action)?;
         let name = self.expect_ident_or_string()?;
+        if name.is_empty() {
+            return Err(self.err("Action name must not be empty"));
+        }
 
         // Optional appliesTo block
         let applies_to = if let Token::Ident(kw) = self.current_token() {
@@ -1129,7 +1135,10 @@ impl Parser {
         self.expect(Token::Test)?;
         // Consume the test name (a string literal)
         match self.current_token() {
-            Token::String(_) => {
+            Token::String(s) => {
+                if s.is_empty() {
+                    return Err(self.err("Test name must not be empty"));
+                }
                 self.advance();
             }
             tok => {
@@ -1167,6 +1176,9 @@ impl Parser {
         // Test name
         let name = match self.current_token().clone() {
             Token::String(s) => {
+                if s.is_empty() {
+                    return Err(self.err("Test name must not be empty"));
+                }
                 self.advance();
                 s
             }
