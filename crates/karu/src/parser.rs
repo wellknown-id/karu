@@ -249,7 +249,11 @@ impl Parser {
         // Rule name (optional - `allow if ...` has no name)
         let name = match self.current_token() {
             Token::Ident(_) | Token::String(_) | Token::Actor | Token::Resource | Token::Action => {
-                self.expect_ident_or_string()?
+                let n = self.expect_ident_or_string()?;
+                if n.is_empty() {
+                    return Err(self.err("Rule name must not be empty"));
+                }
+                n
             }
             _ => format!("{:?}", effect).to_lowercase(),
         };
