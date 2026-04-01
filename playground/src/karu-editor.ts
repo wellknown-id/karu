@@ -185,6 +185,16 @@ export class KaruEditor extends LitElement {
       content: '●';
       color: #fbbf24;
     }
+    /* Code action buttons in lint tooltips */
+    .cm-container .cm-editor .cm-diagnosticAction {
+      text-decoration: underline;
+      cursor: pointer;
+      color: #60a5fa;
+      font-weight: 500;
+    }
+    .cm-container .cm-editor .cm-diagnosticAction:hover {
+      color: #93c5fd;
+    }
   `;
 
   @property({ type: String }) language: 'karu' | 'json' = 'karu';
