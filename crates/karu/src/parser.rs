@@ -735,18 +735,34 @@ impl Parser {
     }
 
     fn parse_unary_expr(&mut self) -> Result<ExprAst, ParseError> {
-        if self.current_token() == &Token::Not {
+        // Count consecutive `not` tokens and collapse pairs:
+        // `not not x` ≡ `x`, `not not not x` ≡ `not x`.
+        // This prevents trivial DoS via `not not not...` chains.
+        let mut not_count = 0u32;
+        while self.current_token() == &Token::Not {
+            not_count += 1;
+            self.advance();
+        }
+
+        if not_count > 0 {
             self.depth += 1;
             if self.depth > MAX_DEPTH {
                 return Err(self.err("Expression nesting depth exceeded (max 256)"));
             }
-            self.advance();
-            let expr = self.parse_unary_expr()?;
-            self.depth -= 1;
-            return Ok(ExprAst::Not(Box::new(expr)));
         }
 
-        self.parse_primary_expr()
+        let expr = self.parse_primary_expr()?;
+
+        if not_count > 0 {
+            self.depth -= 1;
+        }
+
+        // Odd count → single Not; even count → identity
+        if not_count % 2 == 1 {
+            Ok(ExprAst::Not(Box::new(expr)))
+        } else {
+            Ok(expr)
+        }
     }
 
     fn parse_primary_expr(&mut self) -> Result<ExprAst, ParseError> {
