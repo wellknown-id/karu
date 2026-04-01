@@ -465,6 +465,7 @@ export class KaruPlayground extends LitElement {
               language="karu"
               .value=${this.policy}
               .testResults=${this.testResults?.tests ?? null}
+              .coverage=${this.testResults?.coverage ?? null}
               @change=${this.handlePolicyChange}
             ></karu-editor>
           </div>

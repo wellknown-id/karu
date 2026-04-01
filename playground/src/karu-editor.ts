@@ -13,9 +13,9 @@ import { linter, type Diagnostic } from '@codemirror/lint';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { json } from '@codemirror/lang-json';
 import { karuLanguage } from './karu-lang';
-import { getDiagnostics, getHover, getCompletions, getCodeActions, isReady, type LspTestResult } from './karu-engine';
+import { getDiagnostics, getHover, getCompletions, getCodeActions, isReady, type LspTestResult, type LspRuleCoverage } from './karu-engine';
 
-// ── Test result gutter markers ────────────────────────────────────
+// ── Test result & coverage gutter markers ─────────────────────────
 
 class TestPassMarker extends GutterMarker {
   toDOM() {
@@ -38,36 +38,95 @@ class TestFailMarker extends GutterMarker {
 const testPassMarker = new TestPassMarker();
 const testFailMarker = new TestFailMarker();
 
+class CoverageFullMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.textContent = '●';
+    el.className = 'test-gutter-cov-full';
+    el.title = 'Full test coverage';
+    return el;
+  }
+}
+
+class CoveragePartialMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.textContent = '◐';
+    el.className = 'test-gutter-cov-partial';
+    el.title = 'Partial test coverage';
+    return el;
+  }
+}
+
+class CoverageNoneMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.textContent = '○';
+    el.className = 'test-gutter-cov-none';
+    el.title = 'No test coverage';
+    return el;
+  }
+}
+
+const covFullMarker = new CoverageFullMarker();
+const covPartialMarker = new CoveragePartialMarker();
+const covNoneMarker = new CoverageNoneMarker();
+
 /** Effect to update the test result markers in the gutter. */
 const setTestMarkers = StateEffect.define<{ line: number; passed: boolean }[]>();
+/** Effect to update the coverage markers in the gutter. */
+const setCoverageMarkers = StateEffect.define<{ line: number; status: string }[]>();
 
-/** State field tracking test result markers. */
+interface GutterEntry {
+  from: number;
+  value: GutterMarker;
+}
+
+/** State field tracking test result + coverage markers. */
 const testMarkerField = StateField.define<RangeSet<GutterMarker>>({
   create() {
     return RangeSet.empty;
   },
   update(markers, tr) {
+    // We rebuild the full set when either effect fires
+    let testEntries: GutterEntry[] | null = null;
+    let covEntries: GutterEntry[] | null = null;
+
     for (const effect of tr.effects) {
       if (effect.is(setTestMarkers)) {
-        const builder: { from: number; to: number; value: GutterMarker }[] = [];
+        testEntries = [];
         for (const { line, passed } of effect.value) {
-          // line is 0-indexed from WASM, CM doc.line() is 1-indexed
           const cmLine = line + 1;
           if (cmLine >= 1 && cmLine <= tr.state.doc.lines) {
             const pos = tr.state.doc.line(cmLine).from;
-            builder.push({ from: pos, to: pos, value: passed ? testPassMarker : testFailMarker });
+            testEntries.push({ from: pos, value: passed ? testPassMarker : testFailMarker });
           }
         }
-        // Sort by from position
-        builder.sort((a, b) => a.from - b.from);
-        return RangeSet.of(builder.map(b => b.value.range(b.from)));
       }
+      if (effect.is(setCoverageMarkers)) {
+        covEntries = [];
+        for (const { line, status } of effect.value) {
+          const cmLine = line + 1;
+          if (cmLine >= 1 && cmLine <= tr.state.doc.lines) {
+            const pos = tr.state.doc.line(cmLine).from;
+            const marker = status === 'full' ? covFullMarker : status === 'partial' ? covPartialMarker : covNoneMarker;
+            covEntries.push({ from: pos, value: marker });
+          }
+        }
+      }
+    }
+
+    if (testEntries || covEntries) {
+      // Merge: combine whatever we have
+      const all = [...(testEntries || []), ...(covEntries || [])];
+      all.sort((a, b) => a.from - b.from);
+      return RangeSet.of(all.map(e => e.value.range(e.from)));
     }
     return markers;
   },
 });
 
-/** Gutter that shows test pass/fail markers. */
+/** Gutter that shows test pass/fail + coverage markers. */
 function testResultGutter() {
   return [
     testMarkerField,
@@ -276,12 +335,28 @@ export class KaruEditor extends LitElement {
       font-weight: bold;
       line-height: 1;
     }
+    .cm-container .cm-editor .test-gutter-cov-full {
+      color: #34d399;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .cm-container .cm-editor .test-gutter-cov-partial {
+      color: #fbbf24;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .cm-container .cm-editor .test-gutter-cov-none {
+      color: rgba(255,255,255,0.2);
+      font-size: 10px;
+      line-height: 1;
+    }
   `;
 
   @property({ type: String }) language: 'karu' | 'json' = 'karu';
   @property({ type: String }) value = '';
   @property({ type: Boolean }) readonly = false;
   @property({ attribute: false }) testResults: LspTestResult[] | null = null;
+  @property({ attribute: false }) coverage: LspRuleCoverage[] | null = null;
 
   private view?: EditorView;
   private _container?: HTMLDivElement;
@@ -374,7 +449,7 @@ export class KaruEditor extends LitElement {
         });
       }
     }
-    if (changedProperties.has('testResults') && this.view) {
+    if ((changedProperties.has('testResults') || changedProperties.has('coverage')) && this.view) {
       this.updateTestMarkers();
     }
   }
@@ -382,11 +457,21 @@ export class KaruEditor extends LitElement {
   /** Dispatch test result markers into the editor gutter. */
   private updateTestMarkers() {
     if (!this.view) return;
+    const effects: StateEffect<unknown>[] = [];
+
     const markers = (this.testResults || []).map(t => ({
       line: t.line,
       passed: t.passed,
     }));
-    this.view.dispatch({ effects: setTestMarkers.of(markers) });
+    effects.push(setTestMarkers.of(markers));
+
+    const covMarkers = (this.coverage || []).map(c => ({
+      line: c.line,
+      status: c.status,
+    }));
+    effects.push(setCoverageMarkers.of(covMarkers));
+
+    this.view.dispatch({ effects });
   }
 
   disconnectedCallback() {
