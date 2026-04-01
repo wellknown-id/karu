@@ -72,3 +72,19 @@ path = "fuzz_targets/fuzz_cedar_roundtrip.rs"
 test = false
 doc = false
 bench = false
+
+# Semantic evaluation correctness (PathRef, deny-overrides, schema mode)
+[[bin]]
+name = "fuzz_eval_semantic"
+path = "fuzz_targets/fuzz_eval_semantic.rs"
+test = false
+doc = false
+bench = false
+
+# Inline test parsing + execution
+[[bin]]
+name = "fuzz_inline_tests"
+path = "fuzz_targets/fuzz_inline_tests.rs"
+test = false
+doc = false
+bench = false

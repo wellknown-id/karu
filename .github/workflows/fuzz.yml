@@ -1,0 +1,56 @@
+name: fuzz
+
+on:
+  push:
+    paths:
+      - "crates/karu/src/**"
+      - "crates/karu/fuzz/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fuzz:
+    name: fuzz-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - fuzz_parser
+          - fuzz_lexer
+          - fuzz_compile
+          - fuzz_eval
+          - fuzz_eval_semantic
+          - fuzz_inline_tests
+          - fuzz_transpile
+          - fuzz_cedar_import
+          - fuzz_cedar_roundtrip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked
+
+      - name: Cache fuzz corpus
+        uses: actions/cache@v4
+        with:
+          path: crates/karu/fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.sha }}
+          restore-keys: fuzz-corpus-${{ matrix.target }}-
+
+      - name: Run ${{ matrix.target }}
+        run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=30
+        working-directory: crates/karu

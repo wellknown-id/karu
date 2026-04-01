@@ -33,6 +33,10 @@ static POLICIES: &[&str] = &[
         allow read if action == "read";
         deny blocked if user.status == "blocked";
     "#,
+    // Path-to-path comparison (entity references on RHS)
+    r#"allow owner if resource.ownerId == principal.id;"#,
+    r#"allow self if actor == resource.creator;"#,
+    r#"deny steal if resource.owner != actor;"#,
 ];
 
 fuzz_target!(|data: &[u8]| {
