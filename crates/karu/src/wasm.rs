@@ -302,6 +302,16 @@ pub fn karu_run_tests_js(source: &str) -> JsValue {
     }
 }
 
+/// Get code actions (quick-fixes) for a Karu source file (browser-friendly API).
+/// Returns JSON array: [{ title, kind, diagnostic_code?, edits: [{ line, col, end_col, new_text }] }]
+#[cfg(feature = "wasm")]
+#[wasm_bindgen]
+pub fn karu_code_actions_js(source: &str) -> JsValue {
+    let actions = crate::lsp_core::code_actions(source);
+    let json = serde_json::to_string(&actions).unwrap_or_else(|_| "[]".into());
+    JsValue::from_str(&json)
+}
+
 // ============================================================================
 // C-compatible FFI (original implementation)
 // ============================================================================

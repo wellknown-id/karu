@@ -22,6 +22,7 @@ interface KaruWasm {
   karu_completions_js(): string;
   karu_semantic_tokens_js(source: string): string;
   karu_run_tests_js(source: string): string | null;
+  karu_code_actions_js(source: string): string;
 }
 
 let wasmModule: KaruWasm | null = null;
@@ -232,6 +233,31 @@ export function runInlineTests(source: string): LspInlineTestResults | null {
     return JSON.parse(json) as LspInlineTestResults;
   } catch {
     return null;
+  }
+}
+
+export interface LspTextEdit {
+  line: number;
+  col: number;
+  end_col: number;
+  new_text: string;
+}
+
+export interface LspCodeAction {
+  title: string;
+  kind: string;
+  diagnostic_code?: string;
+  edits: LspTextEdit[];
+}
+
+/** Get code actions (quick-fixes) for a Karu source file. */
+export function getCodeActions(source: string): LspCodeAction[] {
+  if (!wasmModule) return [];
+  try {
+    const json = wasmModule.karu_code_actions_js(source);
+    return JSON.parse(json) as LspCodeAction[];
+  } catch {
+    return [];
   }
 }
 

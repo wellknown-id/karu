@@ -53,6 +53,32 @@ pub struct LspCompletion {
     pub kind: String,
 }
 
+/// A text edit to apply to the source.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct LspTextEdit {
+    /// 0-indexed line.
+    pub line: u32,
+    /// 0-indexed start column.
+    pub col: u32,
+    /// 0-indexed end column (for replacement range; same as col for pure inserts).
+    pub end_col: u32,
+    /// Text to insert/replace.
+    pub new_text: String,
+}
+
+/// A code action (quick-fix, refactor, etc.).
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct LspCodeAction {
+    pub title: String,
+    /// "quickfix", "refactor", etc.
+    pub kind: String,
+    /// The diagnostic code this action fixes (e.g. "W001").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_code: Option<String>,
+    /// Edits to apply.
+    pub edits: Vec<LspTextEdit>,
+}
+
 /// Semantic token types used by the Karu LSP.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -450,6 +476,57 @@ pub fn keyword_completions() -> Vec<LspCompletion> {
 }
 
 // ============================================================================
+// Code Actions
+// ============================================================================
+
+/// Get code actions for a Karu source file.
+///
+/// Currently produces quick-fixes for:
+/// - **W001**: Insert `has <path> and` guard before unguarded `forall`
+pub fn code_actions(source: &str) -> Vec<LspCodeAction> {
+    let program = match Parser::parse_with_tests(source) {
+        Ok(p) => p,
+        Err(_) => return vec![],
+    };
+
+    let warnings = crate::lint::lint(&program);
+    let lines: Vec<&str> = source.lines().collect();
+    let mut actions = Vec::new();
+
+    for warning in &warnings {
+        if warning.code == "W001" {
+            if let Some(ref forall_path) = warning.forall_path {
+                // Find the forall keyword position
+                if let Some((line_idx, col, _end_col)) = find_forall_in_rule(
+                    source,
+                    &lines,
+                    &warning.rule_name,
+                    Some(forall_path),
+                ) {
+                    // Build the guard text: "has <path> and\n<indent>"
+                    let indent = &lines[line_idx][..col];
+                    let guard = format!("has {} and\n{}", forall_path, indent);
+
+                    actions.push(LspCodeAction {
+                        title: format!("Add `has {}` guard", forall_path),
+                        kind: "quickfix".into(),
+                        diagnostic_code: Some("W001".into()),
+                        edits: vec![LspTextEdit {
+                            line: line_idx as u32,
+                            col: col as u32,
+                            end_col: col as u32,
+                            new_text: guard,
+                        }],
+                    });
+                }
+            }
+        }
+    }
+
+    actions
+}
+
+// ============================================================================
 // Semantic Tokens
 // ============================================================================
 
@@ -826,5 +903,22 @@ test "alice can view" {
     fn test_run_inline_tests_no_tests() {
         let source = r#"allow access if role == "admin";"#;
         assert!(run_inline_tests(source).is_none());
+    }
+
+    #[test]
+    fn test_code_actions_w001() {
+        let source = "allow batch if\n    forall item in resource.items:\n        item.approved == true;";
+        let actions = code_actions(source);
+        assert!(!actions.is_empty(), "should have a W001 quick-fix");
+        assert_eq!(actions[0].diagnostic_code, Some("W001".into()));
+        assert!(actions[0].title.contains("resource.items"));
+        assert!(actions[0].edits[0].new_text.contains("has resource.items"));
+    }
+
+    #[test]
+    fn test_code_actions_no_warning() {
+        let source = "allow batch if\n    has resource.items and\n    forall item in resource.items:\n        item.approved == true;";
+        let actions = code_actions(source);
+        assert!(actions.is_empty(), "guarded forall should have no code action");
     }
 }

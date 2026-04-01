@@ -13,7 +13,7 @@ import { linter, type Diagnostic } from '@codemirror/lint';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { json } from '@codemirror/lang-json';
 import { karuLanguage } from './karu-lang';
-import { getDiagnostics, getHover, getCompletions, isReady } from './karu-engine';
+import { getDiagnostics, getHover, getCompletions, getCodeActions, isReady } from './karu-engine';
 
 /** CodeMirror linter that calls the WASM engine for real-time diagnostics. */
 function karuLinter() {
@@ -21,17 +21,42 @@ function karuLinter() {
     if (!isReady()) return [];
     const source = view.state.doc.toString();
     const diags = getDiagnostics(source);
+    const actions = getCodeActions(source);
 
     return diags.map((d): Diagnostic => {
       const line = view.state.doc.line(d.line + 1); // CM lines are 1-indexed
       const from = Math.min(line.from + d.col, line.to);
       const to = Math.min(line.from + d.end_col, line.to);
+
+      // Find matching code actions for this diagnostic
+      const diagActions: Array<{ name: string; apply: (view: EditorView, from: number, to: number) => void }> = [];
+      if (d.code) {
+        for (const action of actions) {
+          if (action.diagnostic_code === d.code) {
+            diagActions.push({
+              name: action.title,
+              apply: (v) => {
+                // Apply all edits from this action
+                const changes = action.edits.map(edit => {
+                  const editLine = v.state.doc.line(edit.line + 1);
+                  const editFrom = editLine.from + edit.col;
+                  const editTo = editLine.from + edit.end_col;
+                  return { from: editFrom, to: editTo, insert: edit.new_text };
+                });
+                v.dispatch({ changes });
+              },
+            });
+          }
+        }
+      }
+
       return {
         from,
         to: Math.max(to, from + 1),
         severity: d.severity === 'warning' ? 'warning' : d.severity === 'info' ? 'info' : 'error',
         message: d.message,
         source: d.code ? `karu(${d.code})` : 'karu',
+        actions: diagActions.length > 0 ? diagActions : undefined,
       };
     });
   }, { delay: 300 });
