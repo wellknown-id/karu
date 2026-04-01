@@ -1,6 +1,6 @@
 # Karu Roadmap
 
-> **Last updated:** March 2026
+> **Last updated:** April 2026
 
 This document outlines the development trajectory for Karu, from the current foundation to a production-ready policy engine.
 
@@ -91,6 +91,21 @@ This document outlines the development trajectory for Karu, from the current fou
 
 ---
 
+## Phase 6: Distribution & Packaging
+
+**Goal:** Make Karu available across every major platform and package manager.
+
+- [ ] **npm Package** - WASM-based package for Node.js/Bun/Deno (`npm install karu`)
+- [ ] **crates.io** - Publish `karu`, `karu-cli` crates
+- [ ] **VS Code Marketplace** - Extension with bundled LSP
+- [ ] **Open VSX Registry** - Extension for VS Code OSS / Code Server
+- [ ] **Go Bindings** - CGo wrapper via C FFI (`bindings/go/`)
+- [ ] **Swift Bindings** - SPM package via C FFI (`bindings/swift/`)
+- [ ] **Android Libraries** - Shared libs for arm64-v8a, armeabi-v7a, x86_64
+- [ ] **Nightly Releases** - Automated nightly builds of all artifacts
+
+---
+
 ## Non-Goals
 
 These are explicitly out of scope to keep Karu focused:
@@ -102,3 +117,4 @@ These are explicitly out of scope to keep Karu focused:
 ---
 
 _Questions? Open an issue or start a discussion._
+

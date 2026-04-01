@@ -39,4 +39,19 @@ fn main() {
             std::fs::write(&out, serde_json::to_string_pretty(&json).unwrap()).unwrap();
         }
     }
+
+    // Generate C header via cbindgen when the ffi feature is enabled
+    #[cfg(feature = "ffi")]
+    {
+        let crate_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let out_dir = std::path::PathBuf::from(&crate_dir).join("include");
+        std::fs::create_dir_all(&out_dir).unwrap();
+
+        cbindgen::Builder::new()
+            .with_crate(&crate_dir)
+            .with_config(cbindgen::Config::from_file("cbindgen.toml").unwrap())
+            .generate()
+            .expect("Unable to generate C bindings")
+            .write_to_file(out_dir.join("karu.h"));
+    }
 }

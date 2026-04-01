@@ -56,8 +56,41 @@ ln -s "$(pwd)" ~/.vscode/extensions/karu
 
 The nightly GitHub Actions workflow publishes:
 
-- `karu` CLI archives for Linux, macOS, and Windows on both x64 and arm64.
-- A self-contained VSIX that bundles `karu-lsp` for those same platforms.
+- `karu` CLI archives for Linux, macOS, and Windows on both x64 and arm64
+- A self-contained VSIX that bundles `karu-lsp` for those same platforms
+- npm package (WASM) via `wasm-pack` — published to npm with `--tag nightly`
+- Native static libraries (`libkaru.a` + `karu.h`) for Go and Swift bindings
+- Android shared libraries (`libkaru.so`) for arm64-v8a, armeabi-v7a, x86_64
+
+### Language Bindings
+
+| Language | Path | Usage |
+| -------- | ---- | ----- |
+| **Go** | `bindings/go/` | `import "github.com/wellknown-id/karu/bindings/go"` |
+| **Swift** | `bindings/swift/` | SPM package wrapping `libkaru` via C FFI |
+| **JavaScript** | `npm/karu/` | `npm install karu` (WASM) |
+
+To list the Swift package on the [Swift Package Index](https://swiftpackageindex.com), [submit an issue here](https://github.com/SwiftPackageIndex/PackageList/issues/new?template=add_package.yml).
+
+To build the FFI bindings locally:
+
+```bash
+# Build static lib + C header
+cargo build -p karu --features ffi,cedar --no-default-features --release
+# Header is written to crates/karu/include/karu.h
+# Library is at target/release/libkaru.a
+```
+
+### Release Secrets
+
+The following GitHub repository secrets must be configured for publishing:
+
+| Secret | Purpose |
+| ------ | ------- |
+| `CARGO_REGISTRY_TOKEN` | crates.io API token for publishing `karu` and `karu-cli` |
+| `NPM_TOKEN` | npm access token for publishing the WASM package |
+| `VSCE_PAT` | VS Code Marketplace personal access token |
+| `OVSX_TOKEN` | Open VSX Registry access token |
 
 ### Configuration
 

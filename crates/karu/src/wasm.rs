@@ -9,11 +9,15 @@
 //! for allocating and freeing memory for input strings. Karu allocates
 //! memory for output strings which the host should free using `karu_free`.
 
+#[cfg(any(feature = "wasm", feature = "ffi"))]
 use crate::compiler;
+#[cfg(feature = "wasm")]
 use crate::parser::Parser;
+#[cfg(any(feature = "wasm", feature = "ffi"))]
 use crate::rule::Effect;
-#[cfg(feature = "cedar")]
+#[cfg(all(feature = "cedar", any(feature = "wasm", feature = "ffi")))]
 use crate::transpile;
+#[cfg(feature = "ffi")]
 use std::slice;
 
 #[cfg(feature = "wasm")]
@@ -313,8 +317,15 @@ pub fn karu_code_actions_js(source: &str) -> JsValue {
 }
 
 // ============================================================================
-// C-compatible FFI (original implementation)
+// C-compatible FFI (enabled via `ffi` feature for native shared-lib builds)
 // ============================================================================
+
+#[cfg(feature = "ffi")]
+mod ffi_impl {
+    use super::*;
+    use crate::parser::Parser;
+    #[cfg(feature = "cedar")]
+    use crate::transpile;
 
 /// Result codes for FFI functions.
 #[repr(C)]
@@ -676,3 +687,8 @@ mod tests {
         }
     }
 }
+
+} // mod ffi_impl
+
+#[cfg(feature = "ffi")]
+pub use ffi_impl::*;

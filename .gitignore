@@ -2,4 +2,15 @@
 node_modules/
 *.vsix
 .DS_Store
-crates/karu/editors/vscode/bin/
+editors/vscode/bin/
+crates/karu/include/
+/dist/
+npm/karu/karu_bg.wasm
+npm/karu/karu.js
+npm/karu/karu.d.ts
+npm/karu/karu_bg.wasm.d.ts
+npm/karu/wasm-out/
+npm/karu/*.tgz
+bindings/swift/.build/
+bindings/swift/Sources/CKaru/karu.h
+editors/vscode/syntaxes/*.tmLanguage.json

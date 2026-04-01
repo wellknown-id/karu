@@ -1,0 +1,38 @@
+{
+  "name": "karu",
+  "version": "0.1.0",
+  "description": "An embeddable policy engine focusing on structural pattern matching over arbitrary JSON data",
+  "type": "module",
+  "main": "karu.js",
+  "types": "karu.d.ts",
+  "files": [
+    "karu_bg.wasm",
+    "karu.js",
+    "karu.d.ts",
+    "karu_bg.wasm.d.ts",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wellknown-id/karu"
+  },
+  "keywords": [
+    "policy",
+    "authorization",
+    "pattern-matching",
+    "access-control",
+    "abac",
+    "rbac",
+    "cedar",
+    "wasm"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/wellknown-id/karu",
+  "bugs": {
+    "url": "https://github.com/wellknown-id/karu/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false
+}
