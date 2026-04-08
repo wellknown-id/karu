@@ -1850,7 +1850,9 @@ fn is_error_in_comment(
     let err_range = &error.error_position.bytes;
     let bytes = source.as_bytes();
     for i in err_range.start..err_range.end {
-        if i >= bytes.len() { break; }
+        if i >= bytes.len() {
+            break;
+        }
         let is_space = bytes[i].is_ascii_whitespace();
         let is_comment = comment_ranges.iter().any(|r| i >= r.start && i < r.end);
         if !is_space && !is_comment {
