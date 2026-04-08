@@ -630,4 +630,12 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn test_lex_error_unknown_character() {
+        let result = Lexer::tokenize("@");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.message.contains("Unexpected character"));
+    }
 }
