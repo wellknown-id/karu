@@ -686,14 +686,6 @@ mod tests {
     }
 
     #[test]
-    fn test_type_shape_empty() {
-        let shape = TypeShape::empty();
-        assert_eq!(shape.presence, 0);
-        assert!(shape.fields.is_empty());
-        assert!(shape.children.is_empty());
-    }
-
-    #[test]
     fn test_recursive_nested_type_checking() {
         // File { owner User, name String }
         // User { name String, email String }
