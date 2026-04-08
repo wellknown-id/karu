@@ -48,17 +48,12 @@ impl std::error::Error for TranspileError {}
 
 /// Transpile a Karu program to Cedar syntax.
 pub fn to_cedar(program: &Program) -> Result<String, TranspileError> {
-    let mut output = String::new();
-
-    for (i, rule) in program.rules.iter().enumerate() {
-        if i > 0 {
-            output.push_str("\n\n");
-        }
-        let cedar_rule = rule_to_cedar(rule)?;
-        output.push_str(&cedar_rule);
-    }
-
-    Ok(output)
+    program
+        .rules
+        .iter()
+        .map(rule_to_cedar)
+        .collect::<Result<Vec<_>, _>>()
+        .map(|rules| rules.join("\n\n"))
 }
 
 /// Transpile a single Karu rule to Cedar.
