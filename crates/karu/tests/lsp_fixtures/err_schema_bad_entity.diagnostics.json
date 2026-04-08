@@ -1,7 +1,7 @@
 [
   {
     "line": 2,
-    "character": 9,
+    "character": 4,
     "severity": "error",
     "message_contains": "Parse error"
   },

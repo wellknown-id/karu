@@ -1,3 +1,4 @@
+#![cfg(feature = "lsp")]
 // SPDX-License-Identifier: MIT
 
 /// After the fix, cedar_ts_parse_diagnostics should return no diagnostics

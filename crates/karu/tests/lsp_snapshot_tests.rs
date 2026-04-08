@@ -1,3 +1,4 @@
+#![cfg(all(feature = "dev", feature = "lsp"))]
 // SPDX-License-Identifier: MIT
 
 //! Snapshot-based tests for LSP functions.
