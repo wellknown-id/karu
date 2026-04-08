@@ -53,3 +53,7 @@ harness = false
 name = "parser_compare"
 harness = false
 required-features = ["dev"]
+
+[[bench]]
+name = "lint_bench"
+harness = false
