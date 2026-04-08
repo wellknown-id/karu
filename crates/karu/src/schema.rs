@@ -178,3 +178,130 @@ pub struct AssertDef {
     /// The condition expression body.
     pub body: ExprAst,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::{ExprAst, PathAst, PathSegmentAst};
+
+    #[test]
+    fn test_type_ref() {
+        let named = TypeRef::Named("String".to_string());
+        let set = TypeRef::Set(Box::new(named.clone()));
+        let field = FieldDef {
+            name: "field".to_string(),
+            ty: named.clone(),
+            optional: false,
+        };
+        let record = TypeRef::Record(vec![field]);
+        let union = TypeRef::Union(vec![named.clone(), set.clone()]);
+
+        assert!(format!("{:?}", named).contains("Named(\"String\")"));
+        assert!(format!("{:?}", set).contains("Set"));
+        assert!(format!("{:?}", record).contains("Record"));
+        assert!(format!("{:?}", union).contains("Union"));
+
+        let _cloned = union.clone();
+    }
+
+    #[test]
+    fn test_entity_def() {
+        let field = FieldDef {
+            name: "id".to_string(),
+            ty: TypeRef::Named("String".to_string()),
+            optional: true,
+        };
+
+        let entity = EntityDef {
+            kind: EntityKind::Actor,
+            name: "User".to_string(),
+            parents: vec!["Folder".to_string()],
+            traits: vec!["Ownable".to_string()],
+            fields: vec![field],
+        };
+
+        assert_eq!(entity.kind, EntityKind::Actor);
+        assert_eq!(entity.name, "User");
+        assert_eq!(entity.parents, vec!["Folder".to_string()]);
+        assert_eq!(entity.traits, vec!["Ownable".to_string()]);
+        assert_eq!(entity.fields.len(), 1);
+
+        let _cloned = entity.clone();
+        assert!(format!("{:?}", entity).contains("Actor"));
+    }
+
+    #[test]
+    fn test_action_def() {
+        let applies_to = ActionAppliesTo {
+            actors: vec!["User".to_string()],
+            resources: vec!["File".to_string()],
+            context: Some(vec![FieldDef {
+                name: "ip".to_string(),
+                ty: TypeRef::Named("String".to_string()),
+                optional: false,
+            }]),
+        };
+
+        let action = ActionDef {
+            name: "Delete".to_string(),
+            applies_to: Some(applies_to),
+        };
+
+        assert_eq!(action.name, "Delete");
+        assert!(action.applies_to.is_some());
+
+        let _cloned = action.clone();
+        assert!(format!("{:?}", action).contains("Delete"));
+    }
+
+    #[test]
+    fn test_module_def() {
+        let module = ModuleDef {
+            name: Some("MyNamespace".to_string()),
+            entities: vec![],
+            actions: vec![],
+            abstracts: vec![],
+        };
+
+        assert_eq!(module.name, Some("MyNamespace".to_string()));
+        assert!(module.entities.is_empty());
+
+        let _cloned = module.clone();
+        assert!(format!("{:?}", module).contains("MyNamespace"));
+    }
+
+    #[test]
+    fn test_abstract_def() {
+        let abstract_def = AbstractDef {
+            name: "Ownable".to_string(),
+            fields: vec![FieldDef {
+                name: "owner".to_string(),
+                ty: TypeRef::Named("User".to_string()),
+                optional: false,
+            }],
+        };
+
+        assert_eq!(abstract_def.name, "Ownable");
+        assert_eq!(abstract_def.fields.len(), 1);
+
+        let _cloned = abstract_def.clone();
+        assert!(format!("{:?}", abstract_def).contains("Ownable"));
+    }
+
+    #[test]
+    fn test_assert_def() {
+        let assert_def = AssertDef {
+            name: "is_admin".to_string(),
+            type_params: vec!["User".to_string()],
+            body: ExprAst::Has {
+                path: PathAst { segments: vec![PathSegmentAst::Field("is_admin".to_string())] }
+            },
+        };
+
+        assert_eq!(assert_def.name, "is_admin");
+        assert_eq!(assert_def.type_params, vec!["User".to_string()]);
+
+        let _cloned = assert_def.clone();
+        assert!(format!("{:?}", assert_def).contains("is_admin"));
+    }
+}
