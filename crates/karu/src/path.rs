@@ -248,6 +248,21 @@ mod tests {
     }
 
     #[test]
+    fn test_is_empty() {
+        let empty_path = Path::root();
+        assert!(empty_path.is_empty());
+
+        let empty_path_from_str = Path::parse("");
+        assert!(empty_path_from_str.is_empty());
+
+        let non_empty_path = Path::parse("foo");
+        assert!(!non_empty_path.is_empty());
+
+        let complex_path = Path::parse("foo.bar[0]");
+        assert!(!complex_path.is_empty());
+    }
+
+    #[test]
     fn test_parse_with_numeric_index() {
         let path = Path::parse("items.0.name");
         assert_eq!(path.len(), 3);
