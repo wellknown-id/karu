@@ -749,8 +749,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter"
-version = "0.5.0"
-source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e508af8c809fae7e1f1b86c5add46727277477ba2da9ad87807d118292113a8"
 dependencies = [
  "krust-sitter-macro",
  "krust-sitter-types",
@@ -762,8 +763,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-common"
-version = "0.5.0"
-source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7da79dae17b9a80ab39ff44277c19417d429cdeb1b01b28315ac0e5b236fdbe"
 dependencies = [
  "itertools 0.14.0",
  "krust-sitter-types",
@@ -775,8 +777,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-macro"
-version = "0.5.0"
-source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5aab37670a4ae5b3c81e35731397ce34cbc5da2ef4faa592dc63ea45c0d6ef2"
 dependencies = [
  "krust-sitter-common",
  "krust-sitter-types",
@@ -787,8 +790,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-tool"
-version = "0.5.0"
-source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb83e027ef645cfd049b9a4f7713849c4c2b71c01a0a135362424ef7e285b03d"
 dependencies = [
  "cc",
  "krust-sitter-common",
@@ -804,8 +808,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-types"
-version = "0.5.0"
-source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a041e87b78afbedb4559e77076f25678f214d8163d8976950ffeef42cd35c18"
 dependencies = [
  "indexmap",
  "serde",

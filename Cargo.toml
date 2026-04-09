@@ -14,10 +14,3 @@ exclude = [
     "crates/karu/benches/advanced-benchmark",
 ]
 resolver = "2"
-
-[patch.crates-io]
-krust-sitter = { git = "https://github.com/wellknown-id/krust-sitter", rev = "8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975" }
-krust-sitter-common = { git = "https://github.com/wellknown-id/krust-sitter", rev = "8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975" }
-krust-sitter-macro = { git = "https://github.com/wellknown-id/krust-sitter", rev = "8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975" }
-krust-sitter-tool = { git = "https://github.com/wellknown-id/krust-sitter", rev = "8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975" }
-krust-sitter-types = { git = "https://github.com/wellknown-id/krust-sitter", rev = "8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975" }
