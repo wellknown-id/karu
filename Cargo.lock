@@ -750,8 +750,7 @@ dependencies = [
 [[package]]
 name = "krust-sitter"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edeab585f2994ace2c71dd30b351b026359af485e82855cd1b49973a17323194"
+source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
 dependencies = [
  "krust-sitter-macro",
  "krust-sitter-types",
@@ -764,8 +763,7 @@ dependencies = [
 [[package]]
 name = "krust-sitter-common"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67e445b438e3ac4ec34e26f051825b41a0154595546085262b16956234bc4e68"
+source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
 dependencies = [
  "itertools 0.14.0",
  "krust-sitter-types",
@@ -778,8 +776,7 @@ dependencies = [
 [[package]]
 name = "krust-sitter-macro"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1d8af55b06b5f4ec535b771c7f9021037817e4129d75c5d4227f256314a8b36"
+source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
 dependencies = [
  "krust-sitter-common",
  "krust-sitter-types",
@@ -791,8 +788,7 @@ dependencies = [
 [[package]]
 name = "krust-sitter-tool"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a900153602527465c3dbd27675988dffe7169ae814be7a9d69e7b3fc43f3d445"
+source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
 dependencies = [
  "cc",
  "krust-sitter-common",
@@ -809,8 +805,7 @@ dependencies = [
 [[package]]
 name = "krust-sitter-types"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adabb9f334fb00aaf51e4d3c7af81bd904b6c6a093de8e0ee871c7d13d3920c8"
+source = "git+https://github.com/wellknown-id/krust-sitter?rev=8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975#8e42c8e5c930c1bb7f72d0f870a7f696e6f6a975"
 dependencies = [
  "indexmap",
  "serde",
