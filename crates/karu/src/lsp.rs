@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Language Server Protocol support for Karu.
 //!
 //! This module provides core LSP functionality that can be used by the
@@ -9,8 +11,8 @@ use crate::ast::{ExpectedOutcome, RuleAst};
 use crate::grammar;
 use crate::lexer::{Lexer, Token};
 use crate::parser::ParseError;
-use rust_sitter::error as ts_errors;
-use rust_sitter::Language;
+use krust_sitter::error as ts_errors;
+use krust_sitter::Language;
 
 /// Semantic token types used by the Karu LSP.
 /// The order must match SEMANTIC_TOKEN_TYPES.
@@ -434,15 +436,17 @@ pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
     for test in &program.tests {
         let mut flat = serde_json::Map::new();
         for entity in &test.entities {
-            let mut id_value = None;
-            for (key, value) in &entity.fields {
-                if key == "id" {
-                    id_value = Some(value.clone());
+            if entity.shorthand {
+                if let Some((_, value)) = entity.fields.first() {
+                    flat.insert(entity.kind.clone(), value.clone());
                 }
-                flat.insert(format!("{}.{}", entity.kind, key), value.clone());
-            }
-            if let Some(id) = id_value {
-                flat.insert(entity.kind.clone(), id);
+            } else {
+                let mut obj = serde_json::Map::new();
+                for (key, value) in &entity.fields {
+                    flat.insert(format!("{}.{}", entity.kind, key), value.clone());
+                    obj.insert(key.clone(), value.clone());
+                }
+                flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
             }
         }
         test_inputs.push(serde_json::Value::Object(flat));
@@ -729,7 +733,7 @@ pub fn parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     let real_errors: Vec<_> = parse_result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .collect();
 
     if real_errors.is_empty() {
@@ -1837,15 +1841,23 @@ fn collect_comment_byte_ranges(source: &str) -> Vec<std::ops::Range<usize>> {
 fn is_error_in_comment(
     error: &ts_errors::ParseError,
     comment_ranges: &[std::ops::Range<usize>],
+    source: &str,
 ) -> bool {
     // Only filter `Error` reason (not `Missing` or `Extract` which are real issues)
     if !matches!(error.reason, ts_errors::ParseErrorReason::Error) {
         return false;
     }
     let err_range = &error.error_position.bytes;
-    comment_ranges
-        .iter()
-        .any(|cr| err_range.start >= cr.start && err_range.end <= cr.end)
+    let bytes = source.as_bytes();
+    for i in err_range.start..err_range.end {
+        if i >= bytes.len() { break; }
+        let is_space = bytes[i].is_ascii_whitespace();
+        let is_comment = comment_ranges.iter().any(|r| i >= r.start && i < r.end);
+        if !is_space && !is_comment {
+            return false;
+        }
+    }
+    true
 }
 
 /// Convert a byte offset to (line, column), both 0-indexed.
@@ -2621,7 +2633,7 @@ pub fn cedar_ts_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .map(|e| ts_error_to_diagnostic(e, source))
         .collect()
 }
@@ -2637,7 +2649,7 @@ pub fn cedarschema_parse_diagnostics(source: &str) -> Vec<Diagnostic> {
     result
         .errors
         .iter()
-        .filter(|e| !is_error_in_comment(e, &comment_ranges))
+        .filter(|e| !is_error_in_comment(e, &comment_ranges, source))
         .map(|e| {
             let mut diag = ts_error_to_diagnostic(e, source);
             diag.source = Some("cedarschema".to_string());

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Compiler from AST to executable Policy.
 //!
 //! Converts parsed AST into runtime [`Policy`] structures that can be evaluated.
@@ -673,6 +675,29 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_invalid_syntax() {
+        // Missing semicolon
+        let err = compile("allow access").unwrap_err();
+        assert!(err.message.contains("Expected") || err.message.contains("found"));
+
+        // Missing condition after if
+        let err = compile("allow access if;").unwrap_err();
+        assert!(err.message.contains("Expected"));
+
+        // Missing right side of comparison
+        let err = compile("allow access if action == ;").unwrap_err();
+        assert!(err.message.contains("Expected pattern"));
+
+        // Bad effect
+        let err = compile("maybe access;").unwrap_err();
+        assert!(err.message.contains("Expected 'allow'"));
+
+        // Bad logic operator
+        let err = compile("allow access if action == \"read\" but true;").unwrap_err();
+        assert!(err.message.contains("Expected"));
+    }
+
+    #[test]
     fn test_complex_or_and_not() {
         // The user's exact example
         let policy = compile(
@@ -980,6 +1005,72 @@ mod schema_compile_tests {
         assert_eq!(
             policy.evaluate_with_context(&json!({}), &ctx),
             Effect::Allow
+        );
+    }
+}
+
+#[cfg(test)]
+mod quantifier_regression_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_forall_with_dot_path_body() {
+        // Regression: `item.approved` inside forall must resolve `item` from bindings
+        let policy = compile(
+            r#"
+            allow batch if
+                forall item in resource.items:
+                    item.approved == true;
+        "#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            policy.evaluate(&json!({
+                "resource": {
+                    "items": [
+                        {"id": 1, "approved": true},
+                        {"id": 2, "approved": true}
+                    ]
+                }
+            })),
+            Effect::Allow,
+        );
+
+        // One unapproved → deny
+        assert_eq!(
+            policy.evaluate(&json!({
+                "resource": {
+                    "items": [
+                        {"id": 1, "approved": true},
+                        {"id": 2, "approved": false}
+                    ]
+                }
+            })),
+            Effect::Deny,
+        );
+    }
+
+    #[test]
+    fn test_exists_with_dot_path_body() {
+        let policy = compile(
+            r#"
+            allow ok;
+            deny flagged if
+                exists tag in resource.tags:
+                    tag == "blocked";
+        "#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            policy.evaluate(&json!({"resource": {"tags": ["normal", "reviewed"]}})),
+            Effect::Allow,
+        );
+        assert_eq!(
+            policy.evaluate(&json!({"resource": {"tags": ["normal", "blocked"]}})),
+            Effect::Deny,
         );
     }
 }

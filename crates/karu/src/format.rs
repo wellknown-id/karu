@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Formatter for Karu policy files.
 //!
 //! Provides canonical formatting with comment preservation.
@@ -8,17 +10,20 @@
 //! 4. Re-attaches comments at their original relative positions
 
 use crate::grammar::grammar;
-use rust_sitter::Language;
+use krust_sitter::Language;
 
 /// Format a Karu policy source file.
 ///
 /// Returns the canonically formatted source, or an error if parsing fails.
 ///
 /// # Example
-/// ```rust,ignore
+/// ```rust,no_run
+/// # #[cfg(feature = "dev")]
+/// # fn example() {
 /// let messy = r#"allow   view   if   principal  ==  "alice"  and action  == "view";"#;
 /// let formatted = karu::format::format_source(messy).unwrap();
 /// assert!(formatted.starts_with("allow view if"));
+/// # }
 /// ```
 pub fn format_source(source: &str) -> Result<String, String> {
     // Schema files: the formatter's comment/ordering logic doesn't yet handle
@@ -596,6 +601,18 @@ test "basic" {
         let first = format_source(input).unwrap();
         let second = format_source(&first).unwrap();
         assert_eq!(first, second, "Formatter is not idempotent!");
+    }
+
+    #[test]
+    fn test_format_empty_string() {
+        let result = format_source("");
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        // Since completely empty input produces an empty program,
+        // it shouldn't crash. Empty files often get a single newline
+        // during formatting or string construction if not handled purely empty.
+        // It's acceptable for it to be empty or just a newline.
+        assert!(output == "" || output == "\n");
     }
 
     #[test]

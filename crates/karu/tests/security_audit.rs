@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Security audit tests - PoC exploits for identified vulnerabilities.
 //!
 //! Each test validates a specific security finding. Tests marked with

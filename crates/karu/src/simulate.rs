@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Simulation mode for "what-if" policy analysis.
 //!
 //! Evaluate policies without enforcement, with detailed decision rationale.

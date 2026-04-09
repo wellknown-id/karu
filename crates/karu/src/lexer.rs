@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Lexer for Karu's Polar-inspired syntax.
 //!
 //! Tokenizes source code into a stream of tokens for the parser.
@@ -613,6 +615,22 @@ mod tests {
     }
 
     #[test]
+    fn test_lex_error_unterminated_string_literal() {
+        let result = Lexer::tokenize(r#""abc"#);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.message.contains("Unterminated string"));
+    }
+
+    #[test]
+    fn test_lex_error_unterminated_string_escape() {
+        let result = Lexer::tokenize(r#""abc\"#);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.message.contains("Unterminated string escape"));
+    }
+
+    #[test]
     fn test_lex_test_and_expect_keywords() {
         let tokens = Lexer::tokenize(r#"test "hello" { expect allow }"#).unwrap();
         assert_eq!(
@@ -627,5 +645,13 @@ mod tests {
                 Token::Eof,
             ]
         );
+    }
+
+    #[test]
+    fn test_lex_error_unknown_character() {
+        let result = Lexer::tokenize("@");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.message.contains("Unexpected character"));
     }
 }

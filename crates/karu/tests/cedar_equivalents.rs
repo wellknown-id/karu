@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Tests for Cedar policy equivalents.
 //!
 //! These tests demonstrate Karu equivalents to the Cedar policy examples

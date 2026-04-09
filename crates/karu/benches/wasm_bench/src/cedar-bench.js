@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Cedar WASM benchmark functions
 import * as cedar from '@cedar-policy/cedar-wasm';
 

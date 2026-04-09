@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser for Cedar policy language.
 //!
 //! Provides a proper recursive-descent parser for the full Cedar grammar
@@ -1592,6 +1594,12 @@ mod tests {
             p.policies[0].scope.principal,
             CedarScopeConstraint::Slot(_)
         ));
+    }
+
+    #[test]
+    fn test_template_slot_invalid() {
+        let err = parse(r#"permit(principal == ?invalid, action, resource in ?resource);"#).unwrap_err();
+        assert!(err.message.contains("Unknown template slot: ?invalid"));
     }
 
     #[test]

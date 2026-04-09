@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Pattern types for Karu's structural matching.
 //!
 //! Patterns define the shape of data we're looking for. Unlike strict schemas,

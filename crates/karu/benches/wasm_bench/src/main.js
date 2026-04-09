@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Main benchmark orchestrator
 import { SCENARIOS, generateBatchInputs } from './policies.js';
 import { initKaru, benchKaru, karuBatch } from './karu-bench.js';

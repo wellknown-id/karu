@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Semantic diff for policy changes.
 //!
 //! Compares policies to identify added, removed, and modified rules.

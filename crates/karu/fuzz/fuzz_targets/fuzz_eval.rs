@@ -4,14 +4,24 @@
 //! this target compiles known-good policies and fuzzes the evaluation
 //! path with arbitrary JSON data, testing the resolver, matcher,
 //! and condition evaluation with unexpected input shapes.
+//!
+//! NOTE: PathRef, quantifier, and schema-mode policies live in
+//! fuzz_eval_semantic to avoid stack pressure from too many compiled
+//! policies per iteration (libFuzzer's default stack is 81920 bytes).
 
 #![no_main]
 
 use karu::compile;
+use karu::rule::Policy;
 use libfuzzer_sys::fuzz_target;
+use std::sync::LazyLock;
 
 /// Pre-compiled policies covering diverse evaluation paths.
-static POLICIES: &[&str] = &[
+static COMPILED: LazyLock<Vec<Policy>> = LazyLock::new(|| {
+    SOURCES.iter().map(|s| compile(s).expect("Known-good")).collect()
+});
+
+static SOURCES: &[&str] = &[
     // Simple equality
     r#"allow access if role == "admin";"#,
     // Multi-condition
@@ -38,8 +48,7 @@ static POLICIES: &[&str] = &[
 fuzz_target!(|data: &[u8]| {
     // Try to interpret fuzz input as JSON
     if let Ok(input) = serde_json::from_slice::<serde_json::Value>(data) {
-        for policy_source in POLICIES {
-            let policy = compile(policy_source).expect("Known-good policy should compile");
+        for policy in COMPILED.iter() {
             // Evaluation should never panic regardless of input shape
             let _ = policy.evaluate(&input);
         }

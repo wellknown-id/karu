@@ -1,0 +1,33 @@
+{
+  "name": "karu-playground",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "wasm": "wasm-pack build ../crates/karu --target web --no-default-features --features wasm,cedar && mkdir -p public/wasm && cp ../crates/karu/pkg/karu_bg.wasm ../crates/karu/pkg/karu.js ../crates/karu/pkg/karu.d.ts ../crates/karu/pkg/karu_bg.wasm.d.ts public/wasm/",
+    "predev": "npm run wasm",
+    "dev": "vite",
+    "prebuild": "npm run wasm",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.20.1",
+    "@codemirror/commands": "^6.10.3",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/language": "^6.12.3",
+    "@codemirror/lint": "^6.9.5",
+    "@codemirror/search": "^6.6.0",
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/theme-one-dark": "^6.1.3",
+    "@codemirror/view": "^6.40.0",
+    "@lezer/highlight": "^1.2.3",
+    "@lezer/lr": "^1.4.8",
+    "lit": "^3.3.2"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1"
+  }
+}

@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: MIT
+
 //! Tree-sitter grammar for Karu policy language.
 //!
-//! This module defines the Karu grammar using `rust-sitter` annotations,
+//! This module defines the Karu grammar using `krust-sitter` annotations,
 //! providing error-tolerant parsing with span information for dev tooling (LSP).
 //!
 //! The grammar produces its own AST types which can be converted to the
@@ -8,7 +10,7 @@
 
 #[allow(clippy::module_inception, clippy::manual_non_exhaustive)]
 pub mod grammar {
-    use rust_sitter::{Rule, Spanned};
+    use krust_sitter::{Rule, Spanned};
 
     // ── Token types ──────────────────────────────────────────────────────
 
@@ -713,7 +715,7 @@ impl Pattern {
 #[cfg(test)]
 mod tests {
     use super::grammar;
-    use rust_sitter::Language;
+    use krust_sitter::Language;
 
     #[test]
     fn test_parse_simple_allow() {
@@ -844,5 +846,28 @@ mod tests {
             ast.rules[0].body,
             Some(crate::ast::ExprAst::And(_))
         ));
+    }
+
+    #[test]
+    fn test_rules_method_filtering() {
+        let code = r#"
+            use schema;
+            assert is_admin<User> if "admin" in actor.roles;
+            allow read if action == "read";
+            deny delete if action == "delete";
+        "#;
+        let result = grammar::Program::parse(code);
+        let prog = result.result.expect("should parse");
+
+        // Assert that we parsed exactly 4 top-level items
+        assert_eq!(prog.items.len(), 4);
+
+        // Assert that the rules() method correctly filtered out the UseSchema and Assert items
+        let rules = prog.rules();
+        assert_eq!(rules.len(), 2);
+
+        // Assert that the filtered rules match what we expect
+        assert_eq!(rules[0].name, "read");
+        assert_eq!(rules[1].name, "delete");
     }
 }

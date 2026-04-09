@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Import Cedar policies into Karu.
 //!
 //! Converts Cedar policy AST to Karu AST for interoperability with
@@ -41,7 +43,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```rust
 //! use karu::cedar_import::from_cedar;
 //!
 //! let cedar = r#"
@@ -416,7 +418,9 @@ fn convert_expr(expr: &CedarExpr) -> Result<ExprAst, ImportError> {
             // `expr is TypeName` → expr.type == "TypeName"
             // Requires entity data to carry a `type` field.
             let mut type_path = expr_to_path(expr)?;
-            type_path.segments.push(PathSegmentAst::Field("type".to_string()));
+            type_path
+                .segments
+                .push(PathSegmentAst::Field("type".to_string()));
             let type_check = ExprAst::Compare {
                 left: type_path,
                 op: OpAst::Eq,
@@ -437,9 +441,7 @@ fn convert_expr(expr: &CedarExpr) -> Result<ExprAst, ImportError> {
                     .segments
                     .push(PathSegmentAst::Field("groups".to_string()));
                 let group_check = ExprAst::In {
-                    pattern: PatternAst::Literal(serde_json::Value::String(
-                        in_entity.id.clone(),
-                    )),
+                    pattern: PatternAst::Literal(serde_json::Value::String(in_entity.id.clone())),
                     path: groups_path,
                 };
                 Ok(ExprAst::And(vec![type_check, group_check]))
@@ -1440,8 +1442,7 @@ mod tests {
     #[test]
     fn test_is_type_principal_scope() {
         // `principal is User` in scope → principal.type == "User"
-        let program =
-            from_cedar(r#"permit(principal is User, action, resource);"#).unwrap();
+        let program = from_cedar(r#"permit(principal is User, action, resource);"#).unwrap();
         assert_eq!(program.rules.len(), 1);
         if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
             assert_eq!(path_to_string(left), "principal.type");
@@ -1450,15 +1451,17 @@ mod tests {
                 matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "User")
             );
         } else {
-            panic!("Expected Compare on principal.type, got {:?}", program.rules[0].body);
+            panic!(
+                "Expected Compare on principal.type, got {:?}",
+                program.rules[0].body
+            );
         }
     }
 
     #[test]
     fn test_is_type_resource_scope() {
         // `resource is Document` in scope → resource.type == "Document"
-        let program =
-            from_cedar(r#"permit(principal, action, resource is Document);"#).unwrap();
+        let program = from_cedar(r#"permit(principal, action, resource is Document);"#).unwrap();
         assert_eq!(program.rules.len(), 1);
         if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
             assert_eq!(path_to_string(left), "resource.type");
@@ -1467,7 +1470,10 @@ mod tests {
                 matches!(right, PatternAst::Literal(serde_json::Value::String(s)) if s == "Document")
             );
         } else {
-            panic!("Expected Compare on resource.type, got {:?}", program.rules[0].body);
+            panic!(
+                "Expected Compare on resource.type, got {:?}",
+                program.rules[0].body
+            );
         }
     }
 
@@ -1506,10 +1512,9 @@ mod tests {
     #[test]
     fn test_is_type_in_when_clause() {
         // `principal is User` in when clause → principal.type == "User"
-        let program = from_cedar(
-            r#"permit(principal, action, resource) when { principal is User };"#,
-        )
-        .unwrap();
+        let program =
+            from_cedar(r#"permit(principal, action, resource) when { principal is User };"#)
+                .unwrap();
         if let Some(ExprAst::Compare { left, op, right }) = &program.rules[0].body {
             assert_eq!(path_to_string(left), "principal.type");
             assert_eq!(*op, OpAst::Eq);
@@ -1524,11 +1529,9 @@ mod tests {
     #[test]
     fn test_is_type_evaluates_correctly() {
         // Full evaluation: `principal is Admin` should check principal.type field
-        let program =
-            from_cedar(r#"permit(principal is Admin, action, resource);"#).unwrap();
+        let program = from_cedar(r#"permit(principal is Admin, action, resource);"#).unwrap();
         let policy =
-            crate::compiler::compile_program(&program, &std::collections::HashSet::new())
-                .unwrap();
+            crate::compiler::compile_program(&program, &std::collections::HashSet::new()).unwrap();
 
         // principal.type == "Admin" → allow
         let effect = policy.evaluate(&serde_json::json!({
@@ -1552,13 +1555,11 @@ mod tests {
     #[test]
     fn test_is_type_in_group_evaluates_correctly() {
         // Full evaluation: `principal is Admin in Group::"superusers"`
-        let program = from_cedar(
-            r#"permit(principal is Admin in Group::"superusers", action, resource);"#,
-        )
-        .unwrap();
-        let policy =
-            crate::compiler::compile_program(&program, &std::collections::HashSet::new())
+        let program =
+            from_cedar(r#"permit(principal is Admin in Group::"superusers", action, resource);"#)
                 .unwrap();
+        let policy =
+            crate::compiler::compile_program(&program, &std::collections::HashSet::new()).unwrap();
 
         // type "Admin" AND group "superusers" → allow
         let effect = policy.evaluate(&serde_json::json!({

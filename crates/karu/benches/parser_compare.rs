@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser comparison benchmarks: handrolled vs tree-sitter.
 //!
 //! Run with: `cargo bench --bench parser_compare --features dev`
@@ -5,7 +7,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use karu::grammar::grammar::Program;
 use karu::parser::Parser;
-use rust_sitter::Language;
+use krust_sitter::Language;
 
 /// Simple single-rule policy
 const SIMPLE: &str = r#"allow access if role == "admin";"#;

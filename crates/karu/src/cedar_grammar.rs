@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Tree-sitter grammar for Cedar policy language (dev-time parser).
 //!
 //! Provides error-tolerant parsing with span information for LSP tooling.
@@ -8,7 +10,7 @@
 
 #[allow(clippy::manual_non_exhaustive)]
 pub mod grammar {
-    use rust_sitter::Rule;
+    use krust_sitter::Rule;
 
     // ── Token types ──────────────────────────────────────────────────────
 
@@ -567,7 +569,7 @@ impl RelOp {
 #[cfg(test)]
 mod tests {
     use super::grammar;
-    use rust_sitter::Language;
+    use krust_sitter::Language;
 
     #[test]
     fn test_parse_simple_permit() {

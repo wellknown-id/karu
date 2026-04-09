@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Import resolver for multi-file Karu projects.
 //!
 //! Resolves `import "path";` directives, merging imported programs into
@@ -9,11 +11,14 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! use karu::resolver::{resolve, FsSourceLoader};
 //! use std::path::Path;
 //!
-//! let program = resolve(Path::new("policy.karu"), &FsSourceLoader)?;
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let program = resolve(Path::new("policy.karu"), &FsSourceLoader)?;
+//!     Ok(())
+//! }
 //! ```
 
 use crate::ast::Program;

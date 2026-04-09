@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Karu CLI - Policy evaluation and transpilation tool.
 
 use clap::{Parser, Subcommand};
@@ -152,13 +154,20 @@ fn run(cli: Cli) -> Result<(), String> {
             // Run lint and print any warnings
             let warnings = karu::lint::lint(&ast);
             for w in &warnings {
-                eprintln!("warning[{}]: {} (rule '{}')", w.code, w.message, w.rule_name);
+                eprintln!(
+                    "warning[{}]: {} (rule '{}')",
+                    w.code, w.message, w.rule_name
+                );
                 if let Some(ref s) = w.suggestion {
                     eprintln!("  help: {}", s);
                 }
             }
 
-            println!("OK ({} rules, {} warnings)", ast.rules.len(), warnings.len());
+            println!(
+                "OK ({} rules, {} warnings)",
+                ast.rules.len(),
+                warnings.len()
+            );
             Ok(())
         }
         Commands::Lint { policy, deny } => {
@@ -176,7 +185,10 @@ fn run(cli: Cli) -> Result<(), String> {
             }
 
             for w in &warnings {
-                eprintln!("warning[{}]: {} (rule '{}')", w.code, w.message, w.rule_name);
+                eprintln!(
+                    "warning[{}]: {} (rule '{}')",
+                    w.code, w.message, w.rule_name
+                );
                 if let Some(ref s) = w.suggestion {
                     eprintln!("  help: {}", s);
                 }
@@ -184,7 +196,10 @@ fn run(cli: Cli) -> Result<(), String> {
             eprintln!();
 
             if deny {
-                Err(format!("{} warning(s) treated as errors (--deny)", warnings.len()))
+                Err(format!(
+                    "{} warning(s) treated as errors (--deny)",
+                    warnings.len()
+                ))
             } else {
                 println!("{} warning(s)", warnings.len());
                 Ok(())

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Round-trip integration tests for Cedar ↔ Karu conversions.
 //!
 //! These tests use real Cedar example files from:

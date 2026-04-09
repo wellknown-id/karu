@@ -1,0 +1,5 @@
+module CKaru [system] {
+    header "karu.h"
+    link "karu"
+    export *
+}

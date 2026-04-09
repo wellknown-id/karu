@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Deterministic database seeder for scale benchmarks.
 //!
 //! Usage:

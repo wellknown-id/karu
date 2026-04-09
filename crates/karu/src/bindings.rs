@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Variable bindings for Karu's pattern matching.
 //!
 //! When patterns contain named variables (`Pattern::Variable(Some(name))`),

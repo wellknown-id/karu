@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Equivalent policies for Karu and Cedar
 // These express the SAME authorization logic
 

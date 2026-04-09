@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! # Karu
 //!
 //! An embeddable policy engine focusing on structural pattern matching over
@@ -90,6 +92,9 @@ pub mod transpile;
 pub mod type_registry;
 pub mod wasm;
 
+#[cfg(any(feature = "wasm", feature = "lsp"))]
+pub mod lsp_core;
+
 #[cfg(feature = "lsp")]
 pub mod lsp;
 
@@ -133,7 +138,7 @@ mod cedar_api {
     ///
     /// # Example
     ///
-    /// ```rust,ignore
+    /// ```rust
     /// use karu::compile_cedar;
     /// use karu::rule::Effect;
     /// use serde_json::json;

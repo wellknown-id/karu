@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
+  push:
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -16,6 +19,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # ========================================================================
+  # Build native binaries (CLI + LSP) — existing
+  # ========================================================================
   build-binaries:
     name: build-${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
@@ -84,6 +90,149 @@ jobs:
           name: vsix-karu-lsp-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/karu-lsp${{ matrix.binary_ext }}
 
+  # ========================================================================
+  # Build native static libraries (for Go / Swift bindings)
+  # ========================================================================
+  build-native-libs:
+    name: native-lib-${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - runner: macos-13
+            target: x86_64-apple-darwin
+          - runner: macos-15
+            target: aarch64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build static library with FFI
+        run: cargo build --locked --release --target ${{ matrix.target }} -p karu --features ffi --no-default-features --features cedar
+
+      - name: Package native library + header
+        run: |
+          mkdir -p dist
+          tar -czf dist/libkaru-${{ matrix.target }}.tar.gz \
+            -C target/${{ matrix.target }}/release libkaru.a \
+            -C ${{ github.workspace }}/crates/karu/include karu.h
+
+      - name: Upload native lib
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-libkaru-${{ matrix.target }}
+          path: dist/libkaru-${{ matrix.target }}.tar.gz
+
+  # ========================================================================
+  # Build WASM npm package
+  # ========================================================================
+  build-npm:
+    name: build-npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM package
+        run: wasm-pack build crates/karu --target bundler --features wasm,cedar --no-default-features --out-dir ../../npm/karu/wasm-out
+
+      - name: Assemble npm package
+        run: |
+          cd npm/karu
+          # Copy WASM artifacts into the publish directory
+          cp wasm-out/karu_bg.wasm .
+          cp wasm-out/karu.js .
+          cp wasm-out/karu.d.ts .
+          cp wasm-out/karu_bg.wasm.d.ts . 2>/dev/null || true
+          rm -rf wasm-out
+
+      - name: Set nightly version
+        if: github.ref == 'refs/tags/nightly' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          cd npm/karu
+          DATE=$(date +%Y%m%d)
+          node -e "const p=require('./package.json'); p.version=p.version+'-nightly.'+process.argv[1]; require('fs').writeFileSync('package.json',JSON.stringify(p,null,2));" "$DATE"
+
+      - name: npm pack
+        run: |
+          cd npm/karu
+          npm pack
+
+      - name: Upload npm tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-npm
+          path: npm/karu/karu-*.tgz
+
+  # ========================================================================
+  # Build Android shared libraries
+  # ========================================================================
+  build-android:
+    name: build-android
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Build Android libraries
+        run: |
+          for TARGET_ABI in "aarch64-linux-android:arm64-v8a" "armv7-linux-androideabi:armeabi-v7a" "x86_64-linux-android:x86_64"; do
+            TARGET="${TARGET_ABI%%:*}"
+            ABI="${TARGET_ABI##*:}"
+            echo "Building $ABI ($TARGET)..."
+            cargo ndk --target "$TARGET" -- build \
+              -p karu \
+              --features ffi,cedar \
+              --no-default-features \
+              --release
+            mkdir -p dist/android/$ABI
+            cp target/$TARGET/release/libkaru.so dist/android/$ABI/
+          done
+
+      - name: Build header
+        run: cargo build -p karu --features ffi --no-default-features --features cedar --release
+
+      - name: Package Android archive
+        run: |
+          mkdir -p dist/android/include
+          cp crates/karu/include/karu.h dist/android/include/
+          tar -czf dist/libkaru-android.tar.gz -C dist android
+
+      - name: Upload Android archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-android
+          path: dist/libkaru-android.tar.gz
+
+  # ========================================================================
+  # Package VSIX — existing
+  # ========================================================================
   package-vsix:
     name: package-vsix
     runs-on: ubuntu-latest
@@ -96,11 +245,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: crates/karu/editors/vscode/package-lock.json
+          cache-dependency-path: editors/vscode/package-lock.json
 
       - name: Install extension dependencies
         run: npm ci
-        working-directory: crates/karu/editors/vscode
+        working-directory: editors/vscode
 
       - name: Download bundled LSP binaries
         uses: actions/download-artifact@v4
@@ -110,25 +259,150 @@ jobs:
 
       - name: Stage self-contained binaries
         run: npm run build:vsix
-        working-directory: crates/karu/editors/vscode
+        working-directory: editors/vscode
         env:
           KARU_VSIX_ARTIFACT_DIR: /tmp/karu-vsix-artifacts
 
       - name: Package VSIX
-        run: npx @vscode/vsce package --allow-star-activation --skip-license --out /tmp/karu-nightly.vsix
-        working-directory: crates/karu/editors/vscode
+        run: npx @vscode/vsce package --allow-star-activation --skip-license --out /tmp/karu.vsix
+        working-directory: editors/vscode
 
       - name: Upload VSIX release asset
         uses: actions/upload-artifact@v4
         with:
           name: release-vsix
-          path: /tmp/karu-nightly.vsix
+          path: /tmp/karu.vsix
 
+  # ========================================================================
+  # Publish: crates.io
+  # ========================================================================
+  publish-crates:
+    name: publish-crates
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Publish karu crate
+        run: cargo publish -p karu --no-default-features --features cedar
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish karu-cli crate
+        run: |
+          sleep 30  # Wait for crates.io index update
+          cargo publish -p karu-cli
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  # ========================================================================
+  # Publish: npm
+  # ========================================================================
+  publish-npm:
+    name: publish-npm
+    runs-on: ubuntu-latest
+    needs: build-npm
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Download npm tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm
+          path: dist
+
+      - name: Publish to npm
+        run: |
+          TARBALL=$(ls dist/karu-*.tgz | head -1)
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            npm publish "$TARBALL" --access public
+          else
+            npm publish "$TARBALL" --access public --tag nightly
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # ========================================================================
+  # Publish: VS Code Marketplace + Open VSX
+  # ========================================================================
+  publish-vsix:
+    name: publish-vsix
+    runs-on: ubuntu-latest
+    needs: package-vsix
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download VSIX
+        uses: actions/download-artifact@v4
+        with:
+          name: release-vsix
+          path: dist
+
+      - name: Publish to VS Code Marketplace
+        run: |
+          VSIX=$(ls dist/*.vsix | head -1)
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            npx @vscode/vsce publish --packagePath "$VSIX" --skip-duplicate
+          else
+            npx @vscode/vsce publish --packagePath "$VSIX" --pre-release --skip-duplicate
+          fi
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX
+        run: |
+          VSIX=$(ls dist/*.vsix | head -1)
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            npx ovsx publish "$VSIX" -p "$OVSX_TOKEN"
+          else
+            npx ovsx publish "$VSIX" -p "$OVSX_TOKEN" --pre-release
+          fi
+        env:
+          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+
+  # ========================================================================
+  # Dry-run: crates.io (nightly only)
+  # ========================================================================
+  dryrun-crates:
+    name: dryrun-crates
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    if: "!startsWith(github.ref, 'refs/tags/v')"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Dry-run publish karu
+        run: cargo publish -p karu --dry-run --no-default-features --features cedar
+
+  # ========================================================================
+  # Release: GitHub
+  # ========================================================================
   release:
-    name: publish-nightly
+    name: publish-release
     runs-on: ubuntu-latest
     needs:
       - build-binaries
+      - build-native-libs
+      - build-npm
+      - build-android
       - package-vsix
 
     steps:
@@ -136,7 +410,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "name=Karu ${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=nightly" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "name=Karu Nightly" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Move nightly tag to this commit
+        if: steps.tag.outputs.tag == 'nightly'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -153,23 +441,26 @@ jobs:
       - name: Generate release metadata
         run: |
           cd dist
-          sha256sum * > SHA256SUMS.txt
+          sha256sum * > SHA256SUMS.txt 2>/dev/null || true
           cat > ../release-notes.md <<EOF
-          Automated nightly build for commit \`${GITHUB_SHA}\`.
+          Automated build for commit \`${GITHUB_SHA}\`.
 
           Included assets:
           - \`karu\` CLI archives for Linux, macOS, and Windows on x64 + arm64
-          - Self-contained VSIX with bundled \`karu-lsp\` binaries for all supported platforms
+          - Self-contained VSIX with bundled \`karu-lsp\` for all platforms
+          - npm package (WASM)
+          - Native static libraries (Go/Swift) for Linux and macOS
+          - Android shared libraries (arm64-v8a, armeabi-v7a, x86_64)
           - \`SHA256SUMS.txt\` for asset verification
           EOF
 
-      - name: Publish nightly release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: nightly
-          name: Karu Nightly
-          prerelease: true
-          make_latest: false
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.name }}
+          prerelease: ${{ steps.tag.outputs.prerelease }}
+          make_latest: ${{ steps.tag.outputs.tag != 'nightly' }}
           overwrite_files: true
           body_path: release-notes.md
           files: |

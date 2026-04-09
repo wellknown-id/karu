@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Karu performance benchmarks.
 //!
 //! Run with: `cargo bench`

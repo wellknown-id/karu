@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Parser for Karu's Polar-inspired syntax.
 //!
 //! Parses token streams into an AST, which can then be compiled into
@@ -75,10 +77,18 @@ impl From<LexError> for ParseError {
     }
 }
 
+/// Maximum nesting depth for expressions and patterns.
+///
+/// Prevents stack overflow from deeply nested inputs like `not not not...`,
+/// `(((...)))`, or `{a: {b: {c: ...}}}`. 256 levels is generous for any
+/// realistic policy while staying well within default stack limits.
+const MAX_DEPTH: usize = 256;
+
 /// Parser for Karu source code.
 pub struct Parser {
     tokens: Vec<Spanned>,
     pos: usize,
+    depth: usize,
 }
 
 impl Parser {
@@ -89,7 +99,7 @@ impl Parser {
     /// Test blocks are silently skipped.
     pub fn parse(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0 };
+        let mut parser = Parser { tokens, pos: 0, depth: 0 };
         parser.parse_program(false)
     }
 
@@ -99,7 +109,7 @@ impl Parser {
     /// `Program::tests`. Used by the `karu test` CLI command.
     pub fn parse_with_tests(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0 };
+        let mut parser = Parser { tokens, pos: 0, depth: 0 };
         parser.parse_program(true)
     }
 
@@ -174,6 +184,9 @@ impl Parser {
                 Token::String(s) => {
                     let s = s.clone();
                     self.advance();
+                    if s.is_empty() {
+                        return Err(self.err("Import path must not be empty"));
+                    }
                     s
                 }
                 tok => {
@@ -247,7 +260,11 @@ impl Parser {
         // Rule name (optional - `allow if ...` has no name)
         let name = match self.current_token() {
             Token::Ident(_) | Token::String(_) | Token::Actor | Token::Resource | Token::Action => {
-                self.expect_ident_or_string()?
+                let n = self.expect_ident_or_string()?;
+                if n.is_empty() {
+                    return Err(self.err("Rule name must not be empty"));
+                }
+                n
             }
             _ => format!("{:?}", effect).to_lowercase(),
         };
@@ -411,6 +428,9 @@ impl Parser {
     fn parse_action(&mut self) -> Result<ActionDef, ParseError> {
         self.expect(Token::Action)?;
         let name = self.expect_ident_or_string()?;
+        if name.is_empty() {
+            return Err(self.err("Action name must not be empty"));
+        }
 
         // Optional appliesTo block
         let applies_to = if let Token::Ident(kw) = self.current_token() {
@@ -669,7 +689,13 @@ impl Parser {
     }
 
     fn parse_expr(&mut self) -> Result<ExprAst, ParseError> {
-        self.parse_or_expr()
+        self.depth += 1;
+        if self.depth > MAX_DEPTH {
+            return Err(self.err("Expression nesting depth exceeded (max 256)"));
+        }
+        let result = self.parse_or_expr();
+        self.depth -= 1;
+        result
     }
 
     fn parse_or_expr(&mut self) -> Result<ExprAst, ParseError> {
@@ -709,13 +735,34 @@ impl Parser {
     }
 
     fn parse_unary_expr(&mut self) -> Result<ExprAst, ParseError> {
-        if self.current_token() == &Token::Not {
+        // Count consecutive `not` tokens and collapse pairs:
+        // `not not x` ≡ `x`, `not not not x` ≡ `not x`.
+        // This prevents trivial DoS via `not not not...` chains.
+        let mut not_count = 0u32;
+        while self.current_token() == &Token::Not {
+            not_count += 1;
             self.advance();
-            let expr = self.parse_unary_expr()?;
-            return Ok(ExprAst::Not(Box::new(expr)));
         }
 
-        self.parse_primary_expr()
+        if not_count > 0 {
+            self.depth += 1;
+            if self.depth > MAX_DEPTH {
+                return Err(self.err("Expression nesting depth exceeded (max 256)"));
+            }
+        }
+
+        let expr = self.parse_primary_expr()?;
+
+        if not_count > 0 {
+            self.depth -= 1;
+        }
+
+        // Odd count → single Not; even count → identity
+        if not_count % 2 == 1 {
+            Ok(ExprAst::Not(Box::new(expr)))
+        } else {
+            Ok(expr)
+        }
     }
 
     fn parse_primary_expr(&mut self) -> Result<ExprAst, ParseError> {
@@ -983,6 +1030,16 @@ impl Parser {
     }
 
     fn parse_pattern(&mut self) -> Result<PatternAst, ParseError> {
+        self.depth += 1;
+        if self.depth > MAX_DEPTH {
+            return Err(self.err("Pattern nesting depth exceeded (max 256)"));
+        }
+        let result = self.parse_pattern_inner();
+        self.depth -= 1;
+        result
+    }
+
+    fn parse_pattern_inner(&mut self) -> Result<PatternAst, ParseError> {
         match self.current_token() {
             Token::String(s) => {
                 let s = s.clone();
@@ -1020,9 +1077,14 @@ impl Parser {
                 // Check if followed by dot or bracket - if so, it's a path reference
                 let path = self.parse_path()?;
                 if path.segments.len() == 1 {
-                    // Single identifier = variable
                     if let PathSegmentAst::Field(name) = &path.segments[0] {
-                        Ok(PatternAst::Variable(name.clone()))
+                        // Known entity names are path references, not variables
+                        match name.as_str() {
+                            "actor" | "resource" | "principal" | "action" | "context" => {
+                                Ok(PatternAst::PathRef(path))
+                            }
+                            _ => Ok(PatternAst::Variable(name.clone())),
+                        }
                     } else {
                         // Index-only path not valid as pattern
                         Err(self.err("Expected pattern"))
@@ -1118,7 +1180,10 @@ impl Parser {
         self.expect(Token::Test)?;
         // Consume the test name (a string literal)
         match self.current_token() {
-            Token::String(_) => {
+            Token::String(s) => {
+                if s.is_empty() {
+                    return Err(self.err("Test name must not be empty"));
+                }
                 self.advance();
             }
             tok => {
@@ -1156,6 +1221,9 @@ impl Parser {
         // Test name
         let name = match self.current_token().clone() {
             Token::String(s) => {
+                if s.is_empty() {
+                    return Err(self.err("Test name must not be empty"));
+                }
                 self.advance();
                 s
             }
@@ -1223,24 +1291,38 @@ impl Parser {
                     });
                 }
                 _ => {
-                    // Parse an entity block: kind { key: value, ... }
+                    // Parse an entity: either a full block or shorthand
+                    //   Full:      kind { key: value, ... }
+                    //   Shorthand: kind "value"  →  { id: "value" }
                     let kind = self.expect_ident()?;
-                    self.expect(Token::LBrace)?;
 
-                    let mut fields = Vec::new();
-                    while self.current_token() != &Token::RBrace {
-                        let key = self.expect_ident()?;
-                        self.expect(Token::Colon)?;
-                        let value = self.parse_test_value()?;
-                        fields.push((key, value));
-                        // Optional trailing comma
-                        if self.current_token() == &Token::Comma {
-                            self.advance();
+                    let (fields, shorthand) = if self.current_token() == &Token::LBrace {
+                        // Full record form
+                        self.advance();
+                        let mut fields = Vec::new();
+                        while self.current_token() != &Token::RBrace {
+                            let key = self.expect_ident()?;
+                            self.expect(Token::Colon)?;
+                            let value = self.parse_test_value()?;
+                            fields.push((key, value));
+                            // Optional trailing comma
+                            if self.current_token() == &Token::Comma {
+                                self.advance();
+                            }
                         }
-                    }
-                    self.expect(Token::RBrace)?;
+                        self.expect(Token::RBrace)?;
+                        (fields, false)
+                    } else {
+                        // Shorthand: treat the next value as the `id` field
+                        let value = self.parse_test_value()?;
+                        (vec![("id".to_string(), value)], true)
+                    };
 
-                    entities.push(TestEntity { kind, fields });
+                    entities.push(TestEntity {
+                        kind,
+                        fields,
+                        shorthand,
+                    });
                 }
             }
         }
@@ -1276,6 +1358,39 @@ impl Parser {
             Token::False => {
                 self.advance();
                 Ok(serde_json::Value::Bool(false))
+            }
+            Token::Null => {
+                self.advance();
+                Ok(serde_json::Value::Null)
+            }
+            Token::LBrace => {
+                // Nested object: { key: value, ... }
+                self.advance();
+                let mut map = serde_json::Map::new();
+                while self.current_token() != &Token::RBrace {
+                    let key = self.expect_ident()?;
+                    self.expect(Token::Colon)?;
+                    let value = self.parse_test_value()?;
+                    map.insert(key, value);
+                    if self.current_token() == &Token::Comma {
+                        self.advance();
+                    }
+                }
+                self.expect(Token::RBrace)?;
+                Ok(serde_json::Value::Object(map))
+            }
+            Token::LBracket => {
+                // Array: [ value, ... ]
+                self.advance();
+                let mut arr = Vec::new();
+                while self.current_token() != &Token::RBracket {
+                    arr.push(self.parse_test_value()?);
+                    if self.current_token() == &Token::Comma {
+                        self.advance();
+                    }
+                }
+                self.expect(Token::RBracket)?;
+                Ok(serde_json::Value::Array(arr))
             }
             tok => Err(self.err(format!("Expected value in test entity, found {}", tok))),
         }

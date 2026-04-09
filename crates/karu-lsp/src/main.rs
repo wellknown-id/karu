@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 //! Karu Language Server
 //!
 //! LSP implementation for Karu policy files, providing diagnostics,
@@ -15,13 +17,13 @@ use karu::lsp::{
     cedar_document_symbols, cedar_parse_diagnostics, convert_cedar_to_karu, is_cedar_uri,
     is_cedarschema_uri,
 };
-#[cfg(all(feature = "dev", feature = "cedar"))]
-use karu::lsp::{
-    cedar_ts_parse_diagnostics, cedarschema_document_symbols, cedarschema_parse_diagnostics,
-};
 use karu::lsp::{
     cedar_semantic_tokens, document_symbols, find_definition, keyword_completions, keyword_hover,
     parse_diagnostics, run_inline_tests, semantic_tokens, SEMANTIC_TOKEN_TYPES,
+};
+#[cfg(all(feature = "dev", feature = "cedar"))]
+use karu::lsp::{
+    cedar_ts_parse_diagnostics, cedarschema_document_symbols, cedarschema_parse_diagnostics,
 };
 
 /// Document state for a single file
@@ -246,16 +248,7 @@ impl LanguageServer for KaruLanguageServer {
                 ),
                 document_formatting_provider: Some(OneOf::Left(true)),
                 definition_provider: Some(OneOf::Left(true)),
-                code_action_provider: {
-                    #[cfg(feature = "cedar")]
-                    {
-                        Some(CodeActionProviderCapability::Simple(true))
-                    }
-                    #[cfg(not(feature = "cedar"))]
-                    {
-                        None
-                    }
-                },
+                code_action_provider: Some(CodeActionProviderCapability::Simple(true)),
                 execute_command_provider: {
                     #[cfg(feature = "cedar")]
                     {
@@ -548,7 +541,9 @@ impl LanguageServer for KaruLanguageServer {
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
         let uri = &params.text_document.uri;
+        let mut actions: Vec<CodeActionOrCommand> = Vec::new();
 
+        // Cedar-to-Karu conversion action
         #[cfg(feature = "cedar")]
         if is_cedar_uri(uri.as_str()) {
             let action = CodeAction {
@@ -565,10 +560,72 @@ impl LanguageServer for KaruLanguageServer {
                 disabled: None,
                 data: None,
             };
-            return Ok(Some(vec![CodeActionOrCommand::CodeAction(action)]));
+            actions.push(CodeActionOrCommand::CodeAction(action));
         }
 
-        Ok(None)
+        // W001 quick-fix: add `has` guard before unguarded `forall`
+        {
+            let docs = self.documents.read().await;
+            if let Some(doc) = docs.get(uri) {
+                let lsp_actions = karu::lsp_core::code_actions(&doc.content);
+
+                for la in lsp_actions {
+                    let mut text_edits = Vec::new();
+                    for edit in &la.edits {
+                        let line = edit.line;
+                        text_edits.push(TextEdit {
+                            range: Range {
+                                start: Position {
+                                    line,
+                                    character: edit.col,
+                                },
+                                end: Position {
+                                    line,
+                                    character: edit.end_col,
+                                },
+                            },
+                            new_text: edit.new_text.clone(),
+                        });
+                    }
+
+                    // Attach the relevant diagnostic so the editor associates this
+                    // action with the squiggly underline
+                    let diagnostic = la.diagnostic_code.as_ref().and_then(|_code| {
+                        params
+                            .context
+                            .diagnostics
+                            .iter()
+                            .find(|d| {
+                                d.source.as_deref() == Some("karu") && d.message.contains("forall")
+                            })
+                            .cloned()
+                    });
+
+                    let mut changes = std::collections::HashMap::new();
+                    changes.insert(uri.clone(), text_edits);
+
+                    actions.push(CodeActionOrCommand::CodeAction(CodeAction {
+                        title: la.title,
+                        kind: Some(CodeActionKind::QUICKFIX),
+                        diagnostics: diagnostic.map(|d| vec![d]),
+                        edit: Some(WorkspaceEdit {
+                            changes: Some(changes),
+                            ..Default::default()
+                        }),
+                        command: None,
+                        is_preferred: Some(true),
+                        disabled: None,
+                        data: None,
+                    }));
+                }
+            }
+        }
+
+        if actions.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(actions))
+        }
     }
 
     async fn execute_command(
