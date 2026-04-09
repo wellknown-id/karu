@@ -44,7 +44,6 @@ cbindgen = { version = "0.27", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }
-krust-sitter-tool = "0.5.1"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

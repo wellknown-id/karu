@@ -2,16 +2,17 @@
 
 #![cfg(feature = "dev")]
 
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
-use krust_sitter_tool::TextMateBuilder;
 use serde_json::Value;
 
 fn generated_karu_textmate() -> Value {
-    TextMateBuilder::default()
-        .scope_name("karu")
-        .build(&PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/grammar.rs"))
-        .expect("generated karu tmLanguage grammar")
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../editors/vscode/syntaxes/karu.tmLanguage.json");
+    let contents =
+        fs::read_to_string(&path).unwrap_or_else(|err| panic!("failed to read {path:?}: {err}"));
+    serde_json::from_str(&contents)
+        .unwrap_or_else(|err| panic!("failed to parse generated {path:?}: {err}"))
 }
 
 fn field<'a>(value: &'a Value, key: &str) -> &'a Value {
