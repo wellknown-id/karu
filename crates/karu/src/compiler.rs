@@ -678,23 +678,23 @@ mod tests {
     fn test_compile_invalid_syntax() {
         // Missing semicolon
         let err = compile("allow access").unwrap_err();
-        assert!(err.message.contains("Expected") || err.message.contains("found"));
+        assert!(err.message.contains("Expected ;, found EOF"));
 
         // Missing condition after if
         let err = compile("allow access if;").unwrap_err();
-        assert!(err.message.contains("Expected"));
+        assert!(err.message.contains("Expected path identifier"));
 
         // Missing right side of comparison
         let err = compile("allow access if action == ;").unwrap_err();
-        assert!(err.message.contains("Expected pattern"));
+        assert!(err.message.contains("Expected pattern, found ;"));
 
         // Bad effect
         let err = compile("maybe access;").unwrap_err();
-        assert!(err.message.contains("Expected 'allow'"));
+        assert!(err.message.contains("Expected 'allow', 'deny', 'mod', 'assert', or 'test', found maybe"));
 
         // Bad logic operator
         let err = compile("allow access if action == \"read\" but true;").unwrap_err();
-        assert!(err.message.contains("Expected"));
+        assert!(err.message.contains("Expected ;, found but"));
     }
 
     #[test]
