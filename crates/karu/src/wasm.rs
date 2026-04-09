@@ -698,7 +698,7 @@ mod ffi_impl {
 #[cfg(feature = "ffi")]
 pub use ffi_impl::*;
 
-#[cfg(all(test, all(target_arch = "wasm32", target_os = "unknown")))]
+#[cfg(all(test, feature = "wasm", target_arch = "wasm32", target_os = "unknown"))]
 mod wasm_tests {
     use super::*;
     use wasm_bindgen_test::*;
