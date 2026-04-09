@@ -44,6 +44,7 @@ cbindgen = { version = "0.27", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
+krust-sitter-tool = "0.5"
 
 [[bench]]
 name = "evaluation"
