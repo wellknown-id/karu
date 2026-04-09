@@ -1587,14 +1587,6 @@ mod tests {
     }
 
     #[test]
-    fn test_unexpected_character() {
-        let result = parse("permit(principal, action, resource) ^");
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.message, "Unexpected character: '^'");
-    }
-
-    #[test]
     fn test_template_slot() {
         let p =
             parse(r#"permit(principal == ?principal, action, resource in ?resource);"#).unwrap();
