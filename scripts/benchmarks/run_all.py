@@ -242,7 +242,10 @@ def parse_wasm_output(stdout: str, suite: str, command_name: str):
 
 def run_wasm_node(repo: Path):
     bench_dir = repo / "crates" / "karu" / "benches" / "wasm_bench"
+    crate_dir = repo / "crates" / "karu"
+    crate_pkg_dir = crate_dir / "pkg"
     ensure_clean_dir(bench_dir / "pkg")
+    ensure_clean_dir(crate_pkg_dir)
 
     run(["npm", "ci"], cwd=bench_dir)
     run(
@@ -255,11 +258,11 @@ def run_wasm_node(repo: Path):
             "--no-default-features",
             "--features",
             "wasm,cedar",
-            "--out-dir",
-            "benches/wasm_bench/pkg",
         ],
-        cwd=repo / "crates" / "karu",
+        cwd=crate_dir,
     )
+    shutil.copytree(crate_pkg_dir, bench_dir / "pkg")
+    shutil.rmtree(crate_pkg_dir)
 
     bench_node = run(["node", "bench_node.mjs"], cwd=bench_dir, capture_output=True)
     bench_cedar = run(["node", "bench_cedar.mjs"], cwd=bench_dir, capture_output=True)

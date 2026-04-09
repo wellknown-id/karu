@@ -46,30 +46,38 @@ jobs:
       - name: Run base benchmarks
         if: github.event_name == 'pull_request'
         run: |
-          python3 /home/runner/work/karu/karu/scripts/benchmarks/run_all.py \
+          python3 "$GITHUB_WORKSPACE/scripts/benchmarks/run_all.py" \
             --repo /tmp/karu-base \
             --output /tmp/karu-benchmarks/base.json \
             --ci
 
       - name: Run head benchmarks
         run: |
-          python3 /home/runner/work/karu/karu/scripts/benchmarks/run_all.py \
-            --repo /home/runner/work/karu/karu \
+          python3 "$GITHUB_WORKSPACE/scripts/benchmarks/run_all.py" \
+            --repo "$GITHUB_WORKSPACE" \
             --output /tmp/karu-benchmarks/head.json \
             --ci
 
       - name: Compare base and head benchmarks
+        id: compare
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         run: |
-          python3 /home/runner/work/karu/karu/scripts/benchmarks/compare.py \
+          python3 "$GITHUB_WORKSPACE/scripts/benchmarks/compare.py" \
             --base /tmp/karu-benchmarks/base.json \
             --head /tmp/karu-benchmarks/head.json \
             --output /tmp/karu-benchmarks/report.md \
             --threshold "${BENCHMARK_REGRESSION_THRESHOLD_PERCENT}"
 
       - name: Publish benchmark summary
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         run: cat /tmp/karu-benchmarks/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on benchmark regressions
+        if: github.event_name == 'pull_request' && steps.compare.outcome == 'failure'
+        run: |
+          echo "Benchmark regressions exceeded ${BENCHMARK_REGRESSION_THRESHOLD_PERCENT}%." >&2
+          exit 1
 
       - name: Publish workflow-dispatch summary
         if: github.event_name != 'pull_request'

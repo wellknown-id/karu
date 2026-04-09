@@ -39,7 +39,9 @@ cargo bench
 # Node/WASM benches
 cargo install wasm-pack --locked
 cd /path/to/karu/crates/karu
-wasm-pack build . --target nodejs --no-default-features --features wasm,cedar --out-dir benches/wasm_bench/pkg
+wasm-pack build . --target nodejs --no-default-features --features wasm,cedar
+cp -R pkg benches/wasm_bench/pkg
+rm -rf pkg
 cd benches/wasm_bench
 npm ci
 node bench_node.mjs
