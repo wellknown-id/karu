@@ -675,6 +675,29 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_invalid_syntax() {
+        // Missing semicolon
+        let err = compile("allow access").unwrap_err();
+        assert!(err.message.contains("Expected") || err.message.contains("found"));
+
+        // Missing condition after if
+        let err = compile("allow access if;").unwrap_err();
+        assert!(err.message.contains("Expected"));
+
+        // Missing right side of comparison
+        let err = compile("allow access if action == ;").unwrap_err();
+        assert!(err.message.contains("Expected pattern"));
+
+        // Bad effect
+        let err = compile("maybe access;").unwrap_err();
+        assert!(err.message.contains("Expected 'allow'"));
+
+        // Bad logic operator
+        let err = compile("allow access if action == \"read\" but true;").unwrap_err();
+        assert!(err.message.contains("Expected"));
+    }
+
+    #[test]
     fn test_complex_or_and_not() {
         // The user's exact example
         let policy = compile(
