@@ -6,14 +6,10 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 // Load Karu WASM manually
-const karuWasmPath = join(__dirname, 'pkg', 'karu_bg.wasm');
-const karuWasm = readFileSync(karuWasmPath);
-const karuModule = await WebAssembly.compile(karuWasm);
-const karuPkg = await import('./pkg/karu_bg.js');
-await karuPkg.__wbg_set_wasm(await WebAssembly.instantiate(karuModule, { './karu_bg.js': karuPkg }));
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const karuPkg = require('./pkg/karu.js');
 const { karu_eval_js } = karuPkg;
 
 // Cedar WASM (Node.js version - uses fs internally)
