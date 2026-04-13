@@ -688,7 +688,11 @@ pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
                 // fall back to full object if no id field.
                 let mut id_value = None;
                 for (key, value) in &entity.fields {
-                    flat.insert(format!("{}.{}", entity.kind, key), value.clone());
+                    let mut full_key = String::with_capacity(entity.kind.len() + 1 + key.len());
+                    full_key.push_str(&entity.kind);
+                    full_key.push('.');
+                    full_key.push_str(key);
+                    flat.insert(full_key, value.clone());
                     if key == "id" {
                         id_value = Some(value.clone());
                     }

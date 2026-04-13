@@ -56,3 +56,8 @@ harness = false
 name = "parser_compare"
 harness = false
 required-features = ["dev"]
+
+[[bench]]
+name = "inline_tests"
+harness = false
+required-features = ["lsp"]
