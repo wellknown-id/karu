@@ -106,27 +106,25 @@ impl KaruLanguageServer {
 
                     if cov.line < lines.len() as u32 {
                         let line_text = lines.get(cov.line as usize).unwrap_or(&"");
-                        if let Some(name_start) = line_text.find(&cov.name) {
-                            let name_start = name_start as u32;
-                            let name_end = name_start + cov.name.len() as u32;
+                        let name_start = line_text.find(&cov.name).unwrap_or(0) as u32;
+                        let name_end = name_start + cov.name.len() as u32;
 
-                            all_diagnostics.push(Diagnostic {
-                                range: Range {
-                                    start: Position {
-                                        line: cov.line,
-                                        character: name_start,
-                                    },
-                                    end: Position {
-                                        line: cov.line,
-                                        character: name_end,
-                                    },
+                        all_diagnostics.push(Diagnostic {
+                            range: Range {
+                                start: Position {
+                                    line: cov.line,
+                                    character: name_start,
                                 },
-                                severity: Some(DiagnosticSeverity::WARNING),
-                                source: Some("karu".to_string()),
-                                message,
-                                ..Default::default()
-                            });
-                        }
+                                end: Position {
+                                    line: cov.line,
+                                    character: name_end,
+                                },
+                            },
+                            severity: Some(DiagnosticSeverity::WARNING),
+                            source: Some("karu".to_string()),
+                            message,
+                            ..Default::default()
+                        });
                     }
                 }
 
@@ -167,31 +165,30 @@ impl KaruLanguageServer {
                                 line.contains(&format!("allow {}", rule.name))
                                     || line.contains(&format!("deny {}", rule.name))
                             })
-                            .map(|(i, _)| i as u32);
+                            .map(|(i, _)| i as u32)
+                            .unwrap_or(0);
 
-                        if let Some(rule_line) = rule_line {
+                        if rule_line < lines.len() as u32 {
                             let line_text = lines.get(rule_line as usize).unwrap_or(&"");
-                            if let Some(name_start) = line_text.find(&rule.name) {
-                                let name_start = name_start as u32;
-                                let name_end = name_start + rule.name.len() as u32;
+                            let name_start = line_text.find(&rule.name).unwrap_or(0) as u32;
+                            let name_end = name_start + rule.name.len() as u32;
 
-                                all_diagnostics.push(Diagnostic {
-                                    range: Range {
-                                        start: Position {
-                                            line: rule_line,
-                                            character: name_start,
-                                        },
-                                        end: Position {
-                                            line: rule_line,
-                                            character: name_end,
-                                        },
+                            all_diagnostics.push(Diagnostic {
+                                range: Range {
+                                    start: Position {
+                                        line: rule_line,
+                                        character: name_start,
                                     },
-                                    severity: Some(DiagnosticSeverity::WARNING),
-                                    source: Some("karu".to_string()),
-                                    message: format!("Rule '{}' has no test coverage", rule.name),
-                                    ..Default::default()
-                                });
-                            }
+                                    end: Position {
+                                        line: rule_line,
+                                        character: name_end,
+                                    },
+                                },
+                                severity: Some(DiagnosticSeverity::WARNING),
+                                source: Some("karu".to_string()),
+                                message: format!("Rule '{}' has no test coverage", rule.name),
+                                ..Default::default()
+                            });
                         }
                     }
                     self.client
