@@ -388,7 +388,8 @@ impl Condition {
         if self.quantifier.is_none() {
             return self.evaluate_fast(input);
         }
-        self.evaluate_with_bindings(input, &mut std::collections::HashMap::new())
+        let mut bindings = std::collections::HashMap::new();
+        self.evaluate_with_bindings(input, &mut bindings)
     }
 
     /// Evaluate this condition with variable bindings.
@@ -446,7 +447,8 @@ impl Condition {
 
         // For PathRef patterns, fall back to the full path (rare case)
         if let Pattern::PathRef(_) = &self.pattern {
-            return self.evaluate_simple(input, &mut std::collections::HashMap::new());
+            let mut bindings = std::collections::HashMap::new();
+            return self.evaluate_simple(input, &mut bindings);
         }
 
         self.dispatch_op(data, &self.pattern, input)

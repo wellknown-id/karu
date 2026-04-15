@@ -388,8 +388,7 @@ impl Condition {
         if self.quantifier.is_none() {
             return self.evaluate_fast(input);
         }
-        let mut bindings = std::collections::HashMap::new();
-        self.evaluate_with_bindings(input, &mut bindings)
+        self.evaluate_with_bindings(input, &std::collections::HashMap::new())
     }
 
     /// Evaluate this condition with variable bindings.
