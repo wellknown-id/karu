@@ -106,7 +106,7 @@ fn collect_referenced_paths(expr: &ExprAst) -> Vec<&PathAst> {
 
 /// Check if a forall's source path is guarded by any sibling in an And.
 fn has_guard_for_path(siblings: &[&ExprAst], forall_path: &PathAst) -> bool {
-    for sibling in siblings {
+    for &sibling in siblings {
         for path in collect_referenced_paths(sibling) {
             if is_path_prefix(path, forall_path) || is_path_prefix(forall_path, path) {
                 return true;
