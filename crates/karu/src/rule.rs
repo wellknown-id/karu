@@ -388,14 +388,14 @@ impl Condition {
         if self.quantifier.is_none() {
             return self.evaluate_fast(input);
         }
-        self.evaluate_with_bindings(input, &std::collections::HashMap::new())
+        self.evaluate_with_bindings(input, &mut std::collections::HashMap::new())
     }
 
     /// Evaluate this condition with variable bindings.
-    pub fn evaluate_with_bindings(
+    pub fn evaluate_with_bindings<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         // Handle quantified conditions (exists/forall with variable binding)
         if let Some(ref quant) = self.quantifier {
@@ -413,17 +413,19 @@ impl Condition {
                 QuantifierMode::Exists => {
                     // ANY item makes body conditions pass
                     arr.iter().any(|item| {
-                        let mut new_bindings = bindings.clone();
-                        new_bindings.insert(quant.var.clone(), item);
-                        quant.body.evaluate_with_bindings(input, &new_bindings)
+                        let old = bindings.insert(quant.var.clone(), item);
+                        let res = quant.body.evaluate_with_bindings(input, bindings);
+                        if let Some(v) = old { bindings.insert(quant.var.clone(), v); } else { bindings.remove(&quant.var); }
+                        res
                     })
                 }
                 QuantifierMode::ForAll => {
                     // ALL items must make body conditions pass
                     arr.iter().all(|item| {
-                        let mut new_bindings = bindings.clone();
-                        new_bindings.insert(quant.var.clone(), item);
-                        quant.body.evaluate_with_bindings(input, &new_bindings)
+                        let old = bindings.insert(quant.var.clone(), item);
+                        let res = quant.body.evaluate_with_bindings(input, bindings);
+                        if let Some(v) = old { bindings.insert(quant.var.clone(), v); } else { bindings.remove(&quant.var); }
+                        res
                     })
                 }
             }
@@ -444,7 +446,7 @@ impl Condition {
 
         // For PathRef patterns, fall back to the full path (rare case)
         if let Pattern::PathRef(_) = &self.pattern {
-            return self.evaluate_simple(input, &std::collections::HashMap::new());
+            return self.evaluate_simple(input, &mut std::collections::HashMap::new());
         }
 
         self.dispatch_op(data, &self.pattern, input)
@@ -558,10 +560,10 @@ impl Condition {
     }
 
     /// Simple condition evaluation (non-quantified, with bindings support).
-    fn evaluate_simple(
+    fn evaluate_simple<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         let data = match self.path.resolve_with_bindings(input, bindings) {
             Some(d) => d,
@@ -669,10 +671,10 @@ impl ConditionExpr {
     }
 
     /// Evaluate with variable bindings (for quantifiers).
-    pub fn evaluate_with_bindings(
+    pub fn evaluate_with_bindings<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         match self {
             ConditionExpr::Leaf(c) => c.evaluate_with_bindings(input, bindings),

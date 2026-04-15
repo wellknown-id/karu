@@ -135,7 +135,7 @@ impl Path {
                 PathSegment::Index(idx) => current.get(idx)?,
                 PathSegment::Variable(_) => {
                     // Fall back to full resolver with empty bindings
-                    return self.resolve_with_bindings(value, &HashMap::new());
+                    return self.resolve_with_bindings(value, &mut HashMap::new());
                 }
             };
         }
@@ -150,7 +150,7 @@ impl Path {
     pub fn resolve_with_bindings<'a>(
         &self,
         value: &'a Value,
-        bindings: &HashMap<String, &Value>,
+        bindings: &mut HashMap<String, &Value>,
     ) -> Option<&'a Value> {
         let mut current = value;
         let mut used_binding = false;
