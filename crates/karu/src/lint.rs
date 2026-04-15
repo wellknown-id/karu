@@ -62,8 +62,7 @@ fn lint_rule(rule: &RuleAst, warnings: &mut Vec<LintWarning>) {
 // ---------------------------------------------------------------------------
 
 /// Format a [`PathAst`] as a dotted string for display.
-#[doc(hidden)]
-pub fn path_to_string(path: &PathAst) -> String {
+fn path_to_string(path: &PathAst) -> String {
     use crate::ast::PathSegmentAst;
     use std::fmt::Write;
 
@@ -85,6 +84,11 @@ pub fn path_to_string(path: &PathAst) -> String {
         }
     }
     out
+}
+
+#[cfg(feature = "dev")]
+pub fn path_to_string_for_bench(path: &PathAst) -> String {
+    path_to_string(path)
 }
 
 /// Check if an `And` sibling references the forall's source path.

@@ -5,7 +5,7 @@
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use karu::ast::{PathAst, PathSegmentAst};
-use karu::lint::path_to_string;
+use karu::lint::path_to_string_for_bench;
 
 fn old_path_to_string(path: &PathAst) -> String {
     path.segments
@@ -32,7 +32,9 @@ fn bench_path_to_string(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("path_to_string");
     group.bench_function("old", |b| b.iter(|| old_path_to_string(black_box(&path))));
-    group.bench_function("new", |b| b.iter(|| path_to_string(black_box(&path))));
+    group.bench_function("new", |b| {
+        b.iter(|| path_to_string_for_bench(black_box(&path)))
+    });
     group.finish();
 }
 
