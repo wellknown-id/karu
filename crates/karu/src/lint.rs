@@ -61,8 +61,9 @@ fn lint_rule(rule: &RuleAst, warnings: &mut Vec<LintWarning>) {
 // `has` check, a length comparison, or any `Compare`/`In` on the path).
 // ---------------------------------------------------------------------------
 
-/// Format a PathAst as a dotted string for display.
-fn path_to_string(path: &PathAst) -> String {
+/// Format a [`PathAst`] as a dotted string for display.
+#[doc(hidden)]
+pub fn path_to_string(path: &PathAst) -> String {
     use crate::ast::PathSegmentAst;
     use std::fmt::Write;
 
@@ -75,8 +76,12 @@ fn path_to_string(path: &PathAst) -> String {
         first = false;
         match segment {
             PathSegmentAst::Field(name) => out.push_str(name),
-            PathSegmentAst::Index(idx) => write!(out, "[{}]", idx).unwrap(),
-            PathSegmentAst::Variable(var) => write!(out, "[{}]", var).unwrap(),
+            PathSegmentAst::Index(idx) => {
+                let _ = write!(out, "[{}]", idx);
+            }
+            PathSegmentAst::Variable(var) => {
+                let _ = write!(out, "[{}]", var);
+            }
         }
     }
     out
