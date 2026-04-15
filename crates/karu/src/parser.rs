@@ -366,8 +366,14 @@ impl Parser {
         let mut traits = Vec::new();
         if self.current_token() == &Token::Is {
             self.advance();
-            traits.push(self.expect_ident()?);
-            // TODO: Allow `is A, B` multiple traits
+            loop {
+                traits.push(self.expect_ident()?);
+                if self.current_token() == &Token::Comma {
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
         }
 
         // Fields: `{ name Type, ... }` or `{}`
@@ -1408,6 +1414,23 @@ mod tests {
         assert_eq!(prog.rules[0].name, "access");
         assert_eq!(prog.rules[0].effect, EffectAst::Allow);
         assert!(prog.rules[0].body.is_none());
+    }
+
+    #[test]
+    fn test_parse_entity_with_multiple_traits() {
+        let src = concat!(
+            "use schema;\n",
+            "mod Ns {\n",
+            "    abstract Ownable { owner String };\n",
+            "    abstract Shared { users Set<String> };\n",
+            "    resource File is Ownable, Shared { name String };\n",
+            "};\n",
+        );
+        let prog = Parser::parse(src).unwrap();
+        let file_entity = &prog.modules[0].entities[0];
+        assert_eq!(file_entity.name, "File");
+        assert_eq!(file_entity.traits, vec!["Ownable", "Shared"]);
+        assert_eq!(file_entity.fields.len(), 1);
     }
 
     #[test]
