@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-karu = { path = "../../..", default-features = false, features = ["cedar"] }
+karu = { path = "../../..", default-features = false, features = ["ffi", "cedar"] }
 serde_json = "1.0"
 
 [profile.release]
