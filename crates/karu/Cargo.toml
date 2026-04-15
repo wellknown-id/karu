@@ -57,4 +57,3 @@ required-features = ["dev"]
 [[bench]]
 name = "lint_bench"
 harness = false
-required-features = ["dev"]

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
+
 //! Benchmarks `PathAst` path formatting by comparing the previous
 //! `path_to_string` implementation with the current allocation-avoiding version.
 //! Run with `cargo bench --bench lint_bench`.
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use karu::ast::{PathAst, PathSegmentAst};
-use karu::lint::path_to_string_for_bench;
 
 fn old_path_to_string(path: &PathAst) -> String {
     path.segments
@@ -17,6 +17,25 @@ fn old_path_to_string(path: &PathAst) -> String {
         })
         .collect::<Vec<_>>()
         .join(".")
+}
+
+fn new_path_to_string(path: &PathAst) -> String {
+    // New version avoiding clone
+    use std::fmt::Write;
+    let mut out = String::new();
+    let mut first = true;
+    for segment in &path.segments {
+        if !first {
+            out.push('.');
+        }
+        first = false;
+        match segment {
+            PathSegmentAst::Field(name) => out.push_str(name),
+            PathSegmentAst::Index(idx) => write!(out, "[{}]", idx).unwrap(),
+            PathSegmentAst::Variable(var) => write!(out, "[{}]", var).unwrap(),
+        }
+    }
+    out
 }
 
 fn bench_path_to_string(c: &mut Criterion) {
@@ -32,9 +51,7 @@ fn bench_path_to_string(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("path_to_string");
     group.bench_function("old", |b| b.iter(|| old_path_to_string(black_box(&path))));
-    group.bench_function("new", |b| {
-        b.iter(|| path_to_string_for_bench(black_box(&path)))
-    });
+    group.bench_function("new", |b| b.iter(|| new_path_to_string(black_box(&path))));
     group.finish();
 }
 

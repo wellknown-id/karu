@@ -99,7 +99,11 @@ impl Parser {
     /// Test blocks are silently skipped.
     pub fn parse(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0, depth: 0 };
+        let mut parser = Parser {
+            tokens,
+            pos: 0,
+            depth: 0,
+        };
         parser.parse_program(false)
     }
 
@@ -109,7 +113,11 @@ impl Parser {
     /// `Program::tests`. Used by the `karu test` CLI command.
     pub fn parse_with_tests(source: &str) -> Result<Program, ParseError> {
         let tokens = Lexer::tokenize_spanned(source)?;
-        let mut parser = Parser { tokens, pos: 0, depth: 0 };
+        let mut parser = Parser {
+            tokens,
+            pos: 0,
+            depth: 0,
+        };
         parser.parse_program(true)
     }
 
