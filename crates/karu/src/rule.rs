@@ -388,14 +388,25 @@ impl Condition {
         if self.quantifier.is_none() {
             return self.evaluate_fast(input);
         }
-        self.evaluate_with_bindings(input, &std::collections::HashMap::new())
+        let mut bindings = std::collections::HashMap::new();
+        self.evaluate_with_bindings_mut(input, &mut bindings)
     }
 
     /// Evaluate this condition with variable bindings.
-    pub fn evaluate_with_bindings(
+    pub fn evaluate_with_bindings<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &std::collections::HashMap<String, &'a Value>,
+    ) -> bool {
+        let mut bindings = bindings.clone();
+        self.evaluate_with_bindings_mut(input, &mut bindings)
+    }
+
+    /// Evaluate this condition with mutable variable bindings.
+    pub fn evaluate_with_bindings_mut<'a>(
+        &self,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         // Handle quantified conditions (exists/forall with variable binding)
         if let Some(ref quant) = self.quantifier {
@@ -409,22 +420,51 @@ impl Condition {
                 None => return false,
             };
 
+            let previous_binding = bindings.get(quant.var.as_str()).copied();
+            if previous_binding.is_none() {
+                bindings.insert(quant.var.clone(), source_arr);
+            }
+            let restore_binding = |bindings: &mut std::collections::HashMap<String, &'a Value>| {
+                if let Some(old) = previous_binding {
+                    *bindings
+                        .get_mut(quant.var.as_str())
+                        .expect("quantifier binding must exist while restoring previous value") =
+                        old;
+                } else {
+                    bindings.remove(quant.var.as_str());
+                }
+            };
+
             match quant.mode {
                 QuantifierMode::Exists => {
                     // ANY item makes body conditions pass
-                    arr.iter().any(|item| {
-                        let mut new_bindings = bindings.clone();
-                        new_bindings.insert(quant.var.clone(), item);
-                        quant.body.evaluate_with_bindings(input, &new_bindings)
-                    })
+                    let mut found = false;
+                    for item in arr {
+                        *bindings
+                            .get_mut(quant.var.as_str())
+                            .expect("quantifier binding must exist while iterating exists") = item;
+                        if quant.body.evaluate_with_bindings_mut(input, bindings) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    restore_binding(bindings);
+                    found
                 }
                 QuantifierMode::ForAll => {
                     // ALL items must make body conditions pass
-                    arr.iter().all(|item| {
-                        let mut new_bindings = bindings.clone();
-                        new_bindings.insert(quant.var.clone(), item);
-                        quant.body.evaluate_with_bindings(input, &new_bindings)
-                    })
+                    let mut all_pass = true;
+                    for item in arr {
+                        *bindings
+                            .get_mut(quant.var.as_str())
+                            .expect("quantifier binding must exist while iterating forall") = item;
+                        if !quant.body.evaluate_with_bindings_mut(input, bindings) {
+                            all_pass = false;
+                            break;
+                        }
+                    }
+                    restore_binding(bindings);
+                    all_pass
                 }
             }
         } else {
@@ -444,7 +484,8 @@ impl Condition {
 
         // For PathRef patterns, fall back to the full path (rare case)
         if let Pattern::PathRef(_) = &self.pattern {
-            return self.evaluate_simple(input, &std::collections::HashMap::new());
+            let mut bindings = std::collections::HashMap::new();
+            return self.evaluate_simple(input, &mut bindings);
         }
 
         self.dispatch_op(data, &self.pattern, input)
@@ -558,10 +599,10 @@ impl Condition {
     }
 
     /// Simple condition evaluation (non-quantified, with bindings support).
-    fn evaluate_simple(
+    fn evaluate_simple<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         let data = match self.path.resolve_with_bindings(input, bindings) {
             Some(d) => d,
@@ -669,20 +710,30 @@ impl ConditionExpr {
     }
 
     /// Evaluate with variable bindings (for quantifiers).
-    pub fn evaluate_with_bindings(
+    pub fn evaluate_with_bindings<'a>(
         &self,
-        input: &Value,
-        bindings: &std::collections::HashMap<String, &Value>,
+        input: &'a Value,
+        bindings: &std::collections::HashMap<String, &'a Value>,
+    ) -> bool {
+        let mut bindings = bindings.clone();
+        self.evaluate_with_bindings_mut(input, &mut bindings)
+    }
+
+    /// Evaluate with mutable variable bindings (for quantifiers).
+    pub fn evaluate_with_bindings_mut<'a>(
+        &self,
+        input: &'a Value,
+        bindings: &mut std::collections::HashMap<String, &'a Value>,
     ) -> bool {
         match self {
-            ConditionExpr::Leaf(c) => c.evaluate_with_bindings(input, bindings),
+            ConditionExpr::Leaf(c) => c.evaluate_with_bindings_mut(input, bindings),
             ConditionExpr::And(exprs) => exprs
                 .iter()
-                .all(|e| e.evaluate_with_bindings(input, bindings)),
+                .all(|e| e.evaluate_with_bindings_mut(input, bindings)),
             ConditionExpr::Or(exprs) => exprs
                 .iter()
-                .any(|e| e.evaluate_with_bindings(input, bindings)),
-            ConditionExpr::Not(expr) => !expr.evaluate_with_bindings(input, bindings),
+                .any(|e| e.evaluate_with_bindings_mut(input, bindings)),
+            ConditionExpr::Not(expr) => !expr.evaluate_with_bindings_mut(input, bindings),
             ConditionExpr::IsType { path, shape } => match path.resolve(input) {
                 Some(value) => fingerprint_value(value).conforms_to(shape),
                 None => false,
@@ -1037,6 +1088,81 @@ mod tests {
             "users": [
                 {"verified": true},
                 {"verified": false}
+            ]
+        })));
+    }
+
+    #[test]
+    fn test_quantifier_short_circuit_restores_existing_binding() {
+        let mut cond = Condition::eq("unused", Pattern::literal(true));
+        cond.quantifier = Some(QuantifierInfo {
+            mode: QuantifierMode::Exists,
+            var: "item".to_string(),
+            source_path: Path::parse("resource.items"),
+            body: Box::new(ConditionExpr::Leaf(Condition::eq(
+                "item.approved",
+                Pattern::literal(true),
+            ))),
+        });
+
+        let input = json!({
+            "resource": {
+                "items": [
+                    {"approved": true},
+                    {"approved": false}
+                ]
+            },
+            "existing_item": {"approved": false, "sentinel": true}
+        });
+
+        let existing_item = input.get("existing_item").unwrap();
+        let mut bindings = std::collections::HashMap::new();
+        bindings.insert("item".to_string(), existing_item);
+
+        assert!(cond.evaluate_with_bindings_mut(&input, &mut bindings));
+        assert!(std::ptr::eq(*bindings.get("item").unwrap(), existing_item));
+
+        let mut immutable_bindings = std::collections::HashMap::new();
+        immutable_bindings.insert("item".to_string(), existing_item);
+        assert!(cond.evaluate_with_bindings(&input, &immutable_bindings));
+        assert!(std::ptr::eq(
+            *immutable_bindings.get("item").unwrap(),
+            existing_item
+        ));
+    }
+
+    #[test]
+    fn test_nested_quantifier_bindings() {
+        let mut inner_exists = Condition::eq("unused", Pattern::literal(true));
+        inner_exists.quantifier = Some(QuantifierInfo {
+            mode: QuantifierMode::Exists,
+            var: "member".to_string(),
+            source_path: Path::parse("group.members"),
+            body: Box::new(ConditionExpr::Leaf(Condition::eq(
+                "member.approved",
+                Pattern::literal(true),
+            ))),
+        });
+
+        let mut outer_forall = Condition::eq("unused", Pattern::literal(true));
+        outer_forall.quantifier = Some(QuantifierInfo {
+            mode: QuantifierMode::ForAll,
+            var: "group".to_string(),
+            source_path: Path::parse("groups"),
+            body: Box::new(ConditionExpr::Leaf(inner_exists)),
+        });
+
+        assert!(outer_forall.evaluate(&json!({
+            "groups": [
+                {"members": [{"approved": true}, {"approved": false}]},
+                {"members": [{"approved": true}]}
+            ]
+        })));
+
+        assert!(!outer_forall.evaluate(&json!({
+            "groups": [
+                {"members": [{"approved": true}]},
+                {"members": [{"approved": false}]}
             ]
         })));
     }

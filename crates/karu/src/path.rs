@@ -150,7 +150,7 @@ impl Path {
     pub fn resolve_with_bindings<'a>(
         &self,
         value: &'a Value,
-        bindings: &HashMap<String, &Value>,
+        bindings: &HashMap<String, &'a Value>,
     ) -> Option<&'a Value> {
         let mut current = value;
         let mut used_binding = false;
@@ -164,10 +164,7 @@ impl Path {
                     if i == 0 && !used_binding {
                         if let Some(&bound) = bindings.get(name) {
                             used_binding = true;
-                            // SAFETY: The binding value comes from iterating over input data,
-                            // which has the same lifetime as `value`. We transmute to satisfy
-                            // the borrow checker since both share the 'a lifetime in practice.
-                            unsafe { std::mem::transmute::<&Value, &'a Value>(bound) }
+                            bound
                         } else {
                             current.get(name)?
                         }
