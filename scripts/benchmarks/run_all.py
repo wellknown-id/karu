@@ -264,8 +264,6 @@ def run_wasm_node(repo: Path):
             ".",
             "--target",
             target,
-            "--out-dir",
-            "benches/wasm_bench/pkg",
             "--no-default-features",
             "--features",
             "wasm,cedar",
