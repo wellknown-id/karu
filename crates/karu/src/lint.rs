@@ -72,8 +72,12 @@ fn path_to_string(path: &PathAst) -> String {
         }
         match segment {
             PathSegmentAst::Field(name) => s.push_str(name),
-            PathSegmentAst::Index(idx) => write!(s, "[{}]", idx).unwrap(),
-            PathSegmentAst::Variable(var) => write!(s, "[{}]", var).unwrap(),
+            PathSegmentAst::Index(idx) => {
+                let _ = write!(s, "[{}]", idx);
+            }
+            PathSegmentAst::Variable(var) => {
+                let _ = write!(s, "[{}]", var);
+            }
         }
     }
     s

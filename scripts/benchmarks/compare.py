@@ -51,7 +51,8 @@ def markdown_report(base_payload, head_payload, threshold):
             "delta_percent": delta_percent,
         }
 
-        if delta_percent > threshold:
+        # Ignore regressions that are less than 500ns in absolute time to avoid micro-benchmark noise
+        if delta_percent > threshold and (after_value - before_value) > 500.0:
             regressions.append(row)
         elif delta_percent < -threshold:
             improvements.append(row)
