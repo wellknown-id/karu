@@ -695,7 +695,9 @@ mod tests {
     #[test]
     fn test_compile_bad_effect() {
         let err = compile("maybe access;").unwrap_err();
-        assert!(err.message.contains("Expected 'allow', 'deny', 'mod', 'assert', or 'test', found maybe"));
+        assert!(err
+            .message
+            .contains("Expected 'allow', 'deny', 'mod', 'assert', or 'test', found maybe"));
     }
 
     #[test]
