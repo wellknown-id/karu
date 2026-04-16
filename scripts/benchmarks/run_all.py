@@ -106,7 +106,9 @@ def patch_advanced_harness_for_ffi(repo: Path):
     contents = cargo_toml.read_text()
     updated = contents
 
-    exact = 'karu = { path = "../../..", default-features = false, features = ["cedar"] }'
+    exact = (
+        'karu = { path = "../../..", default-features = false, features = ["cedar"] }'
+    )
     if exact in updated:
         updated = updated.replace(
             exact,
@@ -114,7 +116,7 @@ def patch_advanced_harness_for_ffi(repo: Path):
         )
     elif "features = [" in updated and '"ffi"' not in updated:
         updated = re.sub(
-            r'features = \[(.*?)\]',
+            r"features = \[(.*?)\]",
             lambda match: (
                 f'features = [{match.group(1)}, "ffi"]'
                 if match.group(1).strip()
@@ -217,7 +219,9 @@ def run_advanced(repo: Path, criterion_args):
 
 def parse_wasm_output(stdout: str, suite: str, command_name: str):
     metrics = []
-    pattern = re.compile(r"^(?P<label>.+?):\s+(?P<value>[0-9]+(?:\.[0-9]+)?)\s+μs/op$", re.MULTILINE)
+    pattern = re.compile(
+        r"^(?P<label>.+?):\s+(?P<value>[0-9]+(?:\.[0-9]+)?)\s+μs/op$", re.MULTILINE
+    )
     for match in pattern.finditer(stdout):
         label = match.group("label").strip()
         value_us = float(match.group("value"))
@@ -247,6 +251,7 @@ def run_wasm_node(repo: Path):
     ensure_clean_dir(crate_pkg_dir)
 
     run(["npm", "ci"], cwd=bench_dir)
+
     with open(bench_dir / "bench_node.mjs") as f:
         bench_script = f.read()
 
@@ -275,14 +280,22 @@ def run_wasm_node(repo: Path):
 
     metrics = []
     metrics.extend(parse_wasm_output(bench_node.stdout, WASM_NODE_SUITE, "bench-node"))
-    metrics.extend(parse_wasm_output(bench_cedar.stdout, WASM_NODE_SUITE, "bench-cedar"))
+    metrics.extend(
+        parse_wasm_output(bench_cedar.stdout, WASM_NODE_SUITE, "bench-cedar")
+    )
     return metrics
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run Karu benchmark suites and emit JSON results.")
-    parser.add_argument("--repo", required=True, help="Absolute path to the repository checkout.")
-    parser.add_argument("--output", required=True, help="Where to write the JSON report.")
+    parser = argparse.ArgumentParser(
+        description="Run Karu benchmark suites and emit JSON results."
+    )
+    parser.add_argument(
+        "--repo", required=True, help="Absolute path to the repository checkout."
+    )
+    parser.add_argument(
+        "--output", required=True, help="Where to write the JSON report."
+    )
     parser.add_argument(
         "--suite",
         action="append",
