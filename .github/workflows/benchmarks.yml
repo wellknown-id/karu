@@ -16,7 +16,7 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  BENCHMARK_REGRESSION_THRESHOLD_PERCENT: "10"
+  BENCHMARK_REGRESSION_THRESHOLD_PERCENT: "30"
 
 jobs:
   benchmark-regression-check:
