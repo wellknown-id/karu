@@ -152,14 +152,4 @@ let input = json!({"principal": "alice", "action": "view", "resource": "doc"});
 assert_eq!(policy.evaluate(&input), Effect::Allow);
 ```
 
-## WASM
-
-Browser/WASM builds should disable the crate's native default features:
-
-```bash
-cargo check --target wasm32-unknown-unknown --manifest-path crates/karu/Cargo.toml --no-default-features --features wasm
-```
-
-For the npm/playground build shape, use `--no-default-features --features wasm,cedar`.
-
 For development setup and contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).

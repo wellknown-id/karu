@@ -683,29 +683,13 @@ pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
                 }
             } else {
                 // Record: `actor { id: "alice", name: "Alice" }`
-                // → { "actor": "alice", "actor.id": "alice", "actor.name": "Alice" }
-                // Top-level key = id value (for `principal == "alice"`),
-                // fall back to full object if no id field.
-                let mut id_value = None;
+                // → { "actor": {"id":"alice","name":"Alice"}, "actor.id": "alice", "actor.name": "Alice" }
+                let mut obj = serde_json::Map::new();
                 for (key, value) in &entity.fields {
-                    let mut full_key = String::with_capacity(entity.kind.len() + 1 + key.len());
-                    full_key.push_str(&entity.kind);
-                    full_key.push('.');
-                    full_key.push_str(key);
-                    flat.insert(full_key, value.clone());
-                    if key == "id" {
-                        id_value = Some(value.clone());
-                    }
+                    flat.insert(format!("{}.{}", entity.kind, key), value.clone());
+                    obj.insert(key.clone(), value.clone());
                 }
-                if let Some(id) = id_value {
-                    flat.insert(entity.kind.clone(), id);
-                } else {
-                    let mut obj = serde_json::Map::new();
-                    for (key, value) in &entity.fields {
-                        obj.insert(key.clone(), value.clone());
-                    }
-                    flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
-                }
+                flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
             }
         }
         test_inputs.push(serde_json::Value::Object(flat));
@@ -927,37 +911,6 @@ test "alice can view" {
     fn test_run_inline_tests_no_tests() {
         let source = r#"allow access if role == "admin";"#;
         assert!(run_inline_tests(source).is_none());
-    }
-
-    #[test]
-    fn test_run_inline_tests_record_entities() {
-        let source = r#"
-allow view if
-    principal == "alice" and
-    action == "view";
-
-test "alice can view" {
-    principal {
-        id: "alice",
-    }
-    action {
-        id: "view",
-    }
-    resource {
-        id: "doc1",
-    }
-    expect allow
-}
-"#;
-        let results = run_inline_tests(source);
-        assert!(results.is_some());
-        let results = results.unwrap();
-        assert_eq!(results.tests.len(), 1);
-        assert!(
-            results.tests[0].passed,
-            "record-style test should pass: {}",
-            results.tests[0].message
-        );
     }
 
     #[test]

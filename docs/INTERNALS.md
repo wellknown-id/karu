@@ -82,8 +82,6 @@ wasm-pack build --target web --no-default-features --features wasm
 # Output: pkg/karu_bg.wasm
 ```
 
-The `wasm` feature is intended to be used with `--no-default-features`. If you also need Cedar interop in the browser build, use `--features wasm,cedar --no-default-features`.
-
 **C-FFI exports** (for wazero, CGO, or any WASM host):
 
 | Function           | Signature                                        | Returns                   |
