@@ -2,12 +2,18 @@
 // Run with: node bench_node.mjs
 
 import { performance } from 'perf_hooks';
-import karu from './pkg/karu.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load Karu WASM manually
+const karuPkg = await import('./pkg/karu.js');
+const { karu_eval_js } = karuPkg;
 
 // Cedar WASM (Node.js version - uses fs internally)
 const cedar = await import('@cedar-policy/cedar-wasm/nodejs');
-
-const { karu_eval_js } = karu;
 
 const WARMUP = 100;
 const RUNS = 1000;

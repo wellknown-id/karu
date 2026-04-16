@@ -109,7 +109,7 @@ fn collect_referenced_paths(expr: &ExprAst) -> Vec<&PathAst> {
 }
 
 /// Check if a forall's source path is guarded by any sibling in an And.
-fn has_guard_for_path(siblings: &[ExprAst], forall_path: &PathAst) -> bool {
+fn has_guard_for_path(siblings: &[&ExprAst], forall_path: &PathAst) -> bool {
     for sibling in siblings {
         for path in collect_referenced_paths(sibling) {
             if is_path_prefix(path, forall_path) || is_path_prefix(forall_path, path) {
@@ -130,11 +130,11 @@ fn check_forall_vacuous(expr: &ExprAst, rule_name: &str, warnings: &mut Vec<Lint
             for (i, child) in exprs.iter().enumerate() {
                 if let ExprAst::Forall { path, body, .. } = child {
                     // Collect siblings (all non-self And children)
-                    let siblings: Vec<ExprAst> = exprs
+                    let siblings: Vec<&ExprAst> = exprs
                         .iter()
                         .enumerate()
                         .filter(|(j, _)| *j != i)
-                        .map(|(_, e)| e.clone())
+                        .map(|(_, e)| e)
                         .collect();
 
                     if !has_guard_for_path(&siblings, path) {
