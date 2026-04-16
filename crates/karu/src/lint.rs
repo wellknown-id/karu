@@ -65,24 +65,22 @@ fn lint_rule(rule: &RuleAst, warnings: &mut Vec<LintWarning>) {
 fn path_to_string(path: &PathAst) -> String {
     use crate::ast::PathSegmentAst;
     use std::fmt::Write;
-    let mut out = String::new();
-    let mut first = true;
-    for segment in &path.segments {
-        if !first {
-            out.push('.');
+    let mut s = String::new();
+    for (i, segment) in path.segments.iter().enumerate() {
+        if i > 0 {
+            s.push('.');
         }
-        first = false;
         match segment {
-            PathSegmentAst::Field(name) => out.push_str(name),
+            PathSegmentAst::Field(name) => s.push_str(name),
             PathSegmentAst::Index(idx) => {
-                let _ = write!(out, "[{}]", idx);
+                let _ = write!(s, "[{}]", idx);
             }
             PathSegmentAst::Variable(var) => {
-                let _ = write!(out, "[{}]", var);
+                let _ = write!(s, "[{}]", var);
             }
         }
     }
-    out
+    s
 }
 
 /// Check if an `And` sibling references the forall's source path.
