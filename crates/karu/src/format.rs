@@ -609,10 +609,8 @@ test "basic" {
         assert!(result.is_ok());
         let output = result.unwrap();
         // Since completely empty input produces an empty program,
-        // it shouldn't crash. Empty files often get a single newline
-        // during formatting or string construction if not handled purely empty.
-        // It's acceptable for it to be empty or just a newline.
-        assert!(output == "" || output == "\n");
+        // it shouldn't crash. Empty files correctly format to a single newline.
+        assert_eq!(output, "\n");
     }
 
     #[test]
