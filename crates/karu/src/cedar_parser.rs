@@ -1597,6 +1597,12 @@ mod tests {
     }
 
     #[test]
+    fn test_template_slot_invalid() {
+        let err = parse(r#"permit(principal == ?invalid, action, resource in ?resource);"#).unwrap_err();
+        assert!(err.message.contains("Unknown template slot: ?invalid"));
+    }
+
+    #[test]
     fn test_member_index() {
         let p = parse(
             r#"permit(principal, action, resource)
