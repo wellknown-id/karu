@@ -27,11 +27,30 @@ statistically rigorous measurement (100 samples, 5-second measurement window).
 - **Parse+eval**: Policy is parsed and evaluated every iteration
 
 ```bash
-# Run benchmarks
-cd benches/advanced-benchmark
-./build.sh      # build wasm/karu.wasm + wasm/cedar.wasm
-cargo bench     # run all benchmarks
+# Core Criterion benches from crates/karu/benches/
+cargo bench -p karu --features dev --bench evaluation --bench parser_compare
+
+# Advanced Rust + WASM Criterion benches
+cd crates/karu/benches/advanced-benchmark
+./build.sh
+cargo run --release --bin seed
+cargo bench
+
+# Node/WASM benches
+cargo install wasm-pack --locked
+cd /path/to/karu/crates/karu
+wasm-pack build . --target nodejs --no-default-features --features wasm,cedar
+cp -R pkg benches/wasm_bench/pkg
+rm -rf pkg
+cd benches/wasm_bench
+npm ci
+node bench_node.mjs
+node bench_cedar.mjs
 ```
+
+On pull requests, `.github/workflows/benchmarks.yml` runs the same benchmark suites
+against both the PR head and the PR base commit, then fails the workflow if any
+measured benchmark regresses by more than the configured threshold.
 
 ### Scenarios
 

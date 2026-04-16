@@ -65,7 +65,6 @@ fn lint_rule(rule: &RuleAst, warnings: &mut Vec<LintWarning>) {
 fn path_to_string(path: &PathAst) -> String {
     use crate::ast::PathSegmentAst;
     use std::fmt::Write;
-
     let mut out = String::new();
     let mut first = true;
     for segment in &path.segments {

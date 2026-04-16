@@ -1,0 +1,40 @@
+name: validate-wasm
+
+on:
+  pull_request:
+    paths:
+      - "crates/karu/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/validate-wasm.yml"
+  push:
+    branches: [main]
+    paths:
+      - "crates/karu/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/validate-wasm.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-wasm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        feature_set:
+          - wasm
+          - wasm,cedar
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Check supported WASM feature set (${{ matrix.feature_set }})
+        run: cargo check --target wasm32-unknown-unknown --manifest-path crates/karu/Cargo.toml --no-default-features --features ${{ matrix.feature_set }}
