@@ -255,6 +255,8 @@ dependencies = [
  "num-traits",
  "once_cell",
  "oorandom",
+ "plotters",
+ "rayon",
  "regex",
  "serde",
  "serde_derive",
@@ -723,7 +725,6 @@ dependencies = [
  "tokio",
  "tower-lsp",
  "wasm-bindgen",
- "wasm-bindgen-test",
 ]
 
 [[package]]
@@ -748,9 +749,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e508af8c809fae7e1f1b86c5add46727277477ba2da9ad87807d118292113a8"
+checksum = "edeab585f2994ace2c71dd30b351b026359af485e82855cd1b49973a17323194"
 dependencies = [
  "krust-sitter-macro",
  "krust-sitter-types",
@@ -762,9 +763,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-common"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7da79dae17b9a80ab39ff44277c19417d429cdeb1b01b28315ac0e5b236fdbe"
+checksum = "67e445b438e3ac4ec34e26f051825b41a0154595546085262b16956234bc4e68"
 dependencies = [
  "itertools 0.14.0",
  "krust-sitter-types",
@@ -776,9 +777,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-macro"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aab37670a4ae5b3c81e35731397ce34cbc5da2ef4faa592dc63ea45c0d6ef2"
+checksum = "c1d8af55b06b5f4ec535b771c7f9021037817e4129d75c5d4227f256314a8b36"
 dependencies = [
  "krust-sitter-common",
  "krust-sitter-types",
@@ -789,9 +790,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-tool"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb83e027ef645cfd049b9a4f7713849c4c2b71c01a0a135362424ef7e285b03d"
+checksum = "a900153602527465c3dbd27675988dffe7169ae814be7a9d69e7b3fc43f3d445"
 dependencies = [
  "cc",
  "krust-sitter-common",
@@ -807,9 +808,9 @@ dependencies = [
 
 [[package]]
 name = "krust-sitter-types"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a041e87b78afbedb4559e77076f25678f214d8163d8976950ffeef42cd35c18"
+checksum = "adabb9f334fb00aaf51e4d3c7af81bd904b6c6a093de8e0ee871c7d13d3920c8"
 dependencies = [
  "indexmap",
  "serde",
@@ -827,12 +828,6 @@ name = "libc"
 version = "0.2.183"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
-
-[[package]]
-name = "libm"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "linux-raw-sys"
@@ -881,32 +876,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 
 [[package]]
-name = "minicov"
-version = "0.3.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4869b6a491569605d66d3952bcdf03df789e5b536e5f0cf7758a7f08a55ae24d"
-dependencies = [
- "cc",
- "walkdir",
-]
-
-[[package]]
-name = "nu-ansi-term"
-version = "0.50.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
-dependencies = [
- "windows-sys",
-]
-
-[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
- "libm",
 ]
 
 [[package]]
@@ -971,6 +946,34 @@ name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
+
+[[package]]
+name = "plotters"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5aeb6f403d7a4911efb1e33402027fc44f29b5bf6def3effcc22d7bb75f2b747"
+dependencies = [
+ "num-traits",
+ "plotters-backend",
+ "plotters-svg",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
+name = "plotters-backend"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df42e13c12958a16b3f7f4386b9ab1f3e7933914ecea48da7139435263a4172a"
+
+[[package]]
+name = "plotters-svg"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51bae2ac328883f7acdfea3d66a7c35751187f870bc81f94563733a154d7a670"
+dependencies = [
+ "plotters-backend",
+]
 
 [[package]]
 name = "potential_utf"
@@ -1607,20 +1610,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm-bindgen-futures"
-version = "0.4.64"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9c5522b3a28661442748e09d40924dfb9ca614b21c00d3fd135720e48b67db8"
-dependencies = [
- "cfg-if",
- "futures-util",
- "js-sys",
- "once_cell",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1651,45 +1640,6 @@ checksum = "75a326b8c223ee17883a4251907455a2431acc2791c98c26279376490c378c16"
 dependencies = [
  "unicode-ident",
 ]
-
-[[package]]
-name = "wasm-bindgen-test"
-version = "0.3.64"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6311c867385cc7d5602463b31825d454d0837a3aba7cdb5e56d5201792a3f7fe"
-dependencies = [
- "async-trait",
- "cast",
- "js-sys",
- "libm",
- "minicov",
- "nu-ansi-term",
- "num-traits",
- "oorandom",
- "serde",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-bindgen-test-macro",
- "wasm-bindgen-test-shared",
-]
-
-[[package]]
-name = "wasm-bindgen-test-macro"
-version = "0.3.64"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67008cdde4769831958536b0f11b3bdd0380bde882be17fff9c2f34bb4549abd"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "wasm-bindgen-test-shared"
-version = "0.2.114"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfe29135b180b72b04c74aa97b2b4a2ef275161eff9a6c7955ea9eaedc7e1d4e"
 
 [[package]]
 name = "wasm-encoder"

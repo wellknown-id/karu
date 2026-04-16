@@ -7,20 +7,6 @@ cargo build --workspace
 cargo test --workspace
 ```
 
-## WASM Builds
-
-Browser/WASM builds for `crates/karu` are a separate feature path and should disable the native default features:
-
-```bash
-# Browser-facing WASM API
-cargo check --target wasm32-unknown-unknown --manifest-path crates/karu/Cargo.toml --no-default-features --features wasm
-
-# npm/playground package shape
-cargo check --target wasm32-unknown-unknown --manifest-path crates/karu/Cargo.toml --no-default-features --features wasm,cedar
-```
-
-`--features wasm` on its own still combines with the crate's native default features, including `lsp`, which pulls in Tokio settings that are not supported on `wasm32-unknown-unknown`.
-
 ## Workspace Layout
 
 This repository is organized as a Cargo workspace:

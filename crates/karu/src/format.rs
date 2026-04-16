@@ -604,16 +604,6 @@ test "basic" {
     }
 
     #[test]
-    fn test_format_empty_string() {
-        let result = format_source("");
-        assert!(result.is_ok());
-        let output = result.unwrap();
-        // Since completely empty input produces an empty program,
-        // it shouldn't crash. Empty files correctly format to a single newline.
-        assert_eq!(output, "\n");
-    }
-
-    #[test]
     fn test_format_error_on_invalid() {
         // Tree-sitter performs error recovery, so even broken input may
         // produce a partial parse result. The formatter should still

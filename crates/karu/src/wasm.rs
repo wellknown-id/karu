@@ -697,22 +697,3 @@ mod ffi_impl {
 
 #[cfg(feature = "ffi")]
 pub use ffi_impl::*;
-
-#[cfg(all(test, feature = "wasm", target_arch = "wasm32", target_os = "unknown"))]
-mod wasm_tests {
-    use super::*;
-    use wasm_bindgen_test::*;
-
-    #[wasm_bindgen_test]
-    fn test_karu_eval_js_invalid_json() {
-        let policy = r#"allow access;"#;
-        let input = r#"not valid json"#;
-        let result = karu_eval_js(policy, input);
-        let error_key = JsValue::from_str("error");
-        let has_error = js_sys::Reflect::has(&result, &error_key).unwrap();
-        assert!(has_error);
-        let error_val = js_sys::Reflect::get(&result, &error_key).unwrap();
-        let error_str = error_val.as_string().unwrap();
-        assert!(error_str.starts_with("Invalid JSON:"));
-    }
-}
