@@ -426,11 +426,10 @@ impl Condition {
             }
             let restore_binding = |bindings: &mut std::collections::HashMap<String, &'a Value>| {
                 if let Some(old) = previous_binding {
-                    if let Some(slot) = bindings.get_mut(quant.var.as_str()) {
-                        *slot = old;
-                    } else {
-                        bindings.insert(quant.var.clone(), old);
-                    }
+                    *bindings
+                        .get_mut(quant.var.as_str())
+                        .expect("quantifier binding must exist while restoring previous value") =
+                        old;
                 } else {
                     bindings.remove(quant.var.as_str());
                 }
@@ -441,10 +440,9 @@ impl Condition {
                     // ANY item makes body conditions pass
                     let mut found = false;
                     for item in arr {
-                        let Some(slot) = bindings.get_mut(quant.var.as_str()) else {
-                            return false;
-                        };
-                        *slot = item;
+                        *bindings
+                            .get_mut(quant.var.as_str())
+                            .expect("quantifier binding must exist while iterating exists") = item;
                         if quant.body.evaluate_with_bindings_mut(input, bindings) {
                             found = true;
                             break;
@@ -457,10 +455,9 @@ impl Condition {
                     // ALL items must make body conditions pass
                     let mut all_pass = true;
                     for item in arr {
-                        let Some(slot) = bindings.get_mut(quant.var.as_str()) else {
-                            return false;
-                        };
-                        *slot = item;
+                        *bindings
+                            .get_mut(quant.var.as_str())
+                            .expect("quantifier binding must exist while iterating forall") = item;
                         if !quant.body.evaluate_with_bindings_mut(input, bindings) {
                             all_pass = false;
                             break;
