@@ -35,15 +35,16 @@ tower-lsp = { version = "0.20", optional = true }
 tokio = { version = "1", features = ["io-std", "macros", "rt-multi-thread"], optional = true }
 
 # Tree-sitter parser for dev tooling (LSP, diagnostics)
-krust-sitter = { version = "0.5", optional = true }
+krust-sitter = { version = "0.5.1", optional = true }
 
 [build-dependencies]
-krust-sitter-tool = { version = "0.5", optional = true }
+krust-sitter-tool = { version = "0.5.1", optional = true }
 serde_json = "1.0"
 cbindgen = { version = "0.27", optional = true }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = { version = "0.5", default-features = false }
+
 
 [[bench]]
 name = "evaluation"
@@ -53,3 +54,5 @@ harness = false
 name = "parser_compare"
 harness = false
 required-features = ["dev"]
+[target."cfg(target_arch = \"wasm32\")".dev-dependencies]
+wasm-bindgen-test = "0.3.67"
