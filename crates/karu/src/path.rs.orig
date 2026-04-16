@@ -135,7 +135,8 @@ impl Path {
                 PathSegment::Index(idx) => current.get(idx)?,
                 PathSegment::Variable(_) => {
                     // Fall back to full resolver with empty bindings
-                    return self.resolve_with_bindings(value, &HashMap::new());
+                    let bindings = HashMap::new();
+                    return self.resolve_with_bindings(value, &bindings);
                 }
             };
         }
