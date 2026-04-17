@@ -1,0 +1,17 @@
+--- crates/karu/src/type_registry.rs
++++ crates/karu/src/type_registry.rs
+@@ -628,6 +628,14 @@
+         let empty_shape = fingerprint_value(&empty);
+         assert!(empty_shape.conforms_to(folder));
+     }
++
++    #[test]
++    fn test_type_shape_empty() {
++        let shape = TypeShape::empty();
++        assert_eq!(shape.presence, 0);
++        assert!(shape.fields.is_empty());
++        assert!(shape.children.is_empty());
++    }
+
+     #[test]
+     fn test_recursive_nested_type_checking() {
