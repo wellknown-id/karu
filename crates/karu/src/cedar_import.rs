@@ -965,19 +965,15 @@ fn make_path(dotted: &str) -> PathAst {
 }
 
 fn path_to_string(path: &PathAst) -> String {
-    use std::fmt::Write;
-    let mut s = String::new();
-    for (i, segment) in path.segments.iter().enumerate() {
-        if i > 0 {
-            s.push('.');
-        }
-        match segment {
-            PathSegmentAst::Field(f) => s.push_str(f),
-            PathSegmentAst::Index(idx) => write!(s, "[{}]", idx).unwrap(),
-            PathSegmentAst::Variable(v) => s.push_str(v),
-        }
-    }
-    s
+    path.segments
+        .iter()
+        .map(|s| match s {
+            PathSegmentAst::Field(f) => f.clone(),
+            PathSegmentAst::Index(i) => format!("[{}]", i),
+            PathSegmentAst::Variable(v) => v.clone(),
+        })
+        .collect::<Vec<_>>()
+        .join(".")
 }
 
 fn format_expr(expr: &ExprAst, indent: usize) -> String {

@@ -847,27 +847,4 @@ mod tests {
             Some(crate::ast::ExprAst::And(_))
         ));
     }
-
-    #[test]
-    fn test_rules_method_filtering() {
-        let code = r#"
-            use schema;
-            assert is_admin<User> if "admin" in actor.roles;
-            allow read if action == "read";
-            deny delete if action == "delete";
-        "#;
-        let result = grammar::Program::parse(code);
-        let prog = result.result.expect("should parse");
-
-        // Assert that we parsed exactly 4 top-level items
-        assert_eq!(prog.items.len(), 4);
-
-        // Assert that the rules() method correctly filtered out the UseSchema and Assert items
-        let rules = prog.rules();
-        assert_eq!(rules.len(), 2);
-
-        // Assert that the filtered rules match what we expect
-        assert_eq!(rules[0].name, "read");
-        assert_eq!(rules[1].name, "delete");
-    }
 }

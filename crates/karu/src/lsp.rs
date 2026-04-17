@@ -368,7 +368,203 @@ pub fn keyword_hover(word: &str) -> Option<&'static str> {
     }
 }
 
-pub use crate::lsp_core::{run_inline_tests, InlineTestResults, RuleCoverage, TestResult};
+/// Result of running a single inline test.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TestResult {
+    /// Test name
+    pub name: String,
+    /// 0-indexed line where `test "name"` appears
+    pub line: u32,
+    /// Whether the test passed
+    pub passed: bool,
+    /// Message (e.g., "expected Deny, got Allow")
+    pub message: String,
+}
+
+/// Coverage status for a single rule.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RuleCoverage {
+    /// Rule name
+    pub name: String,
+    /// 0-indexed source line of the rule
+    pub line: u32,
+    /// Whether any test triggers this rule (rule body matches)
+    pub has_positive: bool,
+    /// Whether any test exists where this rule does NOT match
+    pub has_negative: bool,
+    /// "none", "partial", or "full"
+    pub status: String,
+}
+
+/// Results from running inline tests, including coverage analysis.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct InlineTestResults {
+    pub tests: Vec<TestResult>,
+    pub coverage: Vec<RuleCoverage>,
+}
+
+/// Run inline tests in a Karu source file and return results with coverage.
+///
+/// Returns None if there are no tests or if parsing/compilation fails.
+pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
+    use crate::ast::{EffectAst, ExpectedOutcome};
+    use crate::compiler::compile;
+    use crate::parser::Parser;
+    use crate::rule::Effect;
+
+    // Parse with tests
+    let program = match Parser::parse_with_tests(source) {
+        Ok(p) => p,
+        Err(_) => return None,
+    };
+
+    if program.tests.is_empty() {
+        return None;
+    }
+
+    // Compile the policy (ignoring test blocks)
+    let compiled = match compile(source) {
+        Ok(c) => c,
+        Err(_) => return None,
+    };
+
+    // Find line numbers for each test block
+    let lines: Vec<&str> = source.lines().collect();
+
+    // Build test inputs first (reused for both test execution and coverage)
+    let mut test_inputs = Vec::new();
+    for test in &program.tests {
+        let mut flat = serde_json::Map::new();
+        for entity in &test.entities {
+            if entity.shorthand {
+                if let Some((_, value)) = entity.fields.first() {
+                    flat.insert(entity.kind.clone(), value.clone());
+                }
+            } else {
+                let mut obj = serde_json::Map::new();
+                for (key, value) in &entity.fields {
+                    flat.insert(format!("{}.{}", entity.kind, key), value.clone());
+                    obj.insert(key.clone(), value.clone());
+                }
+                flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
+            }
+        }
+        test_inputs.push(serde_json::Value::Object(flat));
+    }
+
+    // Run tests
+    let mut results = Vec::new();
+    for (test, input) in program.tests.iter().zip(test_inputs.iter()) {
+        let test_line = lines
+            .iter()
+            .enumerate()
+            .find(|(_, line)| {
+                line.contains("test") && line.contains(&format!(r#""{}""#, test.name))
+            })
+            .map(|(i, _)| i as u32)
+            .unwrap_or(0);
+
+        let result = compiled.evaluate(input);
+        let (passed, message) = match &test.expected {
+            ExpectedOutcome::Simple(eff) => {
+                let expected = match eff {
+                    EffectAst::Allow => Effect::Allow,
+                    EffectAst::Deny => Effect::Deny,
+                };
+                let p = result == expected;
+                let m = if p {
+                    String::new()
+                } else {
+                    format!("expected {:?}, got {:?}", expected, result)
+                };
+                (p, m)
+            }
+            ExpectedOutcome::PerRule(entries) => {
+                let mut msgs = Vec::new();
+                let mut all_pass = true;
+                for (eff, rule_name) in entries {
+                    let expected_eff = match eff {
+                        EffectAst::Allow => Effect::Allow,
+                        EffectAst::Deny => Effect::Deny,
+                    };
+                    if let Some(rule) = compiled.rules.iter().find(|r| r.name == *rule_name) {
+                        let rule_result = if rule.evaluate(input).is_some() {
+                            rule.effect
+                        } else {
+                            Effect::Deny
+                        };
+                        if rule_result != expected_eff {
+                            msgs.push(format!(
+                                "rule '{}': expected {:?}, got {:?}",
+                                rule_name, expected_eff, rule_result
+                            ));
+                            all_pass = false;
+                        }
+                    } else {
+                        msgs.push(format!("rule '{}' not found", rule_name));
+                        all_pass = false;
+                    }
+                }
+                (all_pass, msgs.join("; "))
+            }
+        };
+
+        results.push(TestResult {
+            name: test.name.clone(),
+            line: test_line,
+            passed,
+            message,
+        });
+    }
+
+    // Compute per-rule coverage
+    let mut coverage = Vec::new();
+    for rule in &compiled.rules {
+        // Find the rule's source line
+        let rule_line = lines
+            .iter()
+            .enumerate()
+            .find(|(_, line)| {
+                line.contains(&format!("allow {}", rule.name))
+                    || line.contains(&format!("deny {}", rule.name))
+            })
+            .map(|(i, _)| i as u32)
+            .unwrap_or(0);
+
+        let mut has_positive = false; // a test where this rule matches
+        let mut has_negative = false; // a test where this rule doesn't match
+
+        for (_test, input) in program.tests.iter().zip(test_inputs.iter()) {
+            let rule_matches = rule.evaluate(input).is_some();
+
+            if rule_matches {
+                has_positive = true;
+            } else {
+                // Any test where the rule doesn't trigger counts as negative
+                has_negative = true;
+            }
+        }
+
+        let status = match (has_positive, has_negative) {
+            (true, true) => "full",
+            (true, false) | (false, true) => "partial",
+            (false, false) => "none",
+        };
+
+        coverage.push(RuleCoverage {
+            name: rule.name.clone(),
+            line: rule_line,
+            has_positive,
+            has_negative,
+            status: status.to_string(),
+        });
+    }
+
+    Some(InlineTestResults {
+        tests: results,
+        coverage,
+    })
+}
 
 /// Get completion items for Karu keywords.
 pub fn keyword_completions() -> Vec<CompletionItem> {
@@ -1654,9 +1850,7 @@ fn is_error_in_comment(
     let err_range = &error.error_position.bytes;
     let bytes = source.as_bytes();
     for i in err_range.start..err_range.end {
-        if i >= bytes.len() {
-            break;
-        }
+        if i >= bytes.len() { break; }
         let is_space = bytes[i].is_ascii_whitespace();
         let is_comment = comment_ranges.iter().any(|r| i >= r.start && i < r.end);
         if !is_space && !is_comment {

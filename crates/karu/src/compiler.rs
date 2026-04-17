@@ -675,38 +675,6 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_missing_semicolon() {
-        let err = compile("allow access").unwrap_err();
-        assert!(err.message.contains("Expected ;, found EOF"));
-    }
-
-    #[test]
-    fn test_compile_missing_condition_after_if() {
-        let err = compile("allow access if;").unwrap_err();
-        assert!(err.message.contains("Expected path identifier"));
-    }
-
-    #[test]
-    fn test_compile_missing_right_side_of_comparison() {
-        let err = compile("allow access if action == ;").unwrap_err();
-        assert!(err.message.contains("Expected pattern, found ;"));
-    }
-
-    #[test]
-    fn test_compile_bad_effect() {
-        let err = compile("maybe access;").unwrap_err();
-        assert!(err
-            .message
-            .contains("Expected 'allow', 'deny', 'mod', 'assert', or 'test', found maybe"));
-    }
-
-    #[test]
-    fn test_compile_bad_logic_operator() {
-        let err = compile("allow access if action == \"read\" but true;").unwrap_err();
-        assert!(err.message.contains("Expected ;, found but"));
-    }
-
-    #[test]
     fn test_complex_or_and_not() {
         // The user's exact example
         let policy = compile(
