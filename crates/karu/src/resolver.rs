@@ -200,17 +200,17 @@ fn resolve_recursive(
 
 /// Normalize a path (resolve `.` and `..` without requiring the filesystem).
 fn normalize_path(path: &Path) -> PathBuf {
-    let mut components = Vec::new();
+    let mut ret = PathBuf::new();
     for component in path.components() {
         match component {
             std::path::Component::ParentDir => {
-                components.pop();
+                ret.pop();
             }
             std::path::Component::CurDir => {}
-            c => components.push(c),
+            c => ret.push(c),
         }
     }
-    components.iter().collect()
+    ret
 }
 
 #[cfg(test)]
