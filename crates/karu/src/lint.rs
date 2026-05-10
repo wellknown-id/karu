@@ -64,15 +64,19 @@ fn lint_rule(rule: &RuleAst, warnings: &mut Vec<LintWarning>) {
 /// Format a PathAst as a dotted string for display.
 fn path_to_string(path: &PathAst) -> String {
     use crate::ast::PathSegmentAst;
-    path.segments
-        .iter()
-        .map(|s| match s {
-            PathSegmentAst::Field(name) => name.clone(),
-            PathSegmentAst::Index(idx) => format!("[{}]", idx),
-            PathSegmentAst::Variable(var) => format!("[{}]", var),
-        })
-        .collect::<Vec<_>>()
-        .join(".")
+    use std::fmt::Write;
+    let mut s = String::new();
+    for (i, segment) in path.segments.iter().enumerate() {
+        if i > 0 {
+            s.push('.');
+        }
+        match segment {
+            PathSegmentAst::Field(name) => s.push_str(name),
+            PathSegmentAst::Index(idx) => write!(s, "[{}]", idx).unwrap(),
+            PathSegmentAst::Variable(var) => write!(s, "[{}]", var).unwrap(),
+        }
+    }
+    s
 }
 
 /// Check if an `And` sibling references the forall's source path.

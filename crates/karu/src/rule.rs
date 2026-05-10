@@ -983,6 +983,17 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    // ========== EvalContext Tests ==========
+
+    #[test]
+    fn test_eval_context_is_empty() {
+        let mut ctx = EvalContext::new();
+        assert!(ctx.is_empty(), "EvalContext should be empty initially");
+
+        ctx.register("dummy_assert", |_| true);
+        assert!(!ctx.is_empty(), "EvalContext should not be empty after registration");
+    }
+
     // ========== Condition Tests ==========
 
     #[test]

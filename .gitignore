@@ -1,5 +1,6 @@
 /target/
 node_modules/
+__pycache__/
 *.vsix
 .DS_Store
 editors/vscode/bin/
@@ -11,6 +12,8 @@ npm/karu/karu.d.ts
 npm/karu/karu_bg.wasm.d.ts
 npm/karu/wasm-out/
 npm/karu/*.tgz
+crates/karu/pkg/
+crates/karu/benches/wasm_bench/pkg/
 bindings/swift/.build/
 bindings/swift/Sources/CKaru/karu.h
 editors/vscode/syntaxes/*.tmLanguage.json

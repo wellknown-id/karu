@@ -426,7 +426,6 @@ mod tests {
 
     #[test]
     fn test_type_tag_from_type_ref() {
-        // String variants
         assert_eq!(
             TypeTag::from_type_ref(&TypeRef::Named("String".into())),
             TypeTag::String
@@ -435,92 +434,21 @@ mod tests {
             TypeTag::from_type_ref(&TypeRef::Named("string".into())),
             TypeTag::String
         );
-
-        // Long variants
         assert_eq!(
             TypeTag::from_type_ref(&TypeRef::Named("Long".into())),
             TypeTag::Long
         );
         assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("long".into())),
-            TypeTag::Long
-        );
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("Int".into())),
-            TypeTag::Long
-        );
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("int".into())),
-            TypeTag::Long
-        );
-
-        // Boolean variants
-        assert_eq!(
             TypeTag::from_type_ref(&TypeRef::Named("Boolean".into())),
             TypeTag::Boolean
         );
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("boolean".into())),
-            TypeTag::Boolean
-        );
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("bool".into())),
-            TypeTag::Boolean
-        );
-
-        // Extension types
-        for ext in &["DateTime", "datetime", "Decimal", "decimal", "Duration", "duration", "Ip", "ip"] {
-            assert_eq!(
-                TypeTag::from_type_ref(&TypeRef::Named(ext.to_string())),
-                TypeTag::String,
-                "Expected TypeTag::String for extension type {}", ext
-            );
-        }
-
-        // Entity/Record
         assert_eq!(
             TypeTag::from_type_ref(&TypeRef::Named("User".into())),
             TypeTag::Record
         );
         assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Named("UnknownEntity".into())),
-            TypeTag::Record
-        );
-
-        // Sets
-        assert_eq!(
             TypeTag::from_type_ref(&TypeRef::Set(Box::new(TypeRef::Named("String".into())))),
             TypeTag::Set
-        );
-
-        // Records
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Record(vec![FieldDef {
-                name: "foo".into(),
-                ty: TypeRef::Named("String".into()),
-                optional: false,
-            }])),
-            TypeTag::Record
-        );
-
-        // Unions
-        // Union with one type
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Union(vec![TypeRef::Named("String".into())])),
-            TypeTag::String
-        );
-        // Union with multiple types
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Union(vec![
-                TypeRef::Named("UnknownType".into()), // Resolves to Record
-                TypeRef::Named("String".into())
-            ])),
-            TypeTag::Record // First type resolves to Record
-        );
-        // Empty Union
-        assert_eq!(
-            TypeTag::from_type_ref(&TypeRef::Union(vec![])),
-            TypeTag::Null
         );
     }
 
@@ -755,14 +683,6 @@ mod tests {
         let empty = serde_json::json!({});
         let empty_shape = fingerprint_value(&empty);
         assert!(empty_shape.conforms_to(folder));
-    }
-
-    #[test]
-    fn test_type_shape_empty() {
-        let shape = TypeShape::empty();
-        assert_eq!(shape.presence, 0);
-        assert!(shape.fields.is_empty());
-        assert!(shape.children.is_empty());
     }
 
     #[test]
