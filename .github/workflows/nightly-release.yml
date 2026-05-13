@@ -288,14 +288,37 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Publish karu crate
-        run: cargo publish -p karu --no-default-features --features cedar
+        run: |
+          set +e
+          OUTPUT=$(cargo publish -p karu --no-default-features --features cedar 2>&1)
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [[ $STATUS -ne 0 ]]; then
+            if echo "$OUTPUT" | grep -qi "already uploaded"; then
+              echo "karu crate version already published; skipping."
+            else
+              exit $STATUS
+            fi
+          fi
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
       - name: Publish karu-cli crate
         run: |
           sleep 30  # Wait for crates.io index update
-          cargo publish -p karu-cli
+          set +e
+          OUTPUT=$(cargo publish -p karu-cli 2>&1)
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [[ $STATUS -ne 0 ]]; then
+            if echo "$OUTPUT" | grep -qi "already uploaded"; then
+              echo "karu-cli crate version already published; skipping."
+            else
+              exit $STATUS
+            fi
+          fi
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
@@ -323,10 +346,21 @@ jobs:
         run: |
           cd dist
           TARBALL=$(ls *.tgz | head -1)
+          set +e
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            npm publish "$TARBALL" --access public
+            OUTPUT=$(npm publish "$TARBALL" --access public 2>&1)
           else
-            npm publish "$TARBALL" --access public --tag nightly
+            OUTPUT=$(npm publish "$TARBALL" --access public --tag nightly 2>&1)
+          fi
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [[ $STATUS -ne 0 ]]; then
+            if echo "$OUTPUT" | grep -q "cannot publish over the previously published versions"; then
+              echo "npm package version already published; skipping."
+            else
+              exit $STATUS
+            fi
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -16,4 +16,3 @@ crates/karu/pkg/
 crates/karu/benches/wasm_bench/pkg/
 bindings/swift/.build/
 bindings/swift/Sources/CKaru/karu.h
-editors/vscode/syntaxes/*.tmLanguage.json

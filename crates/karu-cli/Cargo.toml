@@ -15,6 +15,6 @@ default = ["cedar"]
 cedar = ["karu/cedar"]
 
 [dependencies]
-karu = { path = "../karu", default-features = false, features = ["cedar", "dev"] }
+karu = { version = "0.1.0", path = "../karu", default-features = false, features = ["cedar", "dev"] }
 clap = { version = "4", features = ["derive"] }
 serde_json = "1.0"
