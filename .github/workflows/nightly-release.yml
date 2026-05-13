@@ -321,7 +321,8 @@ jobs:
 
       - name: Publish to npm
         run: |
-          TARBALL=$(ls dist/*.tgz | head -1)
+          cd dist
+          TARBALL=$(ls *.tgz | head -1)
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             npm publish "$TARBALL" --access public
           else
