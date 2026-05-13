@@ -457,14 +457,14 @@ impl Condition {
             // Fast path: Literal Eq/Ne bypasses full matcher, just compare Values directly
             Operator::Eq => {
                 if let Pattern::Literal(lit) = pattern {
-                    data == lit
+                    data == lit || entity_id_matches(data, lit)
                 } else {
                     matches_ref(data, pattern)
                 }
             }
             Operator::Ne => {
                 if let Pattern::Literal(lit) = pattern {
-                    data != lit
+                    data != lit && !entity_id_matches(data, lit)
                 } else {
                     !matches_ref(data, pattern)
                 }
@@ -603,6 +603,15 @@ impl Condition {
 
         // Non-PathRef: use the pattern by reference (no clone!)
         self.dispatch_op(data, &self.pattern, input)
+    }
+}
+
+fn entity_id_matches(data: &Value, pattern: &Value) -> bool {
+    match (data, pattern) {
+        (Value::Object(obj), Value::String(id)) | (Value::String(id), Value::Object(obj)) => {
+            obj.get("id") == Some(&Value::String(id.clone()))
+        }
+        _ => false,
     }
 }
 

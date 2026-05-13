@@ -683,29 +683,21 @@ pub fn run_inline_tests(source: &str) -> Option<InlineTestResults> {
                 }
             } else {
                 // Record: `actor { id: "alice", name: "Alice" }`
-                // → { "actor": "alice", "actor.id": "alice", "actor.name": "Alice" }
-                // Top-level key = id value (for `principal == "alice"`),
-                // fall back to full object if no id field.
-                let mut id_value = None;
+                // → { "actor": { ... }, "actor.id": "alice", "actor.name": "Alice" }
+                // Equality against strings still works through the evaluator's
+                // entity-id fallback, while schema checks see the full object.
                 for (key, value) in &entity.fields {
                     let mut full_key = String::with_capacity(entity.kind.len() + 1 + key.len());
                     full_key.push_str(&entity.kind);
                     full_key.push('.');
                     full_key.push_str(key);
                     flat.insert(full_key, value.clone());
-                    if key == "id" {
-                        id_value = Some(value.clone());
-                    }
                 }
-                if let Some(id) = id_value {
-                    flat.insert(entity.kind.clone(), id);
-                } else {
-                    let mut obj = serde_json::Map::new();
-                    for (key, value) in &entity.fields {
-                        obj.insert(key.clone(), value.clone());
-                    }
-                    flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
+                let mut obj = serde_json::Map::new();
+                for (key, value) in &entity.fields {
+                    obj.insert(key.clone(), value.clone());
                 }
+                flat.insert(entity.kind.clone(), serde_json::Value::Object(obj));
             }
         }
         test_inputs.push(serde_json::Value::Object(flat));
@@ -978,6 +970,48 @@ test "alice can view" {
         assert!(
             actions.is_empty(),
             "guarded forall should have no code action"
+        );
+    }
+
+    #[test]
+    fn test_schema_traits_owner_can_view() {
+        let source = r#"
+use schema;
+mod {
+    abstract Ownable {
+        owner User,
+    };
+    actor User {
+        id string,
+    };
+    resource File is Ownable {};
+};
+
+allow view if
+    resource is File and
+    resource.owner == actor;
+
+test "owner can view" {
+    actor {
+        id: "alice",
+    }
+    action "view"
+    resource {
+        id: "readme.txt",
+        owner: {
+            id: "alice",
+        },
+    }
+    expect allow
+}
+"#;
+        let results = run_inline_tests(source);
+        assert!(results.is_some(), "should have test results");
+        let results = results.unwrap();
+        assert!(
+            results.tests[0].passed,
+            "schema object-to-id comparison should pass: {}",
+            results.tests[0].message
         );
     }
 
