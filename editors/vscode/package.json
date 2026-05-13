@@ -3,7 +3,7 @@
     "displayName": "Karu",
     "description": "Language support for Karu policy files",
     "version": "0.1.0",
-    "publisher": "karu",
+    "publisher": "wellknownid",
     "repository": {
         "type": "git",
         "url": "https://github.com/wellknown-id/karu.git"
