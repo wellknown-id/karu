@@ -179,7 +179,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-npm
-          path: npm/karu/karu-*.tgz
+          path: npm/karu/*.tgz
 
   # ========================================================================
   # Build Android shared libraries
@@ -321,7 +321,7 @@ jobs:
 
       - name: Publish to npm
         run: |
-          TARBALL=$(ls dist/karu-*.tgz | head -1)
+          TARBALL=$(ls dist/*.tgz | head -1)
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             npm publish "$TARBALL" --access public
           else
