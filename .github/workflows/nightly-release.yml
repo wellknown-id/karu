@@ -295,7 +295,7 @@ jobs:
           set -e
           echo "$OUTPUT"
           if [[ $STATUS -ne 0 ]]; then
-            if echo "$OUTPUT" | grep -qi "already uploaded"; then
+            if echo "$OUTPUT" | grep -Eqi "already uploaded|already exists on crates\\.io index"; then
               echo "karu crate version already published; skipping."
             else
               exit $STATUS
@@ -313,7 +313,7 @@ jobs:
           set -e
           echo "$OUTPUT"
           if [[ $STATUS -ne 0 ]]; then
-            if echo "$OUTPUT" | grep -qi "already uploaded"; then
+            if echo "$OUTPUT" | grep -Eqi "already uploaded|already exists on crates\\.io index"; then
               echo "karu-cli crate version already published; skipping."
             else
               exit $STATUS

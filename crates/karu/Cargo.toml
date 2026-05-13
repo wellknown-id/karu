@@ -5,7 +5,8 @@ edition = "2021"
 description = "An embeddable policy engine focusing on structural pattern matching over arbitrary JSON data"
 license = "MIT"
 repository = "https://github.com/wellknown-id/karu"
-keywords = ["policy", "authorization", "pattern-matching", "access-control"]
+readme = "README.md"
+keywords = ["policy", "pattern-matching", "access-control", "cedar", "opa"]
 categories = ["authentication"]
 
 [lib]

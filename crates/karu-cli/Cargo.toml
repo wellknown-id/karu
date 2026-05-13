@@ -5,6 +5,7 @@ edition = "2021"
 description = "CLI for the Karu policy engine"
 license = "MIT"
 repository = "https://github.com/wellknown-id/karu"
+readme = "README.md"
 
 [[bin]]
 name = "karu"
