@@ -414,33 +414,26 @@ impl Parser {
     }
 
     fn consume_ident(&mut self) -> Result<String, CedarSchemaError> {
-        match self.peek().clone() {
-            Token::Ident(s) => {
-                let name = s.clone();
-                self.advance();
-                Ok(name)
-            }
-            _ => Err(self.err(format!("expected identifier, got {:?}", self.peek()))),
+        if let Token::Ident(s) = self.peek() {
+            let name = s.clone();
+            self.advance();
+            Ok(name)
+        } else {
+            Err(self.err(format!("expected identifier, got {:?}", self.peek())))
         }
     }
 
     fn consume_name(&mut self) -> Result<String, CedarSchemaError> {
         // A Name is either an IDENT or a STR.
-        match self.peek().clone() {
-            Token::Ident(s) => {
-                let name = s.clone();
-                self.advance();
-                Ok(name)
-            }
-            Token::Str(s) => {
-                let name = s.clone();
-                self.advance();
-                Ok(name)
-            }
-            _ => Err(self.err(format!(
+        if let Token::Ident(s) | Token::Str(s) = self.peek() {
+            let name = s.clone();
+            self.advance();
+            Ok(name)
+        } else {
+            Err(self.err(format!(
                 "expected name (ident or string), got {:?}",
                 self.peek()
-            ))),
+            )))
         }
     }
 
@@ -744,12 +737,12 @@ impl Parser {
     }
 
     fn parse_base_type(&mut self) -> Result<TypeRef, CedarSchemaError> {
-        match self.peek().clone() {
+        match self.peek() {
             Token::LBrace => {
                 let fields = self.parse_record_fields()?;
                 Ok(TypeRef::Record(fields))
             }
-            Token::Ident(ref name) if name == "Set" => {
+            Token::Ident(name) if name == "Set" => {
                 self.advance();
                 self.expect(&Token::Lt)?;
                 let inner = self._parse_type()?;
@@ -876,7 +869,7 @@ impl Parser {
 
     /// Parse a single ref: either a string name or a path (optionally followed by ::"str")
     fn parse_ref(&mut self) -> Result<String, CedarSchemaError> {
-        match self.peek().clone() {
+        match self.peek() {
             Token::Str(s) => {
                 let name = s.clone();
                 self.advance();
