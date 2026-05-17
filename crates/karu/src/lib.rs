@@ -198,6 +198,45 @@ mod cedar_api {
             let result = compile_cedar("not a cedar policy");
             assert!(matches!(result, Err(CompileCedarError::Import(_))));
         }
+
+        #[test]
+        fn test_compile_cedar_compile_error() {
+            // Note: `compile_cedar` delegates to `cedar_import::from_cedar` and then `compiler::compile_program`.
+            // Any cedar parsing errors or conversion errors result in `CompileCedarError::Import`.
+            // Current `from_cedar` implementation generates simple ASTs that do not fail `compile_program`
+            // (e.g., it doesn't generate circular assertions or unknown types for `is` operations).
+            // Thus, triggering `CompileCedarError::Compile` through `compile_cedar` is currently unreachable
+            // organically, but the enum variant exists for future-proofing as Cedar integration expands.
+            // This test verifies the enum variant behaves correctly when explicitly created.
+            let compile_err = CompileCedarError::Compile("AST compilation failed".to_string());
+            assert!(matches!(compile_err, CompileCedarError::Compile(_)));
+            assert_eq!(format!("{}", compile_err), "Compile error: AST compilation failed");
+        }
+
+        #[test]
+        fn test_compile_cedar_success() {
+            use crate::rule::Effect;
+            use serde_json::json;
+
+            let policy = compile_cedar(
+                r#"permit(principal, action, resource) when { principal.role == "admin" };"#,
+            )
+            .unwrap();
+
+            let input = json!({
+                "principal": {"role": "admin"},
+                "action": "read",
+                "resource": "doc"
+            });
+            assert_eq!(policy.evaluate(&input), Effect::Allow);
+
+            let input_deny = json!({
+                "principal": {"role": "user"},
+                "action": "read",
+                "resource": "doc"
+            });
+            assert_eq!(policy.evaluate(&input_deny), Effect::Deny);
+        }
     }
 }
 
